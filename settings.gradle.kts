@@ -7,3 +7,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "Calaf"
 include(":app", ":core:model", ":core:designsystem")
+include(":core:data", ":feature:community")

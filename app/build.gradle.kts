@@ -13,13 +13,14 @@ android {
         versionCode = 1
         versionName = "0.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("boolean", "USE_FIREBASE_EMULATORS", providers.gradleProperty("calaf.emulators").orElse("false").get().toBoolean().toString())
     }
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    buildFeatures { compose = true }
+    buildFeatures { compose = true; buildConfig = true }
     buildTypes {
         release {
             isMinifyEnabled = true
@@ -32,6 +33,8 @@ kotlin { compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarg
 dependencies {
     implementation(project(":core:model"))
     implementation(project(":core:designsystem"))
+    implementation(project(":core:data"))
+    implementation(project(":feature:community"))
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.material3)
     implementation(libs.compose.foundation)

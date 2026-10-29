@@ -11,6 +11,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         val app = application as CalafApplication
-        setContent { CalafTheme { CalafApp(app.auth, app.profiles) } }
+        setContent { CalafTheme { CalafApp(app.auth, app.profiles, app.community, BuildConfig.DEBUG && BuildConfig.USE_FIREBASE_EMULATORS) } }
     }
 }

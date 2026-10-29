@@ -10,3 +10,7 @@ google-services.json
 .env
 .env.*
 !.env.example
+node_modules/
+*-debug.log
+.firebase/
+backend/.secret.local

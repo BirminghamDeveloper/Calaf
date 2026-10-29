@@ -25,6 +25,17 @@ data class ProfileDraft(
     val languages: String = "",
     val culture: String = "",
     val biography: String = "",
+    val gender: Gender = Gender.UNSPECIFIED,
+    val religion: String = "",
+    val occupation: String = "",
+    val education: String = "",
+    val interests: String = "",
+    val values: String = "",
+    val children: Answer = Answer.UNSPECIFIED,
+    val wantsChildren: Answer = Answer.UNSPECIFIED,
+    val smoking: Answer = Answer.UNSPECIFIED,
+    val relocation: Answer = Answer.UNSPECIFIED,
+    val timeline: MarriageTimeline = MarriageTimeline.WHEN_READY,
 )
 
 interface ProfileRepository {
