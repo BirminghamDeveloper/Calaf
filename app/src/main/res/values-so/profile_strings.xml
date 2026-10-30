@@ -1,0 +1,24 @@
+<resources>
+    <string name="local_development">HORUMARIN MAXALLI AH · Firebase emulators · Akoonno tijaabo ah</string>
+    <string name="publish_profile">Daabac astaantayda</string>
+    <string name="profile_gender">Jinsiga</string>
+    <string name="profile_religion">Diinta iyo ku dhaqankeeda</string>
+    <string name="profile_occupation">Shaqada</string>
+    <string name="profile_education">Waxbarashada</string>
+    <string name="profile_interests">Waxyaabaha aad xiisayso (hakad ku kala saar)</string>
+    <string name="profile_values">Qiyamka muhiimka ah (hakad ku kala saar)</string>
+    <string name="profile_children">Carruur ma leedahay?</string>
+    <string name="profile_wants_children">Carruur ma rabtaa?</string>
+    <string name="profile_smoking">Ma sigaar cabtaa?</string>
+    <string name="profile_relocation">Ma guuri lahayd?</string>
+    <string name="profile_timeline">Waqtiga guurka</string>
+    <string name="choice_unspecified">Ma doonayo inaan sheego</string>
+    <string name="choice_woman">Haweeney</string>
+    <string name="choice_man">Nin</string>
+    <string name="choice_yes">Haa</string>
+    <string name="choice_no">Maya</string>
+    <string name="choice_open">Waan ka wada hadli karnaa</string>
+    <string name="choice_when_ready">Markaan diyaar noqonno</string>
+    <string name="choice_within_year">Sannad gudihiis</string>
+    <string name="choice_two_years">Hal ilaa laba sano</string>
+</resources>

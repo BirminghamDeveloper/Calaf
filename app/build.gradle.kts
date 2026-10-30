@@ -41,6 +41,8 @@ dependencies {
     implementation(libs.activity.compose)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
+    implementation(libs.firebase.storage)
+    implementation(libs.exif)
     implementation(libs.lifecycle.compose)
     implementation(libs.lifecycle.viewmodel)
     implementation(libs.navigation.compose)

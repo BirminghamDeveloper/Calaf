@@ -4,7 +4,7 @@ import java.time.LocalDate
 import kotlinx.coroutines.flow.Flow
 
 data class Account(val id: String, val email: String, val emailVerified: Boolean)
-enum class AccountError { InvalidInput, Credentials, Network, RateLimited, WeakPassword, Unavailable, Unknown }
+enum class AccountError { InvalidInput, Credentials, Network, LocalBackend, EmailInUse, RateLimited, WeakPassword, Unavailable, Unknown }
 class AccountException(val reason: AccountError) : Exception(reason.name)
 
 interface AuthRepository {

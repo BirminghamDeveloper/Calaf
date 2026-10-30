@@ -1,0 +1,24 @@
+<resources>
+    <string name="local_development">LOCAL DEVELOPMENT · Firebase emulators · Demo accounts only</string>
+    <string name="publish_profile">Publish my profile to discovery</string>
+    <string name="profile_gender">Gender</string>
+    <string name="profile_religion">Religion and practice</string>
+    <string name="profile_occupation">Occupation</string>
+    <string name="profile_education">Education</string>
+    <string name="profile_interests">Interests (separate with commas)</string>
+    <string name="profile_values">Important values (separate with commas)</string>
+    <string name="profile_children">Do you have children?</string>
+    <string name="profile_wants_children">Would you like children?</string>
+    <string name="profile_smoking">Do you smoke?</string>
+    <string name="profile_relocation">Would you relocate?</string>
+    <string name="profile_timeline">Marriage timeline</string>
+    <string name="choice_unspecified">Prefer not to say</string>
+    <string name="choice_woman">Woman</string>
+    <string name="choice_man">Man</string>
+    <string name="choice_yes">Yes</string>
+    <string name="choice_no">No</string>
+    <string name="choice_open">Open to discussing</string>
+    <string name="choice_when_ready">When we are ready</string>
+    <string name="choice_within_year">Within a year</string>
+    <string name="choice_two_years">In one to two years</string>
+</resources>
