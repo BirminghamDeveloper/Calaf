@@ -1,0 +1,9 @@
+<resources>
+    <string name="activity_title">Activity</string>
+    <string name="activity_count">Activity (%1$d)</string>
+    <string name="activity_description">Your latest 100 match and message alerts. Open a conversation or mark an alert as read.</string>
+    <string name="activity_empty">No activity yet. New matches and messages will appear here.</string>
+    <string name="activity_match">You have a new match</string>
+    <string name="activity_message">You have a new message</string>
+    <string name="activity_mark_read">Mark as read</string>
+</resources>

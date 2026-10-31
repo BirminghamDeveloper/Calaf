@@ -10,12 +10,12 @@ import kotlinx.coroutines.tasks.await
 import org.json.JSONObject
 import com.google.firebase.FirebaseApp
 
-fun createCommunityRepository(emulator: Boolean = false, app: FirebaseApp = FirebaseApp.getInstance()): CommunityRepository {
+fun createCommunityRepository(emulator: Boolean = false, app: FirebaseApp = FirebaseApp.getInstance(), emulatorHost: String = "10.0.2.2"): CommunityRepository {
     val db = FirebaseFirestore.getInstance(app)
     val functions = FirebaseFunctions.getInstance(app, "europe-west2")
     if (emulator) {
-        db.useEmulator("10.0.2.2", 8080)
-        functions.useEmulator("10.0.2.2", 5001)
+        db.useEmulator(emulatorHost, 8080)
+        functions.useEmulator(emulatorHost, 5001)
     }
     return FirebaseCommunityRepository(db, functions, emulator)
 }

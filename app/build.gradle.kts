@@ -5,6 +5,7 @@ plugins {
 }
 android {
     namespace = "com.calaf.app"
+    testBuildType = providers.gradleProperty("calaf.testBuildType").orElse("debug").get()
     compileSdk { version = release(37) }
     defaultConfig {
         applicationId = "com.calaf.app"
@@ -13,6 +14,7 @@ android {
         versionCode = 1
         versionName = "0.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("boolean", "OFFLINE_DEMO", "false")
         buildConfigField("boolean", "USE_FIREBASE_EMULATORS", providers.gradleProperty("calaf.emulators").orElse("false").get().toBoolean().toString())
     }
     compileOptions {
@@ -22,6 +24,14 @@ android {
     }
     buildFeatures { compose = true; buildConfig = true }
     buildTypes {
+        create("offline") {
+            initWith(getByName("debug"))
+            applicationIdSuffix = ".offline"
+            versionNameSuffix = "-offline-demo"
+            matchingFallbacks += "debug"
+            buildConfigField("boolean", "OFFLINE_DEMO", "true")
+            buildConfigField("boolean", "USE_FIREBASE_EMULATORS", "false")
+        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
@@ -56,3 +66,6 @@ dependencies {
     androidTestImplementation(libs.test.runner)
     debugImplementation(libs.compose.test.manifest)
 }
+
+// The standalone demo never initializes or connects to Firebase.
+tasks.configureEach { if (name == "processOfflineGoogleServices") enabled = false }

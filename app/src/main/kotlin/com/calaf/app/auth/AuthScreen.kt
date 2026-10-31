@@ -27,6 +27,7 @@ fun AuthScreen(state: AuthUiState, register: Boolean, onSubmit: (String, String,
     var adult by rememberSaveable { mutableStateOf(false) }
     FormPage(stringResource(if (register) R.string.create_account else R.string.login),
         stringResource(if (register) R.string.register_subtitle else R.string.login_subtitle)) {
+        if (BuildConfig.OFFLINE_DEMO) StatusMessage("Offline demo: accounts stay on this device. No verification or password-reset emails are sent. Use fictional details. Administrator login: admin / admin.")
         OutlinedTextField(email, { email = it.take(254) }, label = { Text(stringResource(R.string.email)) },
             singleLine = true, enabled = !state.busy, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email), modifier = Modifier.fillMaxWidth())
         OutlinedTextField(password, { password = it.take(128) }, label = { Text(stringResource(R.string.password)) },
@@ -59,7 +60,7 @@ fun AuthScreen(state: AuthUiState, register: Boolean, onSubmit: (String, String,
             modifier = Modifier.fillMaxWidth().heightIn(min = CalafDimensions.touchTarget)) {
             Text(stringResource(if (register) R.string.create_account else R.string.login))
         }
-        if (!register) TextButton(onClick = { onReset(email) }, enabled = !state.busy) { Text(stringResource(R.string.forgot_password)) }
+        if (!register && !BuildConfig.OFFLINE_DEMO) TextButton(onClick = { onReset(email) }, enabled = !state.busy) { Text(stringResource(R.string.forgot_password)) }
         TextButton(onClick = onBack, enabled = !state.busy) { Text(stringResource(R.string.back)) }
     }
 }

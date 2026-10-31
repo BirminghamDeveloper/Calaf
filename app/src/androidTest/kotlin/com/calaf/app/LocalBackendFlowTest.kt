@@ -16,13 +16,22 @@ class LocalBackendFlowTest {
         compose.mainClock.advanceTimeBy(3000)
         compose.waitUntil(30000) { compose.onAllNodesWithText("Create account").fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithText("Create account").performScrollTo().performClick()
-        compose.onNodeWithText("Email address").performTextInput("ui-${System.currentTimeMillis()}@calaf.test")
+        val email = "ui-${System.currentTimeMillis()}@calaf.test"
+        compose.onNodeWithText("Email address").performTextInput(email)
         compose.onNodeWithText("Password", substring = false).performTextInput("LocalCheck!2026")
         compose.onNodeWithText("Confirm password", substring = false).performScrollTo().performTextInput("LocalCheck!2026")
         compose.onNode(isToggleable()).performScrollTo().performClick()
         compose.onAllNodesWithText("Create account").onLast().performScrollTo().performClick()
         compose.waitUntil(30000) { compose.onAllNodesWithText("Verify local demo email").fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithText("Verify local demo email").performScrollTo().performClick()
+        compose.waitUntil(30000) { compose.onAllNodesWithText("Display name").fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithText("Display name").assertExists()
+        compose.runOnIdle { (compose.activity.application as CalafApplication).auth.logout() }
+        compose.waitUntil(30000) { compose.onAllNodesWithText("Log in").fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithText("Log in").performScrollTo().performClick()
+        compose.onNodeWithText("Email address").performTextInput(email)
+        compose.onNodeWithText("Password", substring = false).performTextInput("LocalCheck!2026")
+        compose.onAllNodesWithText("Log in").onLast().performScrollTo().performClick()
         compose.waitUntil(30000) { compose.onAllNodesWithText("Display name").fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithText("Display name").assertExists()
         compose.runOnIdle { (compose.activity.application as CalafApplication).auth.logout() }

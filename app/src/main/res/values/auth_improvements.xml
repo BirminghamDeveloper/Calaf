@@ -1,0 +1,9 @@
+<resources>
+    <string name="local_reset_help">Local Firebase does not send reset emails. Open the reset link printed in the Start-LocalBackend terminal on your computer. Replace the newPassword value in that link with your chosen password.</string>
+    <string name="confirm_password">Confirm password</string>
+    <string name="password_mismatch">The passwords do not match. Please enter them again.</string>
+    <string name="error_email_in_use">An account already uses this email. Go back to Log in, or reset your password.</string>
+    <string name="error_local_backend">Local Firebase is not reachable. On your computer, run scripts/Start-LocalBackend.ps1 and keep that terminal open. For a USB phone, enable USB debugging and run scripts/Connect-TestDevice.ps1. Local accounts are separate from your live Firebase accounts.</string>
+    <string name="verify_local_email">Verify local demo email</string>
+    <string name="local_verification_help">Local development does not send email. This button uses a verification code from the local emulator. Real accounts still require inbox verification.</string>
+</resources>

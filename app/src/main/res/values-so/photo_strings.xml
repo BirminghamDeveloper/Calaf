@@ -1,0 +1,12 @@
+<resources>
+    <string name="photos_title">Sawirrada gaarka ah ee bogga</string>
+    <string name="photos_private">Si gaar ah u kaydi ilaa 6 sawir. Adiga oo keliya ayaa arki kara; raadinta laguma muujiyo. Ansixinta sawirrada dadweynaha weli lama heli karo. Dooro sawir ilaa 15 MB ah; xogta goobta waa la saaraa ka hor raridda.</string>
+    <string name="photo_add">Dooro sawir</string>
+    <string name="photo_remove">Ka saar sawirka</string>
+    <string name="photo_remove_confirm">Sawirkan gaarka ah ma ka saartaa akoonkaaga? Tani dib looma celin karo.</string>
+    <string name="photo_cancel">Jooji</string>
+    <string name="photo_description">Sawir gaar ah %1$d</string>
+    <string name="photo_preview_failed">Hordhaca lama heli karo. Mar kale soo rar.</string>
+    <string name="photos_reload">Mar kale soo rar sawirrada</string>
+    <string name="photos_error">Hawsha sawirku way fashilantay. Hubi xiriirkaaga oo sawirrada dib u rar ka hor isku day kale. Dooro sawir la akhrin karo oo ka yar 15 MB. Kaydinta tooska ahi waxay u baahan tahay dejinta Firebase.</string>
+</resources>

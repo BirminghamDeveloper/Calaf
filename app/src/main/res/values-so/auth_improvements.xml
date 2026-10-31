@@ -1,0 +1,9 @@
+<resources>
+    <string name="local_reset_help">Firebase-ka maxalliga ahi iimayl dib-u-dejin ma diro. Kombiyuutarka ka fur xiriirka terminal-ka Start-LocalBackend. Qiimaha newPassword ku beddel erayga sirta ah ee aad dooratay.</string>
+    <string name="confirm_password">Xaqiiji erayga sirta ah</string>
+    <string name="password_mismatch">Erayada sirta ahi isma waafaqaan. Fadlan mar kale geli.</string>
+    <string name="error_email_in_use">Iimaylkan akoon ayaa isticmaala. Ku noqo gelitaanka ama dib u deji erayga sirta ah.</string>
+    <string name="error_local_backend">Firebase-ka maxalliga ah lama heli karo. Kombiyuutarka ka orod scripts/Start-LocalBackend.ps1 oo terminal-ka furnow. Telefoon USB ku xiran, shid USB debugging oo orod scripts/Connect-TestDevice.ps1. Akoonnada maxalliga ahi way ka duwan yihiin kuwa Firebase-ka tooska ah.</string>
+    <string name="verify_local_email">Xaqiiji iimaylka tijaabada</string>
+    <string name="local_verification_help">Horumarinta maxalliga ahi iimayl ma dirto. Badhankani wuxuu isticmaalaa koodhka emulator-ka. Akoonnada dhabta ahi waxay u baahan yihiin xaqiijinta iimaylka.</string>
+</resources>

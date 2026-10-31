@@ -1,0 +1,29 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null && request.auth.token.email_verified == true; }
+    function own(uid) { return signedIn() && request.auth.uid == uid; }
+    function activeAccount() {
+      let user = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+      return user.status == 'ACTIVE' && (!('validAfter' in user) || request.auth.token.auth_time >= user.validAfter);
+    }
+    function activeMember(id) {
+      let pair = get(/databases/$(database)/documents/pairs/$(id)).data;
+      return signedIn() && activeAccount() && request.auth.uid in pair.members && pair.state == 'ACTIVE' && pair.blockedBy.size() == 0;
+    }
+    match /users/{uid} { allow read: if own(uid); }
+    match /profiles/{uid} { allow get: if own(uid); }
+    match /preferences/{uid} { allow read: if own(uid); }
+    match /settings/{uid} { allow read: if own(uid); }
+    match /subscriptions/{uid} { allow read: if own(uid); }
+    match /pairs/{id} {
+      allow read: if signedIn() && request.auth.uid in resource.data.members;
+      match /messages/{messageId} { allow read: if activeMember(id); }
+    }
+    match /reports/{id} { allow get: if signedIn() && resource.data.reporter == request.auth.uid; }
+    match /guardians/{id} { allow read: if signedIn() && request.auth.uid in resource.data.members; }
+    match /notifications/{uid}/items/{id} { allow read: if own(uid); }
+    // All writes and all discovery projections go through authenticated Functions.
+    match /{document=**} { allow read, write: if false; }
+  }
+}

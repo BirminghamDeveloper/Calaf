@@ -1,0 +1,12 @@
+<resources>
+    <string name="photos_title">Private profile photos</string>
+    <string name="photos_private">Save up to 6 photos privately. They are visible only to you and are not yet shown in discovery. Public photo approval is not available yet. Choose an image up to 15 MB; location metadata is removed before upload.</string>
+    <string name="photo_add">Choose a photo</string>
+    <string name="photo_remove">Remove photo</string>
+    <string name="photo_remove_confirm">Remove this private photo from your account? This cannot be undone.</string>
+    <string name="photo_cancel">Cancel</string>
+    <string name="photo_description">Private photo %1$d</string>
+    <string name="photo_preview_failed">Preview unavailable. Reload to try again.</string>
+    <string name="photos_reload">Reload photos</string>
+    <string name="photos_error">Photo action failed. Check your connection and try Reload photos before retrying. Choose a readable image smaller than 15 MB. Live storage requires Firebase setup.</string>
+</resources>

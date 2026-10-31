@@ -1,0 +1,9 @@
+<resources>
+    <string name="retry_connection">Retry connection</string>
+    <string name="preference_children">Partner plans for children</string>
+    <string name="preference_yes">Wants children</string>
+    <string name="preference_no">Does not want children</string>
+    <string name="preference_open">Open to discussion</string>
+    <string name="earlier_messages">Load older messages</string>
+    <string name="message_read">Read</string>
+</resources>

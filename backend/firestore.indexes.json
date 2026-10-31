@@ -1,0 +1,12 @@
+{
+  "indexes": [
+    { "collectionGroup": "profiles", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "visibility", "order": "ASCENDING" }, { "fieldPath": "__name__", "order": "ASCENDING" }
+    ] }
+  ],
+  "fieldOverrides": [
+    { "collectionGroup": "messages", "fieldPath": "text", "indexes": [] },
+    { "collectionGroup": "users", "fieldPath": "birthDate", "indexes": [] },
+    { "collectionGroup": "reports", "fieldPath": "details", "indexes": [] }
+  ]
+}

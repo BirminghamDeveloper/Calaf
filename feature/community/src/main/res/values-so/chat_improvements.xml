@@ -1,0 +1,9 @@
+<resources>
+    <string name="retry_connection">Isku day xiriirka mar kale</string>
+    <string name="preference_children">Qorshaha lammaanaha ee carruurta</string>
+    <string name="preference_yes">Wuxuu rabaa carruur</string>
+    <string name="preference_no">Ma rabo carruur</string>
+    <string name="preference_open">Wadahadal ayuu u furan yahay</string>
+    <string name="earlier_messages">Soo rar farriimihii hore</string>
+    <string name="message_read">La akhriyey</string>
+</resources>

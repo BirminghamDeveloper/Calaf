@@ -14,6 +14,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 import org.json.JSONObject
 import com.calaf.app.BuildConfig
+import com.calaf.app.localBackendHost
 
 class FirebaseAuthRepository(private val auth: FirebaseAuth) : AuthRepository {
     private val local = BuildConfig.DEBUG && BuildConfig.USE_FIREBASE_EMULATORS && auth.app.name == "calaf-local"
@@ -21,7 +22,7 @@ class FirebaseAuthRepository(private val auth: FirebaseAuth) : AuthRepository {
         if (!local) return
         try {
             withContext(Dispatchers.IO) {
-                val connection = URL("http://10.0.2.2:9099/emulator/v1/projects/demo-calaf/config").openConnection() as HttpURLConnection
+                val connection = URL("http://${localBackendHost}:9099/emulator/v1/projects/demo-calaf/config").openConnection() as HttpURLConnection
                 try {
                     connection.connectTimeout = 3000
                     connection.readTimeout = 3000
@@ -60,7 +61,7 @@ class FirebaseAuthRepository(private val auth: FirebaseAuth) : AuthRepository {
         // Local Auth never sends mail. Only the named demo app may consume emulator codes.
         if (local) {
             val code = withContext(Dispatchers.IO) {
-                val connection = URL("http://10.0.2.2:9099/emulator/v1/projects/demo-calaf/oobCodes").openConnection() as HttpURLConnection
+                val connection = URL("http://${localBackendHost}:9099/emulator/v1/projects/demo-calaf/oobCodes").openConnection() as HttpURLConnection
                 try {
                     connection.connectTimeout = 3000
                     connection.readTimeout = 5000
