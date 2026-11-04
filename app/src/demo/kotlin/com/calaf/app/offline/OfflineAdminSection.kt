@@ -5,9 +5,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.calaf.app.demo.DemoAdminRepository
 
 @Composable
-fun OfflineAdminSection(demo: OfflineDemo) {
+fun OfflineAdminSection(demo: DemoAdminRepository) {
     val revision by demo.revision.collectAsState()
     if (!demo.isAdmin) return
     var expanded by remember { mutableStateOf(false) }
@@ -19,16 +20,16 @@ fun OfflineAdminSection(demo: OfflineDemo) {
         OutlinedButton(onClick = { expanded = !expanded }) { Text(if (expanded) "Hide administrator panel" else "Open administrator panel") }
         if (error) Text("The action could not be completed. Reopen the panel and try again.", color = MaterialTheme.colorScheme.error)
         if (expanded) {
-            val members = remember(revision) { demo.adminMembers() }
-            val reports = remember(revision) { demo.adminReports() }
+            val members = remember(revision) { demo.members() }
+            val reports = remember(revision) { demo.reports() }
             Text("Members (${members.size})", style = MaterialTheme.typography.titleMedium)
             members.forEach { member ->
                 Card(Modifier.fillMaxWidth()) { Column(Modifier.padding(12.dp)) {
                     Text(member.email)
-                    Text(if (member.id == "demo-admin") "Administrator" else if (member.suspended) "Suspended" else "Member")
-                    if (member.id != "demo-admin") TextButton(onClick = {
+                    Text(if (member.isAdmin) "Administrator" else if (member.suspended) "Suspended" else "Member")
+                    if (!member.isAdmin) TextButton(onClick = {
                         pending = (if (member.suspended) "Restore ${member.email}?" else "Suspend ${member.email}? They will be unable to log in or appear in discovery.") to
-                            { demo.suspendMember(member.id, !member.suspended) }
+                            { demo.suspend(member.id, !member.suspended) }
                     }) { Text(if (member.suspended) "Restore member" else "Suspend member") }
                 } }
             }

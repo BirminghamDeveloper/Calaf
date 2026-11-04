@@ -3,7 +3,13 @@ package com.calaf.app.di
 import android.content.Context
 import com.calaf.app.AppMode
 import com.calaf.app.DemoAppMode
-import com.calaf.app.offline.OfflineDemo
+import com.calaf.app.demo.DemoAdminRepository
+import com.calaf.app.demo.DemoAuthRepository
+import com.calaf.app.demo.DemoCommunityRepository
+import com.calaf.app.demo.DemoPhotoRepository
+import com.calaf.app.demo.DemoProfileRepository
+import com.calaf.app.demo.DemoSession
+import com.calaf.app.demo.DemoStore
 import com.calaf.core.model.AuthRepository
 import com.calaf.core.model.CommunityRepository
 import com.calaf.core.model.PhotoRepositoryFactory
@@ -13,6 +19,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import java.io.File
 import javax.inject.Singleton
 
 /** Binds every repository to the on device demo store. No network, no Firebase. */
@@ -20,16 +27,28 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object DemoModule {
     @Provides @Singleton
-    fun demo(@ApplicationContext context: Context): OfflineDemo = OfflineDemo(context)
+    fun store(@ApplicationContext context: Context): DemoStore = DemoStore(File(context.filesDir, "calaf_demo"))
 
-    @Provides fun auth(demo: OfflineDemo): AuthRepository = demo
+    @Provides @Singleton
+    fun session(store: DemoStore): DemoSession = DemoSession(store)
 
-    @Provides fun profiles(demo: OfflineDemo): ProfileRepository = demo.drafts
+    @Provides @Singleton
+    fun auth(store: DemoStore, session: DemoSession): AuthRepository = DemoAuthRepository(store, session)
 
-    @Provides fun community(demo: OfflineDemo): CommunityRepository = demo
+    @Provides @Singleton
+    fun profiles(store: DemoStore, session: DemoSession): ProfileRepository = DemoProfileRepository(store, session)
 
-    @Provides fun photoRepositories(demo: OfflineDemo): PhotoRepositoryFactory =
-        PhotoRepositoryFactory { uid -> demo.photos(uid) }
+    @Provides @Singleton
+    fun community(store: DemoStore, session: DemoSession): CommunityRepository =
+        DemoCommunityRepository(store, session)
 
-    @Provides fun appMode(demo: OfflineDemo): AppMode = DemoAppMode(demo)
+    @Provides @Singleton
+    fun admin(store: DemoStore, session: DemoSession): DemoAdminRepository = DemoAdminRepository(store, session)
+
+    @Provides
+    fun photoRepositories(store: DemoStore, session: DemoSession): PhotoRepositoryFactory =
+        PhotoRepositoryFactory { uid -> DemoPhotoRepository(store, session, uid) }
+
+    @Provides
+    fun appMode(admin: DemoAdminRepository): AppMode = DemoAppMode(admin)
 }
