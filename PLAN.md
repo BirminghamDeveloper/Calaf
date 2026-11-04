@@ -46,7 +46,7 @@ Done notes (Task 0.1):
 ## Phase 1: clean architecture
 
 ### Task 1.1 Flavours and Hilt
-Status: todo | Branch: `task/1.1-flavours-hilt` | Depends on: 0.1
+Status: done | Branch: `task/1.1-flavours-hilt` | Depends on: 0.1
 
 - Replace the `offline` build type with product flavours `demo` (applicationIdSuffix `.demo`,
   app name "Calaf Demo", no INTERNET permission, no Firebase init) and `live`.
@@ -64,6 +64,33 @@ Status: todo | Branch: `task/1.1-flavours-hilt` | Depends on: 0.1
 
 Done when: both flavours build, the demo APK has no INTERNET permission (check the merged
 manifest in a unit test or script), existing unit tests pass.
+
+Done notes (Task 1.1):
+- `app` has product flavours on dimension `backend`: `demo` (`.demo` suffix, "Calaf Demo", INTERNET removed in
+  its manifest, Firebase and `core:data` are `liveImplementation` only, so the demo APK has no Firebase classes)
+  and `live`. The `offline` build type and `BuildConfig.OFFLINE_DEMO` are gone. `USE_FIREBASE_EMULATORS` exists
+  in `live` only. `processDemo*GoogleServices` is disabled via `androidComponents.onVariants`.
+- Hilt 2.60.1 and KSP 2.3.13 added (new pins, Kotlin and AGP untouched). `CalafApplication` is an empty
+  `@HiltAndroidApp`, `MainActivity` is `@AndroidEntryPoint`. `DemoModule` (`src/demo`) and `LiveModule`
+  (`src/live`) bind `AuthRepository`, `ProfileRepository`, `CommunityRepository`, `PhotoRepositoryFactory`
+  and `AppMode`. `OfflineDemo`, `OfflineAdminSection` moved to `src/demo`. Firebase and DataStore classes
+  moved to `src/live`.
+- `PhotoRepository` is per member, so Hilt binds a new `PhotoRepositoryFactory` (in `core:model`) instead.
+- `AppMode` (shared interface) carries the flavour differences: banner, login notice, password reset,
+  emulator flag, admin section, and the optional `AdminShortcut`. The `admin/admin` shortcut and its
+  credentials now exist only in `src/demo` (`DemoAppMode`). The live flavour no longer has any admin shortcut,
+  including in emulator builds.
+- Demo banner and login notice moved from hard coded strings to `demo_strings.xml` (Somali values are
+  English copies, listed in the new `docs/TRANSLATION_TODO.md`).
+- `scripts/check-demo-manifest.sh` fails if the demo merged manifest has INTERNET or Firebase. CI runs it.
+- Instrumented tests split into `androidTestDemo` and `androidTestLive`, and use a new `AppEntryPoint`.
+- CI workflow, CLAUDE.md verify commands and `docs/OFFLINE_DEMO.md` / README names updated.
+- Verified: `assembleDemoDebug assembleLiveDebug testDemoDebugUnitTest testLiveDebugUnitTest
+  :core:model:test :feature:community:testDebugUnitTest` green, manifest script OK, `aapt2` shows
+  `com.calaf.app.demo` labelled "Calaf Demo" with no INTERNET, live APK has INTERNET, androidTest sources
+  compile for both flavours.
+- Not verified: instrumented tests (no emulator), release builds with R8 for the new flavours, the GitHub
+  Actions run, and the live flavour against a real Firebase project.
 
 ### Task 1.2 Split the demo backend
 Status: todo | Branch: `task/1.2-demo-backend` | Depends on: 1.1
@@ -270,3 +297,8 @@ Status: todo | Branch: `task/5.6-release` | Depends on: all above
   disables the repository for the rest of that build, so a cold-cache build can fail several times in a row.
   Each attempt caches more; re-running the same command (use `--max-workers=1 -Dorg.gradle.parallel=false`
   to be gentler) converged after about 3 attempts. Warm cache builds are fine. Not a pinned version problem.
+- The post Task 1.4 verify command in CLAUDE.md (`testDemoDebugUnitTest testLiveDebugUnitTest`) does not run
+  the library module tests (`:core:model:test`, `:feature:community:testDebugUnitTest`). Add them when
+  Task 1.3 or 1.4 touches that line.
+- `assembleDemoRelease` and `assembleLiveRelease` (R8) were not tried in Task 1.1. Task 5.6 owns release
+  hardening.

@@ -192,6 +192,6 @@ The app does not publish a download URL or request broad photo-library permissio
 
 ## Standalone offline phone demo
 
-For installation directly on a phone without a computer backend, use `dist/Calaf-offline-demo.apk` and open **Calaf Offline Demo**. This separate package has no internet permission. See [offline demo instructions](docs/OFFLINE_DEMO.md) for local accounts and administrator controls. The earlier `Calaf-local-debug.apk` still requires the computer-connected Firebase emulator setup.
+For installation directly on a phone without a computer backend, use `dist/Calaf-offline-demo.apk` and open **Calaf Demo**. This separate package has no internet permission. See [offline demo instructions](docs/OFFLINE_DEMO.md) for local accounts and administrator controls. The earlier `Calaf-local-debug.apk` still requires the computer-connected Firebase emulator setup.
 
 Current detailed handoff: [Implementation status and continuation plan](docs/IMPLEMENTATION_STATUS_AND_PLAN.md) (3 November 2026).

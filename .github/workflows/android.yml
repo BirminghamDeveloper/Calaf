@@ -28,7 +28,11 @@ jobs:
         run: bash scripts/placeholder-google-services.sh
       - uses: gradle/actions/setup-gradle@v4
       - name: Build and unit tests
-        run: ./gradlew :app:assembleDebug :app:assembleOffline :app:testDebugUnitTest test
+        run: >
+          ./gradlew assembleDemoDebug assembleLiveDebug testDemoDebugUnitTest testLiveDebugUnitTest
+          :core:model:test :feature:community:testDebugUnitTest
+      - name: Demo APK must have no INTERNET permission
+        run: bash scripts/check-demo-manifest.sh
 
   backend:
     runs-on: ubuntu-24.04
