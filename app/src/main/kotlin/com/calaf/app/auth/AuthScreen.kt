@@ -1,5 +1,6 @@
 package com.calaf.app.auth
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.selection.toggleable
@@ -11,13 +12,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.*
 import com.calaf.app.R
-import com.calaf.app.BuildConfig
 import com.calaf.app.ui.*
 import com.calaf.core.designsystem.CalafDimensions
 
 @Composable
 fun AuthScreen(state: AuthUiState, register: Boolean, onSubmit: (String, String, Boolean) -> Unit,
-    onReset: (String) -> Unit, onBack: () -> Unit) {
+    onReset: (String) -> Unit, onBack: () -> Unit, @StringRes notice: Int? = null, canResetPassword: Boolean = true,
+    localEmulators: Boolean = false) {
     var email by rememberSaveable { mutableStateOf("") }
     // Passwords deliberately never enter saved instance state or disk storage.
     var password by remember { mutableStateOf("") }
@@ -27,7 +28,7 @@ fun AuthScreen(state: AuthUiState, register: Boolean, onSubmit: (String, String,
     var adult by rememberSaveable { mutableStateOf(false) }
     FormPage(stringResource(if (register) R.string.create_account else R.string.login),
         stringResource(if (register) R.string.register_subtitle else R.string.login_subtitle)) {
-        if (BuildConfig.OFFLINE_DEMO) StatusMessage("Offline demo: accounts stay on this device. No verification or password-reset emails are sent. Use fictional details. Administrator login: admin / admin.")
+        notice?.let { StatusMessage(stringResource(it)) }
         OutlinedTextField(email, { email = it.take(254) }, label = { Text(stringResource(R.string.email)) },
             singleLine = true, enabled = !state.busy, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email), modifier = Modifier.fillMaxWidth())
         OutlinedTextField(password, { password = it.take(128) }, label = { Text(stringResource(R.string.password)) },
@@ -51,7 +52,7 @@ fun AuthScreen(state: AuthUiState, register: Boolean, onSubmit: (String, String,
         }
         AccountErrorMessage(state.error)
         if (state.notice == AuthNotice.ResetSent) StatusMessage(stringResource(
-            if (BuildConfig.DEBUG && BuildConfig.USE_FIREBASE_EMULATORS) R.string.local_reset_help else R.string.reset_sent))
+            if (localEmulators) R.string.local_reset_help else R.string.reset_sent))
         if (state.busy) LinearProgressIndicator(Modifier.fillMaxWidth())
         Button(onClick = {
             mismatch = register && password != confirmation
@@ -60,14 +61,14 @@ fun AuthScreen(state: AuthUiState, register: Boolean, onSubmit: (String, String,
             modifier = Modifier.fillMaxWidth().heightIn(min = CalafDimensions.touchTarget)) {
             Text(stringResource(if (register) R.string.create_account else R.string.login))
         }
-        if (!register && !BuildConfig.OFFLINE_DEMO) TextButton(onClick = { onReset(email) }, enabled = !state.busy) { Text(stringResource(R.string.forgot_password)) }
+        if (!register && canResetPassword) TextButton(onClick = { onReset(email) }, enabled = !state.busy) { Text(stringResource(R.string.forgot_password)) }
         TextButton(onClick = onBack, enabled = !state.busy) { Text(stringResource(R.string.back)) }
     }
 }
 
 @Composable
-fun VerificationScreen(state: AuthUiState, onSend: () -> Unit, onRefresh: () -> Unit, onLogout: () -> Unit) {
-    val local = BuildConfig.DEBUG && BuildConfig.USE_FIREBASE_EMULATORS
+fun VerificationScreen(state: AuthUiState, onSend: () -> Unit, onRefresh: () -> Unit, onLogout: () -> Unit,
+    local: Boolean = false) {
     FormPage(stringResource(R.string.verify_title), stringResource(R.string.verify_body, state.account?.email.orEmpty())) {
         if (local) StatusMessage(stringResource(R.string.local_verification_help))
         AccountErrorMessage(state.error)
