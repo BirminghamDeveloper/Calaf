@@ -117,6 +117,13 @@ Status: todo | Branch: `task/1.3-feature-modules` | Depends on: 1.2
 - Split `CommunityViewModel` into `DiscoveryViewModel`, `MatchesViewModel`, `ChatViewModel`,
   `SettingsViewModel`, `GuardianViewModel`, `ActivityViewModel`. Hilt injected.
 - Type safe navigation graph with a bottom bar: Discover, Matches, Activity, Profile.
+- Real bottom bar icons. Today the bar shows the first letter of each label instead of an icon.
+  Add `CalafIcons` in `core:designsystem` as vector drawables (Material Symbols Rounded, Apache 2.0,
+  copied as XML, not the deprecated `material-icons-extended` library). Outlined icon when not
+  selected, filled when selected: Discover (explore/compass), Matches (favorite/heart),
+  Messages (chat bubble), Activity (notifications/bell), Profile (person). Every icon gets a
+  content description. Use the same `CalafIcons` set for back, more, report, block, send and
+  settings buttons that currently use text only.
 - Move existing unit tests to the right modules and add tests for each new ViewModel.
 - Behaviour must stay the same. This task is a refactor, not a redesign.
 
