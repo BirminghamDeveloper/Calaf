@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Calaf Demo</string>
+    <string name="demo_banner">DEMO · Fictional people, local accounts and simulated matches. No messages leave this device.</string>
+    <string name="demo_auth_notice">Demo: accounts stay on this device. No verification or password-reset emails are sent. Use fictional details. Administrator login: admin / admin.</string>
+</resources>

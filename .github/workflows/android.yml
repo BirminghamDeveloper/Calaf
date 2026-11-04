@@ -28,7 +28,19 @@ jobs:
         run: bash scripts/placeholder-google-services.sh
       - uses: gradle/actions/setup-gradle@v4
       - name: Build and unit tests
-        run: ./gradlew :app:assembleDebug :app:assembleOffline :app:testDebugUnitTest test
+        run: >
+          ./gradlew assembleDemoDebug assembleLiveDebug testDemoDebugUnitTest testLiveDebugUnitTest
+          :core:model:test :feature:community:testDebugUnitTest
+      - name: Demo APK must have no INTERNET permission
+        run: bash scripts/check-demo-manifest.sh
+      # Lets the owner download the demo APK from the Actions run and install it on a phone.
+      - name: Upload demo APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: calaf-demo-debug-apk
+          path: app/build/outputs/apk/demo/debug/*.apk
+          if-no-files-found: error
+          retention-days: 14
 
   backend:
     runs-on: ubuntu-24.04

@@ -12,7 +12,7 @@ class LocalBackendFlowTest {
 
     @Test fun registrationAndLocalVerificationReachProfile() {
         assumeTrue(BuildConfig.DEBUG && BuildConfig.USE_FIREBASE_EMULATORS)
-        compose.runOnIdle { (compose.activity.application as CalafApplication).auth.logout() }
+        compose.runOnIdle { compose.activity.appEntryPoint().auth().logout() }
         compose.mainClock.advanceTimeBy(3000)
         compose.waitUntil(30000) { compose.onAllNodesWithText("Create account").fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithText("Create account").performScrollTo().performClick()
@@ -26,7 +26,7 @@ class LocalBackendFlowTest {
         compose.onNodeWithText("Verify local demo email").performScrollTo().performClick()
         compose.waitUntil(30000) { compose.onAllNodesWithText("Display name").fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithText("Display name").assertExists()
-        compose.runOnIdle { (compose.activity.application as CalafApplication).auth.logout() }
+        compose.runOnIdle { compose.activity.appEntryPoint().auth().logout() }
         compose.waitUntil(30000) { compose.onAllNodesWithText("Log in").fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithText("Log in").performScrollTo().performClick()
         compose.onNodeWithText("Email address").performTextInput(email)
@@ -34,12 +34,12 @@ class LocalBackendFlowTest {
         compose.onAllNodesWithText("Log in").onLast().performScrollTo().performClick()
         compose.waitUntil(30000) { compose.onAllNodesWithText("Display name").fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithText("Display name").assertExists()
-        compose.runOnIdle { (compose.activity.application as CalafApplication).auth.logout() }
+        compose.runOnIdle { compose.activity.appEntryPoint().auth().logout() }
     }
 
     @Test fun localAccountDiscoversMatchesAndSendsMessage() {
         assumeTrue(BuildConfig.DEBUG && BuildConfig.USE_FIREBASE_EMULATORS)
-        compose.runOnIdle { (compose.activity.application as CalafApplication).auth.logout() }
+        compose.runOnIdle { compose.activity.appEntryPoint().auth().logout() }
         compose.mainClock.advanceTimeBy(3000)
         compose.waitUntil(30000) { compose.onAllNodesWithText("Log in").fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithText("Log in").performScrollTo().performClick()
@@ -67,6 +67,6 @@ class LocalBackendFlowTest {
         compose.waitUntil(30000) { compose.onAllNodesWithText("Hassan (Demo)", substring = true).fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithTag("community_list").performScrollToNode(hasText("Hodan (Demo)", substring = true))
         compose.onNodeWithText("Hodan (Demo)", substring = true).assertIsDisplayed()
-        compose.runOnIdle { (compose.activity.application as CalafApplication).auth.logout() }
+        compose.runOnIdle { compose.activity.appEntryPoint().auth().logout() }
     }
 }

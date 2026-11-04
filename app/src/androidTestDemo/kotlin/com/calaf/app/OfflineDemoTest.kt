@@ -7,14 +7,12 @@ import com.calaf.core.model.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.flow.first
 import org.junit.Assert.*
-import org.junit.Assume.assumeTrue
 import org.junit.Test
 import java.util.UUID
 
 class OfflineDemoTest {
     private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
     @Test fun registrationPersistsAndOnlyAdministratorCanModerate() = runBlocking<Unit> {
-        assumeTrue(BuildConfig.OFFLINE_DEMO)
         val store = "test-offline-${UUID.randomUUID()}"
         val first = OfflineDemo(context, store)
         first.register("new@example.test", "DemoPass!2026")
@@ -44,7 +42,6 @@ class OfflineDemoTest {
         context.getSharedPreferences(store, 0).edit().clear().commit()
     }
     @Test fun messagesPersistAndBlockingRevokesConversationAccess() = runBlocking<Unit> {
-        assumeTrue(BuildConfig.OFFLINE_DEMO)
         val store = "test-offline-${UUID.randomUUID()}"
         val demo = OfflineDemo(context, store)
         demo.login("hassan@calaf.test", "CalafDemo!2026")
@@ -61,10 +58,10 @@ class OfflineDemoTest {
         context.getSharedPreferences(store, 0).edit().clear().commit()
     }
     @Test fun offlineApkCannotUseTheNetwork() {
-        assumeTrue(BuildConfig.OFFLINE_DEMO)
         @Suppress("DEPRECATION")
         val permissions = context.packageManager.getPackageInfo(context.packageName, PackageManager.GET_PERMISSIONS).requestedPermissions.orEmpty()
         assertFalse(permissions.contains("android.permission.INTERNET"))
-        assertTrue(com.google.firebase.FirebaseApp.getApps(context).isEmpty())
+        // The demo flavour does not ship Firebase at all.
+        assertThrows(ClassNotFoundException::class.java) { Class.forName("com.google.firebase.FirebaseApp") }
     }
 }

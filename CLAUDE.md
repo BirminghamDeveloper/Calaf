@@ -76,8 +76,14 @@ Run, at minimum, before you open a pull request:
 cd backend && npm ci && npm test
 ```
 
-Until Task 1.1 adds flavours and Task 1.4 adds Spotless, use the tasks that exist instead:
-`./gradlew :app:assembleDebug :app:assembleOffline :app:testDebugUnitTest test`.
+Until Task 1.4 adds Spotless, leave out `spotlessCheck` and add the library tests, then check the demo
+manifest:
+
+```bash
+./gradlew assembleDemoDebug assembleLiveDebug testDemoDebugUnitTest testLiveDebugUnitTest \
+  :core:model:test :feature:community:testDebugUnitTest
+bash scripts/check-demo-manifest.sh
+```
 
 Instrumented tests (`androidTest`) cannot run in the cloud. Keep logic in ViewModels and
 repositories so it can be unit tested on the JVM, and use Robolectric for Compose UI tests

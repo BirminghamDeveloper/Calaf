@@ -2,6 +2,7 @@ package com.calaf.app.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.calaf.app.AdminShortcut
 import com.calaf.core.model.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.*
@@ -16,7 +17,7 @@ data class AuthUiState(
     val notice: AuthNotice? = null,
 )
 
-class AuthViewModel(private val repository: AuthRepository, private val allowLocalAdmin: Boolean = false) : ViewModel() {
+class AuthViewModel(private val repository: AuthRepository, private val adminShortcut: AdminShortcut? = null) : ViewModel() {
     private val mutable = MutableStateFlow(AuthUiState())
     val state = mutable.asStateFlow()
     init {
@@ -28,8 +29,9 @@ class AuthViewModel(private val repository: AuthRepository, private val allowLoc
     }
     fun clearMessage() { mutable.update { it.copy(error = null, notice = null) } }
     fun submit(email: String, password: String, register: Boolean, adultConsent: Boolean) {
-        if (allowLocalAdmin && !register && email.trim() == "admin" && password == "admin") {
-            perform { repository.login("admin@calaf.test", "CalafAdmin!2026") }
+        val shortcut = adminShortcut
+        if (shortcut != null && !register && email.trim() == shortcut.typedEmail && password == shortcut.typedPassword) {
+            perform { repository.login(shortcut.loginEmail, shortcut.loginPassword) }
             return
         }
         if (!AccountValidation.email(email) || password.isEmpty() ||

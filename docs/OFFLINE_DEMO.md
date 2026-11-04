@@ -1,6 +1,6 @@
-# Calaf Offline Demo
+# Calaf Demo
 
-Install `dist/Calaf-offline-demo.apk` directly on your Android phone and open **Calaf Offline Demo**. This separate app has package `com.calaf.app.offline`; it does not replace the computer-connected Calaf app or use its accounts. No USB setup, Firebase service, email delivery or internet connection is needed.
+Install `dist/Calaf-offline-demo.apk` directly on your Android phone and open **Calaf Demo**. This separate app has package `com.calaf.app.demo`; it does not replace the computer-connected Calaf app or use its accounts. No USB setup, Firebase service, email delivery or internet connection is needed.
 
 ## Accounts
 
@@ -24,9 +24,9 @@ Profile editing and publishing, private device photo upload/removal, preference 
 
 ## Build
 
-`./gradlew.bat :app:assembleOffline :app:assembleOfflineAndroidTest -Pcalaf.testBuildType=offline`
+`./gradlew.bat :app:assembleDemoDebug :app:assembleDemoDebugAndroidTest`
 
-The offline manifest removes internet permission and the Firebase initialization provider. The normal debug/release configurations retain their original backend behaviour.
+The demo flavour manifest removes internet permission and the Firebase initialization provider. The normal debug/release configurations retain their original backend behaviour.
 
 ## Verified build - 3 November 2026
 

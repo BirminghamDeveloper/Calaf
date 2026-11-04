@@ -1,6 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
+    <!-- The demo is fully offline. Remove INTERNET even if a library tries to merge it in. -->
     <uses-permission android:name="android.permission.INTERNET" tools:node="remove" />
-    <application android:label="Calaf Offline Demo" tools:replace="android:label">
+    <application>
         <provider android:name="com.google.firebase.provider.FirebaseInitProvider" tools:node="remove" />
     </application>
 </manifest>
