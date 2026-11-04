@@ -3,7 +3,12 @@
 Each task is one cloud session and one pull request. Do them in order unless a task says it can
 run in parallel. A task may start only when every task in "Depends on" has been merged to `master`.
 
-Status values: `todo`, `in progress`, `done`, `blocked`.
+Status values: `todo`, `in progress`, `done`, `blocked`, `deferred`.
+
+**Current goal: the demo flavour.** Tasks marked `deferred` are live only or cosmetic work, parked until
+the owner decides to go live. Never start a `deferred` task. When a task asks you to change both flavours,
+the live flavour must still compile and pass its tests, but put the effort into the demo experience.
+Demo track order: 1.2, 1.3, 2.1, 2.2, 3.1, 3.2, 3.3, 3.4, 3.5.
 
 ---
 
@@ -116,7 +121,7 @@ Status: todo | Branch: `task/1.3-feature-modules` | Depends on: 1.2
 - Behaviour must stay the same. This task is a refactor, not a redesign.
 
 ### Task 1.4 Code style and backend bug fixes
-Status: todo | Branch: `task/1.4-style-backend-fixes` | Depends on: 1.3
+Status: deferred | Branch: `task/1.4-style-backend-fixes` | Depends on: 1.3
 (The backend half can run in parallel with 1.3 if done as a separate PR touching only `backend/`.)
 
 - Add Spotless with ktlint, line length 120, no wildcard imports. Reformat the codebase in one
@@ -132,7 +137,7 @@ Status: todo | Branch: `task/1.4-style-backend-fixes` | Depends on: 1.3
 ## Phase 2: Muzz style profiles and photos
 
 ### Task 2.1 Richer profile and onboarding
-Status: todo | Branch: `task/2.1-onboarding` | Depends on: 1.4
+Status: todo | Branch: `task/2.1-onboarding` | Depends on: 1.3
 
 - Add optional fields: marital status (never married, divorced, widowed), has children,
   height, religiosity (very practising, practising, moderately, not practising), prays,
@@ -154,7 +159,7 @@ Status: todo | Branch: `task/2.2-photos-model` | Depends on: 2.1
   uploads, and let the demo admin approve or reject photos in `feature:admin`.
 
 ### Task 2.3 Live photo pipeline
-Status: todo | Branch: `task/2.3-photos-live` | Depends on: 2.2
+Status: deferred | Branch: `task/2.3-photos-live` | Depends on: 2.2
 
 - Storage layout: `private/{uid}/{photoId}` (owner only), `public/{uid}/{photoId}_{size}.jpg`
   (readable by signed in active members, written only by Functions).
@@ -207,12 +212,30 @@ Status: todo | Branch: `task/3.4-chat-guardian` | Depends on: 3.3
   match's conversation read only, only after the member opts in for that match.
 - Demo: seeded matches send a scripted, clearly labelled demo reply after a short delay.
 
+### Task 3.5 Demo showcase polish
+Status: todo | Branch: `task/3.5-demo-showcase` | Depends on: 3.4
+
+The demo is shown to investors and the community. Make the first five minutes impressive.
+- Seed 20 fictional demo profiles (balanced women and men, ages 21 to 45, UK, Somaliland, Somalia,
+  Djibouti, Ethiopia, Kenya, US, Canada, Sweden cities), each with complete fields, 2 to 4 bundled
+  illustrated avatars (never real people), believable bios. Mark every one as a demo profile.
+- First launch: after the intro, a short 3 screen "what Calaf is" walkthrough with a Skip button.
+- A "Try the demo" button on the welcome screen that signs into a ready made member who already has
+  2 matches, 1 compliment received and a started conversation, so a viewer sees everything in 30 seconds.
+- A "Reset demo data" action in demo settings.
+- App icon and splash screen with the Calaf name, consistent colours and typography across all screens,
+  empty states with friendly illustrations instead of plain text.
+- Fill in all Somali strings you can. List the rest in `docs/TRANSLATION_TODO.md`.
+- `docs/DEMO_SCRIPT.md`: a 5 minute walkthrough the owner can follow when presenting.
+
+Done when: both flavours build, unit tests pass, demo manifest check passes.
+
 ---
 
 ## Phase 4: backend that scales
 
 ### Task 4.1 Discovery redesign
-Status: todo | Branch: `task/4.1-discovery-backend` | Depends on: 3.2
+Status: deferred | Branch: `task/4.1-discovery-backend` | Depends on: 3.2
 
 - Denormalised `discoverable/{uid}` document maintained by Functions with only public fields,
   status, gender, age bucket, country, city bucket, heritage, approved primary photo.
@@ -222,7 +245,7 @@ Status: todo | Branch: `task/4.1-discovery-backend` | Depends on: 3.2
 - Emulator tests: blocked, paused, suspended, under 18 and already seen profiles never return.
 
 ### Task 4.2 Push notifications
-Status: todo | Branch: `task/4.2-push` | Depends on: 4.1
+Status: deferred | Branch: `task/4.2-push` | Depends on: 4.1
 (Can run in parallel with 4.3.)
 
 - FCM token registration and removal on logout, Android 13 permission prompt with explainer.
@@ -231,7 +254,7 @@ Status: todo | Branch: `task/4.2-push` | Depends on: 4.1
 - Deep links go through auth and membership checks.
 
 ### Task 4.3 Reliable chat sending
-Status: todo | Branch: `task/4.3-chat-outbox` | Depends on: 3.4
+Status: deferred | Branch: `task/4.3-chat-outbox` | Depends on: 3.4
 (Can run in parallel with 4.2.)
 
 - Room outbox with stable message ids, WorkManager retry with backoff, pending/sent/failed UI.
@@ -242,7 +265,7 @@ Status: todo | Branch: `task/4.3-chat-outbox` | Depends on: 3.4
 ## Phase 5: going live
 
 ### Task 5.1 Deployment readiness
-Status: todo | Branch: `task/5.1-deploy-ready` | Depends on: 4.2, 4.3
+Status: deferred | Branch: `task/5.1-deploy-ready` | Depends on: 4.2, 4.3
 
 - `docs/DEPLOY.md`: Blaze plan steps, budget alerts (50, 80, 100 percent of a GBP budget),
   App Check with Play Integrity, environments (`calaf-development`, later `calaf-production`).
@@ -250,7 +273,7 @@ Status: todo | Branch: `task/5.1-deploy-ready` | Depends on: 4.2, 4.3
 - Remove remaining emulator only defaults from the live release path.
 
 ### Task 5.2 Moderation and admin roles
-Status: todo | Branch: `task/5.2-moderation` | Depends on: 5.1
+Status: deferred | Branch: `task/5.2-moderation` | Depends on: 5.1
 
 - Firebase custom claims for `moderator` and `admin`, set only by a script run by the owner.
 - Moderation callables: photo queue, report queue, warn, suspend, ban, restore, with reasons
@@ -258,14 +281,14 @@ Status: todo | Branch: `task/5.2-moderation` | Depends on: 5.1
   hidden unless the claim exists.
 
 ### Task 5.3 Selfie verification
-Status: todo | Branch: `task/5.3-verification` | Depends on: 5.2
+Status: deferred | Branch: `task/5.3-verification` | Depends on: 5.2
 
 - Member records a selfie with a requested pose. A moderator compares it with profile photos
   and approves or rejects. Badge only after approval. Selfies stored privately and deleted
   after review. Interface ready for a provider later.
 
 ### Task 5.4 Premium with Play Billing
-Status: todo | Branch: `task/5.4-billing` | Depends on: 5.1
+Status: deferred | Branch: `task/5.4-billing` | Depends on: 5.1
 (Can run in parallel with 5.2 and 5.3.)
 
 - `BillingRepository` abstraction. Live: Play Billing, server side purchase token verification,
@@ -274,14 +297,14 @@ Status: todo | Branch: `task/5.4-billing` | Depends on: 5.1
 - Prices are read from Play, never hard coded.
 
 ### Task 5.5 Privacy and account lifecycle
-Status: todo | Branch: `task/5.5-privacy` | Depends on: 5.2
+Status: deferred | Branch: `task/5.5-privacy` | Depends on: 5.2
 
 - Full data export, real deletion worker covering Auth, Firestore, Storage and FCM tokens,
   consent records for special category data, privacy notice and terms screens with placeholders
   for legal text.
 
 ### Task 5.6 Release hardening
-Status: todo | Branch: `task/5.6-release` | Depends on: all above
+Status: deferred | Branch: `task/5.6-release` | Depends on: all above
 
 - R8 rules, signing config read from environment variables, baseline profile, accessibility
   pass (contrast, font scale, TalkBack labels), Somali translation gaps listed, Play listing
