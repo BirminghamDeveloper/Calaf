@@ -2,7 +2,7 @@
 
 Updated: 3 November 2026. Workspace: `C:\Users\Hassan\Codex\Calaf`.
 
-This is the current handoff report. Older dated entries in `PROGRESS.md`, `VERIFICATION.md` and `FEATURE_AUDIT.md` are historical evidence, not statements that every feature or test is currently complete. The original supplied brief contains sections 1â€“48 and ends at the heading for section 49 (COMPOSE); no missing section text has been invented.
+This is the current handoff report. Older dated entries in `PROGRESS.md`, `VERIFICATION.md` and `FEATURE_AUDIT.md` are historical evidence, not statements that every feature or test is currently complete. The original supplied brief contains sections 1–48 and ends at the heading for section 49 (COMPOSE); no missing section text has been invented.
 
 ## 1. Current objective and decisions
 
@@ -139,32 +139,32 @@ No physical handset verification, production deployment, Play release certificat
 
 | Area / brief sections | Remaining work |
 | --- | --- |
-| Accessibility/design, 4â€“7 | TalkBack traversal, contrast/font scaling, touch targets, RTL, full small-screen review, additional screen polish |
-| Architecture/models, 8â€“10 | Split the broad community feature and offline repository into focused components; dependency injection and stronger domain boundaries; keep demo/live implementations isolated |
+| Accessibility/design, 4–7 | TalkBack traversal, contrast/font scaling, touch targets, RTL, full small-screen review, additional screen polish |
+| Architecture/models, 8–10 | Split the broad community feature and offline repository into focused components; dependency injection and stronger domain boundaries; keep demo/live implementations isolated |
 | Authentication, 11 | Google and phone sign-in, production email configuration, recent-auth and provider-linking UX, real multi-device session validation |
-| Firebase/data, 12â€“13 | Deploy functions/rules/indexes, App Check setup and enforcement, production configuration, operational monitoring and environment separation |
-| Onboarding/profile, 14â€“15 | Structured onboarding/completion percentage and fields such as country of birth, height, marital status, distinct ethnicity/practice and alcohol preference where appropriate |
+| Firebase/data, 12–13 | Deploy functions/rules/indexes, App Check setup and enforcement, production configuration, operational monitoring and environment separation |
+| Onboarding/profile, 14–15 | Structured onboarding/completion percentage and fields such as country of birth, height, marital status, distinct ethnicity/practice and alcohol preference where appropriate |
 | Photos, 16 | Resolve outstanding Storage device test, moderation state, progress/retry, reorder/primary selection, approved public thumbnails/gallery and caching |
 | Preferences, 17 | Extend beyond age/gender/country/language/smoking/children to culture/religion/practice, height, education, marital status, timeline, relocation, verification, values/deal-breakers and privacy-safe distance |
-| Discovery/engine, 18â€“19 | Detailed public profile/gallery, broader compatibility explanations, scalable pagination/ranking, location buckets, smooth accessible interactions |
+| Discovery/engine, 18–19 | Detailed public profile/gallery, broader compatibility explanations, scalable pagination/ranking, location buckets, smooth accessible interactions |
 | Likes/matches, 20 | Likes-received surface, entitlement-checked undo and advanced interest actions; retain transactional race handling |
-| Chat/safety, 21â€“22 | Durable send queue and delivery state, reconnect behaviour, stronger safety UX, broader multi-device coverage; offline demo has no safety-warning/receipt parity yet |
+| Chat/safety, 21–22 | Durable send queue and delivery state, reconnect behaviour, stronger safety UX, broader multi-device coverage; offline demo has no safety-warning/receipt parity yet |
 | Guardian, 23 | Expiry, permission UX, invitation delivery, consent history and expanded privacy-safe family workflows |
 | Verification, 24 | Phone/selfie/manual review and provider-backed identity verification, expiry/rejection/appeal paths; never promote a local mock to a genuine verification badge |
-| Safety/location/privacy, 25â€“27 | Moderator notes/evidence, account warnings/bans/appeals, approximate distance controls, retention policies, complete export and actual erasure processing |
-| Plans/billing, 28â€“30 | Billing client abstraction, Play products/prices, purchase/restore/pending/error states and server-verified entitlements, renewal/revocation handling |
+| Safety/location/privacy, 25–27 | Moderator notes/evidence, account warnings/bans/appeals, approximate distance controls, retention policies, complete export and actual erasure processing |
+| Plans/billing, 28–30 | Billing client abstraction, Play products/prices, purchase/restore/pending/error states and server-verified entitlements, renewal/revocation handling |
 | Notifications, 31 | FCM token lifecycle, permission UX, per-category preferences, server dispatch and secure deep links; inbox is not push delivery |
-| Localisation/navigation/settings, 32â€“35 | Native-speaker Somali review, missing translations, RTL/back-stack/deep-link checks and completion of settings that currently explain unavailable services |
-| Security/offline/errors, 36â€“40 | Release security review, App Check/device integration, durable Room/WorkManager outbox/cache for the connected build, richer retry/recovery UI |
-| Validation/age/moderation, 41â€“43 | Extend validation for new fields, moderation workflows, separately secured production administration and immutable audit records |
-| Analytics/crashes, 44â€“45 | Consent-aware diagnostics and Crashlytics with sensitive-data redaction; current preferences do not establish those integrations |
-| Tests/quality/performance, 46â€“48 | Fix outstanding photo test; current full-suite run; CI, release build/signing, migration tests, baseline/startup benchmarks and device/accessibility matrix |
+| Localisation/navigation/settings, 32–35 | Native-speaker Somali review, missing translations, RTL/back-stack/deep-link checks and completion of settings that currently explain unavailable services |
+| Security/offline/errors, 36–40 | Release security review, App Check/device integration, durable Room/WorkManager outbox/cache for the connected build, richer retry/recovery UI |
+| Validation/age/moderation, 41–43 | Extend validation for new fields, moderation workflows, separately secured production administration and immutable audit records |
+| Analytics/crashes, 44–45 | Consent-aware diagnostics and Crashlytics with sensitive-data redaction; current preferences do not establish those integrations |
+| Tests/quality/performance, 46–48 | Fix outstanding photo test; current full-suite run; CI, release build/signing, migration tests, baseline/startup benchmarks and device/accessibility matrix |
 
 Offline-specific limits: the local demo does not enforce the backend's full quota/eligibility/compatibility system, does not send emails/push notifications, does not implement real remote receipts or payment ownership, and does not provide full deletion/export. SharedPreferences JSON is a small-demo store, not the planned production synchronization layer. Blocking a previously unmatched demo member currently creates a pair through the sample-match helper and can also create a misleading MATCH activity item; correct that demo-only behaviour in the next focused polish pass.
 
 ## 6. Implementation order and acceptance criteria
 
-### Phase 1 â€” close the offline handoff
+### Phase 1 — close the offline handoff
 
 **Completed on the emulator on 3 November:** the five-device-test run and eight account JVM checks, copied-artifact installation and fingerprint verification. The offline APK path is recorded above. Keep the failed/interrupted earlier logs as history. Verify on the user's physical handset when feedback is available; do not equate an emulator pass with all-device support.
 
@@ -172,7 +172,7 @@ Targets: `app/src/androidTest/.../OfflineDemoTest.kt`, `OfflineDemoScreenTest.kt
 
 Acceptance: direct install; admin login exposes the panel; ordinary login does not; registration/login work without email/network; suspension and restoration enforce access; messages survive reopening; app has no internet permission and initializes no Firebase app.
 
-### Phase 2 â€” offline polish and storage-test repair
+### Phase 2 — offline polish and storage-test repair
 
 Separate pair creation from match-notification creation so blocking does not emit a match. Add a regression test for unmatched blocking. Add process-restart coverage and clearer guidance for switching accounts. Factor local auth/community/moderation persistence into smaller classes before adding substantial demo state. Do not add fake premium or verified-ID flags.
 
@@ -180,7 +180,7 @@ For the outstanding Firebase photo failure, inspect the exact failed assertion, 
 
 Acceptance: no spurious MATCH notification after block; local account/photo isolation remains intact; the Storage test passes for the intended behaviour and unauthorized reads/writes remain denied.
 
-### Phase 3 â€” complete profile and public-photo foundation
+### Phase 3 — complete profile and public-photo foundation
 
 Extend `core:model` drafts/public projections/preferences with explicit types and migration defaults. Add onboarding sections and a derived completion percentage. Update validation and server allowlists before exposing new fields. Keep private DOB/contact information out of public responses.
 
@@ -190,13 +190,13 @@ Targets: `core:model`, `core:data`, app profile/photo UI, `backend/src/service.j
 
 Acceptance: old drafts still load, invalid/underage inputs cannot publish, photo ordering persists, unapproved photos never appear in discovery, deletion revokes access, image limits/metadata removal remain tested.
 
-### Phase 4 â€” discovery, preferences and matching depth
+### Phase 4 — discovery, preferences and matching depth
 
 Add the missing structured filters, profile-detail/gallery screen and transparent compatibility reasons. Apply eligibility, blocks, visibility and entitlements on the backend. Implement approximate location buckets rather than exposing coordinates. Add cursor-based paging/indexes and bounded ranking work. Add likes-received/undo only with explicit entitlement rules.
 
 Acceptance: server and UI filters agree; no blocked/paused/ineligible profile appears; paging is stable; compatibility can be explained; location privacy and entitlement bypass attempts are tested.
 
-### Phase 5 â€” connected chat resilience, guardians and notifications
+### Phase 5 — connected chat resilience, guardians and notifications
 
 Introduce a Room-backed outbox with stable message IDs, account ownership, bounded retry/backoff and WorkManager dispatch. Model pending/sent/failed states; keep server idempotency. Cancel or quarantine pending sends after logout/block/suspension. Preserve opt-in receipt behaviour.
 
@@ -204,7 +204,7 @@ Add FCM token registration/revocation and authenticated server events, respectin
 
 Acceptance: reconnect sends each message once; logout cannot send as another account; blocked chats reject queued sends; push deep links cannot open another member's content; expired/revoked guardian invitations fail.
 
-### Phase 6 â€” real administration, verification and data lifecycle
+### Phase 6 — real administration, verification and data lifecycle
 
 Build trusted server-side administrator/moderator roles with least-privilege permissions and current account-status checks. Never authorize from the `admin` text alias or a client-local flag. Provide a separately secured admin surface with strong authentication for production. Add report queues, evidence access checks, moderator notes, reasoned warnings/suspensions/bans, appeals and audit records.
 
@@ -212,13 +212,13 @@ Add an idempotent deletion worker covering Auth, Firestore records, private/publ
 
 Acceptance: ordinary clients cannot grant themselves roles; role revocation takes effect; all administrative mutations are attributable; deletion completes across services rather than setting a flag; forged verification callbacks are rejected.
 
-### Phase 7 â€” billing and premium
+### Phase 7 — billing and premium
 
 Add a billing abstraction and retrieve prices/products from Play configuration. Implement purchase/restore/pending/error UI. Verify purchase tokens on the server, handle renewal/cancellation/refund events, and gate premium actions there. Keep safety features free. Use Play test products/accounts; no local Boolean should grant real premium ownership.
 
 Acceptance: valid purchase restores across devices; pending/expired/revoked purchases do not grant access; forged/reused tokens fail; prices are Play-sourced.
 
-### Phase 8 â€” production activation and release hardening
+### Phase 8 — production activation and release hardening
 
 When the user chooses online activation, confirm project/account/billing readiness and prepare reviewable deployment configuration. Validate project IDs and signing fingerprints; deploy rules/indexes/functions to the intended environment; configure App Check, authentication providers and monitoring. Keep demo fixtures and public credentials out of production provisioning.
 

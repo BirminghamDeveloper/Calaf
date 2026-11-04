@@ -28,7 +28,7 @@ install_sdk() {
     rm -rf "$tmp"
   fi
   yes | "$SDK/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$SDK" --licenses >/dev/null || true
-  "$SDK/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$SDK" "platform-tools" "platforms;android-37" >/dev/null
+  "$SDK/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$SDK" "platform-tools" "platforms;android-37.0" >/dev/null
 }
 
 command -v unzip >/dev/null || (apt-get update -qq && apt-get install -y -qq unzip)
@@ -42,7 +42,14 @@ cat > /root/.gradle/gradle.properties <<EOF
 org.gradle.java.installations.paths=$JDK
 org.gradle.java.installations.auto-download=false
 org.gradle.daemon=true
-org.gradle.parallel=true
+# Maven Central often answers the cloud proxy with 429 Too Many Requests on a cold cache.
+# Fewer parallel downloads and more patient retries avoid most of those failures.
+org.gradle.parallel=false
+org.gradle.workers.max=2
+org.gradle.internal.repository.max.retries=8
+org.gradle.internal.repository.initial.backoff=2000
+org.gradle.internal.http.connectionTimeout=60000
+org.gradle.internal.http.socketTimeout=60000
 EOF
 
 cat > /etc/profile.d/android.sh <<EOF
@@ -51,4 +58,4 @@ export ANDROID_SDK_ROOT=$SDK
 export PATH=\$PATH:$SDK/platform-tools:$SDK/cmdline-tools/latest/bin
 EOF
 
-echo "Calaf setup complete: JDK $("$JDK/bin/java" -version 2>&1 | head -1), SDK at $SDK"
+echo "Calaf setup complete: JDK $("$JDK/bin/java" -version 2>&1 | grep -m1 "version"), SDK at $SDK"

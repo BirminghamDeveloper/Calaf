@@ -10,7 +10,7 @@ Status values: `todo`, `in progress`, `done`, `blocked`.
 ## Phase 0: make the project buildable anywhere
 
 ### Task 0.1 Cloud build bootstrap
-Status: todo | Branch: `task/0.1-cloud-bootstrap` | Depends on: none
+Status: done | Branch: `task/0.1-cloud-bootstrap` | Depends on: none
 
 - `scripts/setup-cloud.sh` already exists and is the environment setup script. Confirm JDK 25 and
   the SDK are present (run the script if not), write `local.properties` with
@@ -28,6 +28,19 @@ Status: todo | Branch: `task/0.1-cloud-bootstrap` | Depends on: none
 
 Done when: the script works on a fresh session, CI is green, nothing else changed.
 
+Done notes (Task 0.1):
+- `scripts/setup-cloud.sh`: fixed SDK package id (`platforms;android-37.0`, the old `android-37` id does
+  not exist, so the platform was never installed) and the noisy JDK banner in the final message.
+- Added `scripts/placeholder-google-services.sh` (fake, git ignored `app/google-services.json` for CI and
+  cloud sessions). `local.properties` written with `sdk.dir=/opt/android-sdk` (git ignored).
+- `gradlew` was committed non executable; mode is now 755.
+- Added `.github/workflows/android.yml` (Android build and unit tests, backend `npm test`).
+- Fixed mojibake in docs (two files affected), moved the four history files to `docs/history/`.
+- Verified in a cloud session: `./gradlew :app:assembleDebug :app:assembleOffline :app:testDebugUnitTest test`
+  green; `cd backend && npm ci && npm test` 5/5 pass.
+- Not verified: the GitHub Actions workflow itself (it only runs once the PR is open); emulator
+  integration tests (optional, need `firebase-tools`).
+
 ---
 
 ## Phase 1: clean architecture
@@ -43,6 +56,11 @@ Status: todo | Branch: `task/1.1-flavours-hilt` | Depends on: 0.1
   shared code. The demo banner comes from a flavour resource or a bound `AppMode`.
 - Move the `admin/admin` shortcut into the demo source set only.
 - Update the CLAUDE.md verify commands if task names change.
+- Update `.github/workflows/android.yml` to the new task names (`assembleDemoDebug`,
+  `assembleLiveDebug`, `testDemoDebugUnitTest`, `testLiveDebugUnitTest`).
+- The google-services plugin must not run for `demo` (its `.demo` package has no Firebase client
+  and the demo never uses Firebase). Disable `process*Demo*GoogleServices` the same way the
+  current build disables `processOfflineGoogleServices`.
 
 Done when: both flavours build, the demo APK has no INTERNET permission (check the merged
 manifest in a unit test or script), existing unit tests pass.
@@ -247,3 +265,8 @@ Status: todo | Branch: `task/5.6-release` | Depends on: all above
 ## Found issues
 
 (Sessions add problems they notice outside their task scope here.)
+
+- Maven Central (repo.maven.apache.org) intermittently answers HTTP 429 through the cloud proxy. Gradle then
+  disables the repository for the rest of that build, so a cold-cache build can fail several times in a row.
+  Each attempt caches more; re-running the same command (use `--max-workers=1 -Dorg.gradle.parallel=false`
+  to be gentler) converged after about 3 attempts. Warm cache builds are fine. Not a pinned version problem.

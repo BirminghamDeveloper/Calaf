@@ -72,7 +72,7 @@ Do not touch GitHub identity configuration; user already fixed it.
 
 
 
-## 30 October 2026 â€” private photos in progress
+## 30 October 2026 — private photos in progress
 
 
 
