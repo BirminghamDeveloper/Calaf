@@ -1,3 +1,5 @@
+> Current handoff (3 November 2026): [Implementation status and continuation plan](IMPLEMENTATION_STATUS_AND_PLAN.md). Entries below retain their original dates and scopes; offline administrator privileges differ from the older Firebase demo member.
+
 # Calaf implementation audit
 
 Product: a social marriage platform for Somali and East African people.

@@ -1,3 +1,5 @@
+> Current handoff (3 November 2026): [Implementation status and continuation plan](IMPLEMENTATION_STATUS_AND_PLAN.md). Entries below retain their original dates and scopes; offline administrator privileges differ from the older Firebase demo member.
+
 # Work checkpoint — 29 October 2026
 
 
@@ -113,3 +115,14 @@ Remaining: live backend deployment for standalone use and previously recorded pr
 ## 31 October 2026 - standalone offline demo in progress
 
 User clarified APK was installed directly on a phone, then explicitly chose an offline demo instead of cloud deployment. Added a separate offline build/package with no internet permission or Firebase initialization. Added persistent local accounts, community repositories and local photos, plus administrator-only member suspension/restoration and report resolution with a local action log. Added tests for persistence, member denial, suspension, conversations and UI login/registration. Build and device verification pending at this checkpoint. See docs/OFFLINE_DEMO.md for the intended usage. No production administrator privileges were granted.
+
+
+## 3 November 2026 - offline APK verified and detailed handoff saved
+
+Fixed the two offline coroutine test signatures to return Unit, allowing JUnit to run them. Rebuilt the offline APK/test package and ran the account unit suite: 8 passed, no failures/errors/skips. Direct Android 14 instrumentation completed 5 offline tests in 87.672 seconds, with 0 failed and 0 ignored. Covers no internet permission/no Firebase initialization; registration persistence and restricted administrator operations; suspension/restoration; persisted messages and blocked sends; admin-panel login and registration/logout/login UI.
+
+Standalone artifact: `dist/Calaf-offline-demo.apk` (20,471,456 bytes), package `com.calaf.app.offline`. SHA-256: `93FDA10486DE8F5B4B980B58FE7D9ABE24247D78BA34DF41DBBD9D7EB5065E13`. Open **Calaf Offline Demo** and use admin/admin for offline administrator controls. No computer backend or USB setup is needed. No real cloud administrator was provisioned.
+
+Detailed completed-feature inventory, original-brief gap matrix, verification history, eight-phase implementation plan, dependencies, commands and next-session checklist: [IMPLEMENTATION_STATUS_AND_PLAN.md](IMPLEMENTATION_STATUS_AND_PLAN.md).
+
+Remaining immediate work: physical-phone feedback; offline unmatched-block notification polish and process-restart coverage; reproduce/fix the separate Firebase photo test failure; then complete profile/photo moderation foundation. Live authentication/deployment, public photos, production moderation, push, billing, identity-provider integration, full erasure/export and release hardening remain incomplete. This run is 13 targeted passing checks, not a new full-suite certification. No Git author changes or production deployment were performed.
