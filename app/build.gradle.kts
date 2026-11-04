@@ -69,6 +69,8 @@ dependencies {
     "liveImplementation"(libs.coroutines.tasks)
     "liveImplementation"(libs.datastore)
     coreLibraryDesugaring(libs.desugar)
+    // android.jar only has stubs for org.json, so JVM tests of the demo store need the real library.
+    "testDemoImplementation"(libs.json)
     testImplementation(libs.junit)
     testImplementation(libs.coroutines.test)
     androidTestImplementation(platform(libs.compose.bom))
