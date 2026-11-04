@@ -14,15 +14,15 @@ import java.io.ByteArrayOutputStream
 class PhotoRepositoryTest {
     @Test fun privatePhotoUploadReadAndRemovalUseLocalStorage() = runBlocking {
         assumeTrue(BuildConfig.DEBUG && BuildConfig.USE_FIREBASE_EMULATORS)
-        val app = InstrumentationRegistry.getInstrumentation().targetContext.applicationContext as CalafApplication
-        app.auth.logout()
-        app.auth.register("photo-${System.currentTimeMillis()}@calaf.test", "PhotoCheck!2026")
+        val app = InstrumentationRegistry.getInstrumentation().targetContext.appEntryPoint()
+        app.auth().logout()
+        app.auth().register("photo-${System.currentTimeMillis()}@calaf.test", "PhotoCheck!2026")
         val auth = FirebaseAuth.getInstance(FirebaseApp.getInstance("calaf-local"))
         try {
-            app.auth.sendVerification()
-            val account = app.auth.refresh()!!
+            app.auth().sendVerification()
+            val account = app.auth().refresh()!!
             assertTrue(account.emailVerified)
-            val repository = app.photos(account.id)
+            val repository = app.photoRepositories().create(account.id)
             val bitmap = Bitmap.createBitmap(32, 32, Bitmap.Config.ARGB_8888)
             val bytes = ByteArrayOutputStream().use { out -> bitmap.compress(Bitmap.CompressFormat.JPEG, 85, out); out.toByteArray() }
             bitmap.recycle()
@@ -37,7 +37,7 @@ class PhotoRepositoryTest {
             assertTrue(repository.slots().isEmpty())
         } finally {
             auth.currentUser?.delete()?.await()
-            app.auth.logout()
+            app.auth().logout()
         }
     }
 }

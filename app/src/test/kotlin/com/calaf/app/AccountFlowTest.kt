@@ -1,5 +1,6 @@
 package com.calaf.app
 
+import com.calaf.app.AdminShortcut
 import com.calaf.app.auth.*
 import com.calaf.app.profile.ProfileViewModel
 import com.calaf.core.model.*
@@ -76,13 +77,14 @@ class AccountFlowTest {
         assertFalse(model.state.value.saved)
     }
 
-    @Test fun `admin shortcut only works when local mode is explicitly enabled`() = runTest(dispatcher) {
+    private val shortcut = AdminShortcut("admin", "admin", "admin@calaf.test", "CalafAdmin!2026")
+    @Test fun `admin shortcut only works when one is configured`() = runTest(dispatcher) {
         val repository = FakeAuth()
         val live = AuthViewModel(repository)
         live.submit("admin", "admin", false, false)
         runCurrent()
         assertEquals(0, repository.calls)
-        val local = AuthViewModel(repository, allowLocalAdmin = true)
+        val local = AuthViewModel(repository, adminShortcut = shortcut)
         local.submit("admin", "wrong", false, false)
         runCurrent()
         assertEquals(0, repository.calls)
@@ -94,7 +96,7 @@ class AccountFlowTest {
     }
     @Test fun `admin shortcut cannot register an account`() = runTest(dispatcher) {
         val repository = FakeAuth()
-        val local = AuthViewModel(repository, allowLocalAdmin = true)
+        val local = AuthViewModel(repository, adminShortcut = shortcut)
         local.submit("admin", "admin", true, true)
         runCurrent()
         assertEquals(0, repository.calls)
