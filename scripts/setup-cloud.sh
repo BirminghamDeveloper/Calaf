@@ -28,7 +28,7 @@ install_sdk() {
     rm -rf "$tmp"
   fi
   yes | "$SDK/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$SDK" --licenses >/dev/null || true
-  "$SDK/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$SDK" "platform-tools" "platforms;android-37" >/dev/null
+  "$SDK/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$SDK" "platform-tools" "platforms;android-37.0" >/dev/null
 }
 
 command -v unzip >/dev/null || (apt-get update -qq && apt-get install -y -qq unzip)
@@ -51,4 +51,4 @@ export ANDROID_SDK_ROOT=$SDK
 export PATH=\$PATH:$SDK/platform-tools:$SDK/cmdline-tools/latest/bin
 EOF
 
-echo "Calaf setup complete: JDK $("$JDK/bin/java" -version 2>&1 | head -1), SDK at $SDK"
+echo "Calaf setup complete: JDK $("$JDK/bin/java" -version 2>&1 | grep -m1 "version"), SDK at $SDK"
