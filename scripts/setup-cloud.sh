@@ -42,7 +42,14 @@ cat > /root/.gradle/gradle.properties <<EOF
 org.gradle.java.installations.paths=$JDK
 org.gradle.java.installations.auto-download=false
 org.gradle.daemon=true
-org.gradle.parallel=true
+# Maven Central often answers the cloud proxy with 429 Too Many Requests on a cold cache.
+# Fewer parallel downloads and more patient retries avoid most of those failures.
+org.gradle.parallel=false
+org.gradle.workers.max=2
+org.gradle.internal.repository.max.retries=8
+org.gradle.internal.repository.initial.backoff=2000
+org.gradle.internal.http.connectionTimeout=60000
+org.gradle.internal.http.socketTimeout=60000
 EOF
 
 cat > /etc/profile.d/android.sh <<EOF

@@ -56,6 +56,11 @@ Status: todo | Branch: `task/1.1-flavours-hilt` | Depends on: 0.1
   shared code. The demo banner comes from a flavour resource or a bound `AppMode`.
 - Move the `admin/admin` shortcut into the demo source set only.
 - Update the CLAUDE.md verify commands if task names change.
+- Update `.github/workflows/android.yml` to the new task names (`assembleDemoDebug`,
+  `assembleLiveDebug`, `testDemoDebugUnitTest`, `testLiveDebugUnitTest`).
+- The google-services plugin must not run for `demo` (its `.demo` package has no Firebase client
+  and the demo never uses Firebase). Disable `process*Demo*GoogleServices` the same way the
+  current build disables `processOfflineGoogleServices`.
 
 Done when: both flavours build, the demo APK has no INTERNET permission (check the merged
 manifest in a unit test or script), existing unit tests pass.

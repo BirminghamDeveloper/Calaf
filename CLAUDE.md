@@ -97,6 +97,11 @@ If a download is blocked by the network, stop and report the blocked host. Do no
   (for example `./gradlew :feature:chat:compileDemoDebugKotlin`), run the full verify once at the end.
 - Use `--offline` for Gradle after the first successful build in a session.
 - If the same error survives three fix attempts, stop, record it in PLAN.md and the PR, and finish.
+- `429 Too Many Requests` from Maven Central is a rate limit, not a code problem. Do not investigate
+  it. Rerun the same Gradle command with `--max-workers=1 -Dorg.gradle.parallel=false`, up to 5 times.
+  These reruns do not count as fix attempts.
+- On a fresh session run `bash scripts/placeholder-google-services.sh` and write `local.properties`
+  (`sdk.dir=/opt/android-sdk`) before the first build.
 - No refactors, renames or "improvements" outside the task.
 
 ## How to work on a task
