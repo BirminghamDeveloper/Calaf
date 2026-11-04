@@ -98,7 +98,7 @@ Done notes (Task 1.1):
   Actions run, and the live flavour against a real Firebase project.
 
 ### Task 1.2 Split the demo backend
-Status: todo | Branch: `task/1.2-demo-backend` | Depends on: 1.1
+Status: done | Branch: `task/1.2-demo-backend` | Depends on: 1.1
 
 - Break `OfflineDemo` into `DemoStore` (one JSON file store with a schema version and
   migration hook), `DemoAuthRepository`, `DemoCommunityRepository`, `DemoPhotoRepository`,
@@ -108,6 +108,33 @@ Status: todo | Branch: `task/1.2-demo-backend` | Depends on: 1.1
 - Demo admin becomes a role flag on the stored user, not `id == "demo-admin"`.
 - Seed passwords move to a single `DemoSeed` constant documented as public demo credentials.
 - JVM unit tests for each repository using a temp directory store.
+
+Done notes (Task 1.2):
+- `OfflineDemo` is gone. New package `com.calaf.app.demo` in `src/demo`: `DemoStore` (one `demo.json` file plus a
+  `photos` folder, schema version with a `migrate` hook, atomic write, no Android dependency), `DemoSession`
+  (who is signed in), `DemoSeed`, `DemoAuthRepository`, `DemoProfileRepository` (the old `drafts`),
+  `DemoCommunityRepository` (reads) with `DemoCommandHandler` (writes), `DemoPhotoRepository`,
+  `DemoAdminRepository`, `DemoProfileCodec`. `DemoModule` wires them. Code reformatted to 120 columns.
+- Bug fixed: blocking an unmatched member no longer creates a pair or a MATCH notification. Blocks are recorded in
+  a separate `blocks` table, hide both members from each other in discovery and refuse likes. An existing pair is
+  still closed as BLOCKED. Regression test `blocking an unmatched member creates no pair and no MATCH notification`
+  fails if the old behaviour is put back (checked by mutation).
+- Demo admin is now a `admin` flag on the stored user. No code compares against `"demo-admin"`. Administrators
+  cannot be suspended.
+- Public demo credentials live only in `DemoSeed` (`ADMIN_EMAIL`, `ADMIN_PASSWORD`, `MEMBER_PASSWORD`), also used
+  by `DemoAppMode`.
+- 27 new JVM tests in `app/src/testDemo` using a temp directory store (store 6, auth 5, profile 2, photo 2,
+  admin 4, community 8). New test only dependency `org.json:json:20260814` (`testDemoImplementation`) because
+  android.jar only has stubs for `org.json`.
+- `OfflineDemoTest` (instrumented) was replaced by those JVM tests. Its network permission check lives on in
+  `DemoManifestTest`.
+- Behaviour change to know about: the demo now stores data in `files/calaf_demo/demo.json` instead of
+  SharedPreferences `offline_demo_v1`, so data from a pre 1.2 demo install is not carried over. The `.demo`
+  package only exists since Task 1.1, so this affects no released install.
+- Verified: `assembleDemoDebug assembleLiveDebug testDemoDebugUnitTest testLiveDebugUnitTest :core:model:test
+  :feature:community:testDebugUnitTest`, both `compile*DebugAndroidTestKotlin`, `scripts/check-demo-manifest.sh`
+  and `cd backend && npm ci && npm test` (5 of 5) all pass.
+- Not verified: instrumented tests (no emulator), the demo on a device, the GitHub Actions run.
 
 ### Task 1.3 Feature modules and ViewModels
 Status: todo | Branch: `task/1.3-feature-modules` | Depends on: 1.2
