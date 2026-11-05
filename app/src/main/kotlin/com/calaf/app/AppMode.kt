@@ -2,17 +2,7 @@ package com.calaf.app
 
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
-
-/**
- * Typing [typedEmail] and [typedPassword] on the login screen signs in with [loginEmail] and [loginPassword].
- * Only the demo flavour ever creates one. Shared code just passes it along.
- */
-data class AdminShortcut(
-    val typedEmail: String,
-    val typedPassword: String,
-    val loginEmail: String,
-    val loginPassword: String,
-)
+import com.calaf.feature.auth.AdminShortcut
 
 /** What differs between flavours in the shared UI. Each flavour binds its own implementation through Hilt. */
 interface AppMode {

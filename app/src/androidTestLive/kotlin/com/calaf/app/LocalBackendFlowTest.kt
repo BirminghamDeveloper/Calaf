@@ -65,7 +65,7 @@ class LocalBackendFlowTest {
         compose.onNodeWithText("Discover").performClick()
         compose.onNodeWithText("Refresh").performScrollTo().performClick()
         compose.waitUntil(30000) { compose.onAllNodesWithText("Hassan (Demo)", substring = true).fetchSemanticsNodes().isNotEmpty() }
-        compose.onNodeWithTag("community_list").performScrollToNode(hasText("Hodan (Demo)", substring = true))
+        compose.onNodeWithTag("discovery_list").performScrollToNode(hasText("Hodan (Demo)", substring = true))
         compose.onNodeWithText("Hodan (Demo)", substring = true).assertIsDisplayed()
         compose.runOnIdle { compose.activity.appEntryPoint().auth().logout() }
     }

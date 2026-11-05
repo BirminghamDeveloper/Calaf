@@ -3,7 +3,7 @@ package com.calaf.app
 import android.graphics.Bitmap
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.v2.createComposeRule
-import com.calaf.app.profile.PhotoSection
+import com.calaf.feature.onboarding.PhotoSection
 import com.calaf.core.designsystem.CalafTheme
 import com.calaf.core.model.PhotoRepository
 import org.junit.Rule

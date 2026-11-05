@@ -76,12 +76,13 @@ Run, at minimum, before you open a pull request:
 cd backend && npm ci && npm test
 ```
 
-Until Task 1.4 adds Spotless, leave out `spotlessCheck` and add the library tests, then check the demo
+Until Task 1.4 adds Spotless, leave out `spotlessCheck` and add the library module tests
+(`testDebugUnitTest` runs every library module, `:core:model:test` the plain Kotlin one), then check the demo
 manifest:
 
 ```bash
 ./gradlew assembleDemoDebug assembleLiveDebug testDemoDebugUnitTest testLiveDebugUnitTest \
-  :core:model:test :feature:community:testDebugUnitTest
+  testDebugUnitTest :core:model:test
 bash scripts/check-demo-manifest.sh
 ```
 
@@ -100,7 +101,7 @@ If a download is blocked by the network, stop and report the blocked host. Do no
 
 - Do not read the whole repo. Read CLAUDE.md, PLAN.md, then only files the task touches.
 - Do not re run a full build after every small edit. Compile the module you changed
-  (for example `./gradlew :feature:chat:compileDemoDebugKotlin`), run the full verify once at the end.
+  (for example `./gradlew :feature:chat:compileDebugKotlin`, library modules have no flavour), run the full verify once at the end.
 - Use `--offline` for Gradle after the first successful build in a session.
 - If the same error survives three fix attempts, stop, record it in PLAN.md and the PR, and finish.
 - `429 Too Many Requests` from Maven Central is a rate limit, not a code problem. Do not investigate

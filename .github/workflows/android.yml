@@ -30,7 +30,7 @@ jobs:
       - name: Build and unit tests
         run: >
           ./gradlew assembleDemoDebug assembleLiveDebug testDemoDebugUnitTest testLiveDebugUnitTest
-          :core:model:test :feature:community:testDebugUnitTest
+          testDebugUnitTest :core:model:test
       - name: Demo APK must have no INTERNET permission
         run: bash scripts/check-demo-manifest.sh
       # Lets the owner download the demo APK from the Actions run and install it on a phone.
