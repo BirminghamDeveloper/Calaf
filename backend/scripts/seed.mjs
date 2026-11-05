@@ -29,7 +29,10 @@ for (const [uid, email, name, gender, birthDate] of people) {
   await service.execute(uid, { action: 'saveProfile', profile: {
     name, gender, birthDate, city: 'London', country: 'United Kingdom', culture: 'Somali / East African',
     languages: ['Somali', 'English'], biography: 'Fictional local test profile. Interested in family, community and a serious commitment.',
-    interests: ['Reading', 'Walking'], values: ['Family', 'Honesty'], religion: 'Islam', smoking: 'NO', wantsChildren: 'YES', timeline: 'ONE_TO_TWO_YEARS',
+    interests: ['Reading', 'Walking'], values: ['Family', 'Honesty'], smoking: 'NO', wantsChildren: 'YES', timeline: 'ONE_TO_TWO_YEARS',
+    // These fictional members consent to sharing faith and heritage so the local demo shows those fields.
+    sensitiveConsent: true, religion: 'Islam', religiosity: 'PRACTISING', prays: 'USUALLY', heritage: 'SOMALI',
+    maritalStatus: 'NEVER_MARRIED', heightCm: 170, countryOfBirth: 'Somalia', occupation: 'Teacher', education: 'Degree',
   } });
 }
 await service.execute('demo-amina', { action: 'interest', userId: 'demo-hassan', decision: 'LIKE' });

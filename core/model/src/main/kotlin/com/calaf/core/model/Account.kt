@@ -36,6 +36,16 @@ data class ProfileDraft(
     val smoking: Answer = Answer.UNSPECIFIED,
     val relocation: Answer = Answer.UNSPECIFIED,
     val timeline: MarriageTimeline = MarriageTimeline.WHEN_READY,
+    // Added in Task 2.1. Appended so older positional constructors and stored drafts keep working.
+    val maritalStatus: MaritalStatus = MaritalStatus.UNSPECIFIED,
+    /** Height in centimetres. 0 means not shared. */
+    val heightCm: Int = 0,
+    val countryOfBirth: String = "",
+    val religiosity: Religiosity = Religiosity.UNSPECIFIED,
+    val prays: PrayerHabit = PrayerHabit.UNSPECIFIED,
+    val heritage: Heritage = Heritage.UNSPECIFIED,
+    /** Explicit consent to save and show religion, how practising, prayer and heritage. Off by default. */
+    val sensitiveConsent: Boolean = false,
 )
 
 interface ProfileRepository {
@@ -43,7 +53,10 @@ interface ProfileRepository {
     suspend fun save(userId: String, profile: ProfileDraft)
 }
 
-enum class ProfileIssue { Name, BirthDate, Underage, City, Country, Biography, Length }
+enum class ProfileIssue { Name, BirthDate, Underage, City, Country, Biography, Length, Height, ConsentRequired }
+
+const val MIN_HEIGHT_CM = 120
+const val MAX_HEIGHT_CM = 230
 
 object AccountValidation {
     fun email(value: String): Boolean = value.length <= 254 &&
@@ -58,6 +71,9 @@ object AccountValidation {
         if (value.country.trim().length !in 2..100) return ProfileIssue.Country
         if (value.biography.length > 500) return ProfileIssue.Biography
         if (value.languages.length > 200 || value.culture.length > 200) return ProfileIssue.Length
+        if (value.countryOfBirth.length > 100 || value.religion.length > 60) return ProfileIssue.Length
+        if (value.heightCm != 0 && value.heightCm !in MIN_HEIGHT_CM..MAX_HEIGHT_CM) return ProfileIssue.Height
+        if (value.hasSpecialCategoryData && !value.sensitiveConsent) return ProfileIssue.ConsentRequired
         return null
     }
 }

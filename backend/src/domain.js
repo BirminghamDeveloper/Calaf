@@ -35,16 +35,43 @@ export function tags(value) {
   requireThat(Array.isArray(value) && value.length <= 20, 'Too many selections.');
   return [...new Set(value.map(item => text(item, 60, 1)))];
 }
+// UK GDPR special category data: religion, how practising, prayer and heritage (ethnicity). Optional, and only stored
+// or shown while the member has given explicit consent. There is deliberately no clan (qabiil) field.
+export const SPECIAL_CATEGORY_FIELDS = ['religion', 'religiosity', 'prays', 'heritage'];
+const MARITAL = ['NEVER_MARRIED', 'DIVORCED', 'WIDOWED', 'UNSPECIFIED'];
+const RELIGIOSITY = ['VERY_PRACTISING', 'PRACTISING', 'MODERATELY', 'NOT_PRACTISING', 'UNSPECIFIED'];
+const PRAYS = ['ALWAYS', 'USUALLY', 'SOMETIMES', 'NEVER', 'UNSPECIFIED'];
+const HERITAGE = ['SOMALI', 'SOMALILAND', 'ETHIOPIAN', 'ERITREAN', 'DJIBOUTIAN', 'KENYAN', 'SUDANESE', 'OTHER', 'UNSPECIFIED'];
+export function hasSpecialCategoryData(profile) {
+  return Boolean(profile.religion) || ['religiosity', 'prays', 'heritage'].some(
+    field => profile[field] && profile[field] !== 'UNSPECIFIED');
+}
+/** A copy of the profile with special category fields blanked unless the owner consented. Use before any sharing. */
+export function shareable(profile) {
+  if (profile.sensitiveConsent === true) return profile;
+  return { ...profile, religion: '', religiosity: 'UNSPECIFIED', prays: 'UNSPECIFIED', heritage: 'UNSPECIFIED' };
+}
 export function validateProfile(input, now = new Date()) {
   const age = ageOn(input.birthDate, now);
   requireThat(age >= 18, 'Calaf is for adults aged 18 and over.', 'permission-denied');
+  const heightCm = input.heightCm ?? 0;
+  requireThat(Number.isInteger(heightCm) && (heightCm === 0 || (heightCm >= 120 && heightCm <= 230)), 'Invalid height.');
+  const sensitiveConsent = input.sensitiveConsent === true;
+  const faith = {
+    religion: text(input.religion ?? '', 60), religiosity: choice(input.religiosity, RELIGIOSITY, 'UNSPECIFIED'),
+    prays: choice(input.prays, PRAYS, 'UNSPECIFIED'), heritage: choice(input.heritage, HERITAGE, 'UNSPECIFIED'),
+  };
+  requireThat(sensitiveConsent || !hasSpecialCategoryData(faith),
+    'Consent is needed to save faith and heritage details.', 'failed-precondition');
   return {
     name: text(input.name, 60, 2), city: text(input.city, 100, 2), country: text(input.country, 100, 2),
     biography: text(input.biography ?? '', 500), culture: text(input.culture ?? '', 200),
     languages: tags(input.languages ?? []), interests: tags(input.interests ?? []),
     values: tags(input.values ?? []), gender: choice(input.gender, ['WOMAN', 'MAN', 'UNSPECIFIED'], 'UNSPECIFIED'),
-    religion: text(input.religion ?? '', 60), occupation: text(input.occupation ?? '', 100),
+    ...faith, sensitiveConsent, occupation: text(input.occupation ?? '', 100),
     education: text(input.education ?? '', 100),
+    maritalStatus: choice(input.maritalStatus, MARITAL, 'UNSPECIFIED'), heightCm,
+    countryOfBirth: text(input.countryOfBirth ?? '', 100),
     children: choice(input.children, ['YES', 'NO', 'UNSPECIFIED'], 'UNSPECIFIED'),
     wantsChildren: choice(input.wantsChildren, ['YES', 'NO', 'OPEN', 'UNSPECIFIED'], 'UNSPECIFIED'),
     smoking: choice(input.smoking, ['YES', 'NO', 'UNSPECIFIED'], 'UNSPECIFIED'),

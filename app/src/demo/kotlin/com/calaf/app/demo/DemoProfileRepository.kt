@@ -2,6 +2,7 @@ package com.calaf.app.demo
 
 import com.calaf.core.model.ProfileDraft
 import com.calaf.core.model.ProfileRepository
+import com.calaf.core.model.withoutUnconsentedData
 
 /** Private drafts. A member who has published but never saved a draft gets their published profile back. */
 class DemoProfileRepository(private val store: DemoStore, private val session: DemoSession) : ProfileRepository {
@@ -13,7 +14,8 @@ class DemoProfileRepository(private val store: DemoStore, private val session: D
 
     override suspend fun save(userId: String, profile: ProfileDraft) {
         session.requireOwner(userId)
-        store.table("drafts").put(userId, DemoProfileCodec.toJson(profile))
+        // Faith and heritage are special category data: never keep them without consent.
+        store.table("drafts").put(userId, DemoProfileCodec.toJson(profile.withoutUnconsentedData()))
         store.save()
     }
 }

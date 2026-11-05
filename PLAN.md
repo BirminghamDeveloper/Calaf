@@ -206,7 +206,7 @@ Status: deferred | Branch: `task/1.4-style-backend-fixes` | Depends on: 1.3
 ## Phase 2: Muzz style profiles and photos
 
 ### Task 2.1 Richer profile and onboarding
-Status: todo | Branch: `task/2.1-onboarding` | Depends on: 1.3
+Status: done | Branch: `task/2.1-onboarding` | Depends on: 1.3
 
 - Add optional fields: marital status (never married, divorced, widowed), has children,
   height, religiosity (very practising, practising, moderately, not practising), prays,
@@ -217,6 +217,25 @@ Status: todo | Branch: `task/2.1-onboarding` | Depends on: 1.3
 - Multi step onboarding with progress and a profile completion percentage.
 - Update `core:model`, backend `validateProfile`, allowlisted discovery projection, demo store
   migration, and both flavours. Old drafts must still load.
+
+Done notes (Task 2.1):
+- `core:model`: new optional fields on `ProfileDraft` (marital status, height in cm, country of birth, religiosity, prayer
+  habit, heritage) plus `sensitiveConsent`, appended so old drafts and positional constructors keep working. Existing
+  fields already covered has children, languages, profession (`occupation`), education, timeline and relocation. No clan
+  field. `ProfileCompletion.percent` (optional faith fields only count after consent), `withConsent`,
+  `withoutUnconsentedData`. Validation adds `Height` and `ConsentRequired`.
+- Onboarding: five steps (basics, in your words, your life, faith and heritage, review) with a progress bar, "Step n of 5"
+  and a live completion percentage. An invalid save jumps to the step that needs fixing. The faith step starts with an
+  explicit consent card (off by default). Turning consent off deletes religion, religiosity, prayer and heritage.
+- Backend: `validateProfile` accepts the new fields and rejects special category data sent without consent
+  (`failed-precondition`). Discovery blanks faith and heritage unless the owner consented, returns the new fields in
+  the allowlisted projection (never the consent flag, DOB or email) and compatibility ignores unconsented religion.
+  Seed script updated. 5 new domain tests (10 pass).
+- Demo store schema version 2: migration gives seeded members consent and clears the religion text of everyone else
+  (no consent record exists for it). Drafts never keep faith data without consent. Seed profiles are richer.
+  Live local drafts and Firebase restore/payload carry the new fields and drop unconsented data on load.
+- Tests: model (3), onboarding ViewModel (4), demo store migration, profile repository and discovery projection (5).
+- Not verified: the onboarding screens on a device. Somali for the new `onb_*` strings is English (TRANSLATION_TODO).
 
 ### Task 2.2 Photo model and demo photos
 Status: todo | Branch: `task/2.2-photos-model` | Depends on: 2.1
@@ -397,6 +416,11 @@ Owner decisions. Items below were listed as pending in Task 1.3 and are **approv
 Choices made without the owner while following `docs/AUTOPILOT.md`. One line each, newest last.
 
 - The `hilt-smoke` emulator job is `continue-on-error: true`. Only the `android` and `backend` jobs gate merges.
+- 2.1: "Prays" is a four option prayer habit (always, usually, sometimes, never). Religion text, religiosity, prayer and
+  heritage are all special category data behind one consent switch that is off by default.
+- 2.1: Old stored religion text with no consent record is cleared by the demo store migration (seeded fictional members
+  keep theirs). The server rejects, rather than silently strips, special category data sent without consent.
+- 2.1: New Somali strings are English copies listed in `docs/TRANSLATION_TODO.md`, to be filled in Task 3.5.
 
 ## Found issues
 
@@ -416,3 +440,4 @@ Choices made without the owner while following `docs/AUTOPILOT.md`. One line eac
 - Unused strings carried over into `core:ui`: `activity_count`, `empty_messages`, `development_notice`,
   `last_messages`. Safe to delete in a later cleanup.
 - Somali for `more_options` is an English copy (listed in `docs/TRANSLATION_TODO.md`).
+- The GitHub proxy returns 403 for deleting branches (`DELETE git/refs/heads/...`), so merged task branches stay on the remote.

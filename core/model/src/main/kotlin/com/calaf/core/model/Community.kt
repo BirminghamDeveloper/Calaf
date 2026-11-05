@@ -23,6 +23,13 @@ data class CommunityProfile(
     val relocation: Answer = Answer.UNSPECIFIED, val timeline: MarriageTimeline = MarriageTimeline.WHEN_READY,
     val verification: VerificationStatus = VerificationStatus.NOT_STARTED,
     val compatibility: CompatibilityResult = CompatibilityResult(),
+    // Added in Task 2.1. Religion, religiosity, prays and heritage arrive only from members who consented.
+    val maritalStatus: MaritalStatus = MaritalStatus.UNSPECIFIED,
+    val heightCm: Int = 0,
+    val countryOfBirth: String = "",
+    val religiosity: Religiosity = Religiosity.UNSPECIFIED,
+    val prays: PrayerHabit = PrayerHabit.UNSPECIFIED,
+    val heritage: Heritage = Heritage.UNSPECIFIED,
 )
 data class PartnerPreference(val minAge: Int = 18, val maxAge: Int = 70, val gender: Gender? = null,
     val country: String = "", val language: String = "", val nonSmokerOnly: Boolean = false, val wantsChildren: Answer? = null)

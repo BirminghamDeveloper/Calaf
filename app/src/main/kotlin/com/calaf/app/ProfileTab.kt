@@ -33,6 +33,7 @@ internal fun ProfileTab(
         Box(Modifier.weight(1f)) {
             ProfileScreen(
                 profileState, profile::edit, profile::save, profile::editAgain, profile::load, onLogout,
+                onStep = profile::goToStep, onConsent = profile::setConsent,
                 onPublish = { publish.publish(profileState.draft) },
                 photos = {
                     appMode.AdminSection()

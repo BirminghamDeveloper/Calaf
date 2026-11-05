@@ -8,7 +8,12 @@ import com.calaf.core.model.ProfileDraft
 import com.calaf.core.model.ProfileRepository
 import com.calaf.core.model.Gender
 import com.calaf.core.model.Answer
+import com.calaf.core.model.Heritage
+import com.calaf.core.model.MaritalStatus
 import com.calaf.core.model.MarriageTimeline
+import com.calaf.core.model.PrayerHabit
+import com.calaf.core.model.Religiosity
+import com.calaf.core.model.withoutUnconsentedData
 import kotlinx.coroutines.flow.first
 import org.json.JSONObject
 
@@ -24,10 +29,17 @@ class LocalProfileRepository(private val store: DataStore<Preferences>) : Profil
             value.optString("religion"), value.optString("occupation"), value.optString("education"),
             value.optString("interests"), value.optString("values"),
             value.answer("children"), value.answer("wantsChildren"), value.answer("smoking"), value.answer("relocation"),
-            enumValues<MarriageTimeline>().firstOrNull { it.name == value.optString("timeline") } ?: MarriageTimeline.WHEN_READY)
+            enumValues<MarriageTimeline>().firstOrNull { it.name == value.optString("timeline") } ?: MarriageTimeline.WHEN_READY,
+            value.choice("maritalStatus", MaritalStatus.UNSPECIFIED), value.optInt("heightCm"), value.optString("countryOfBirth"),
+            value.choice("religiosity", Religiosity.UNSPECIFIED), value.choice("prays", PrayerHabit.UNSPECIFIED),
+            value.choice("heritage", Heritage.UNSPECIFIED), value.optBoolean("sensitiveConsent"),
+        ).withoutUnconsentedData()
     }
     override suspend fun save(userId: String, profile: ProfileDraft) {
-        val value = JSONObject().put("name", profile.name).put("birthDate", profile.birthDate)
+        val value = JSONObject().put("maritalStatus", profile.maritalStatus.name).put("heightCm", profile.heightCm)
+            .put("countryOfBirth", profile.countryOfBirth).put("religiosity", profile.religiosity.name)
+            .put("prays", profile.prays.name).put("heritage", profile.heritage.name)
+            .put("sensitiveConsent", profile.sensitiveConsent).put("name", profile.name).put("birthDate", profile.birthDate)
             .put("city", profile.city).put("country", profile.country).put("languages", profile.languages)
             .put("culture", profile.culture).put("biography", profile.biography)
             .put("gender", profile.gender.name).put("religion", profile.religion).put("occupation", profile.occupation)
@@ -37,4 +49,6 @@ class LocalProfileRepository(private val store: DataStore<Preferences>) : Profil
         store.edit { it[stringPreferencesKey("profile_$userId")] = value }
     }
 }
+private inline fun <reified T : Enum<T>> JSONObject.choice(key: String, default: T) =
+    enumValues<T>().firstOrNull { it.name == optString(key) } ?: default
 private fun JSONObject.answer(key: String) = enumValues<Answer>().firstOrNull { it.name == optString(key) } ?: Answer.UNSPECIFIED
