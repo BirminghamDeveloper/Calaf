@@ -17,7 +17,23 @@ data class ProfileUiState(
     val storageError: Boolean = false,
     val reviewing: Boolean = false,
     val saved: Boolean = false,
-)
+    /** The onboarding step being shown, from 0 to [ONBOARDING_STEPS] minus 1. */
+    val step: Int = 0,
+) {
+    val completion: Int get() = ProfileCompletion.percent(draft)
+}
+
+const val ONBOARDING_STEPS = 5
+const val FIRST_STEP = 0
+const val LAST_STEP = ONBOARDING_STEPS - 1
+
+/** The onboarding step where the member can fix [issue]. */
+fun stepFor(issue: ProfileIssue): Int = when (issue) {
+    ProfileIssue.Name, ProfileIssue.BirthDate, ProfileIssue.Underage, ProfileIssue.City, ProfileIssue.Country -> 0
+    ProfileIssue.Biography, ProfileIssue.Length -> 1
+    ProfileIssue.Height -> 2
+    ProfileIssue.ConsentRequired -> 3
+}
 
 class ProfileViewModel(private val userId: String, private val repository: ProfileRepository) : ViewModel() {
     private val mutable = MutableStateFlow(ProfileUiState())
@@ -37,19 +53,26 @@ class ProfileViewModel(private val userId: String, private val repository: Profi
     }
     fun edit(draft: ProfileDraft) {
         if (state.value.loading || state.value.saving) return
-        mutable.update { it.copy(draft = draft, issue = null, saved = false) }
+        // Special category data is never kept without consent, whatever the screen sends.
+        val allowed = draft.withoutUnconsentedData()
+        mutable.update { it.copy(draft = allowed, issue = null, saved = false) }
         autosave?.cancel()
         autosave = viewModelScope.launch {
             delay(350)
-            persist(draft, review = false)
+            persist(allowed, review = false)
         }
     }
+    /** Grants or withdraws consent for faith and heritage. Withdrawing deletes those details. */
+    fun setConsent(granted: Boolean) = edit(state.value.draft.withConsent(granted))
+    fun goToStep(step: Int) { mutable.update { it.copy(step = step.coerceIn(FIRST_STEP, LAST_STEP)) } }
+    fun nextStep() = goToStep(state.value.step + 1)
+    fun previousStep() = goToStep(state.value.step - 1)
     fun editAgain() { mutable.update { it.copy(reviewing = false, saved = false) } }
     fun save() {
         if (state.value.saving || state.value.loading) return
         val draft = state.value.draft
         val issue = AccountValidation.profile(draft)
-        mutable.update { it.copy(issue = issue) }
+        mutable.update { it.copy(issue = issue, step = if (issue != null) stepFor(issue) else it.step) }
         if (issue != null) return
         autosave?.cancel()
         mutable.update { it.copy(saving = true) }

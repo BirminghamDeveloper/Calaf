@@ -24,9 +24,12 @@ class DemoStore(
     val photoRoot = File(directory, "photos")
 
     init {
-        migrate(root.optInt(KEY_VERSION, 0))
+        val storedVersion = root.optInt(KEY_VERSION, 0)
+        migrate(storedVersion)
         root.put(KEY_VERSION, SCHEMA_VERSION)
         seed(this)
+        // Write a migrated store back straight away so the migration only ever runs once.
+        if (storedVersion in 1 until SCHEMA_VERSION) save()
     }
 
     /** The id of the signed in member, kept so the demo reopens signed in. */
@@ -87,14 +90,29 @@ class DemoStore(
         return try { JSONObject(file.readText()) } catch (_: JSONException) { JSONObject() }
     }
 
-    @Suppress("UNUSED_PARAMETER")
     private fun migrate(from: Int) {
-        // Version 1 is the first versioned layout, so nothing to migrate yet. Future steps go here:
-        // if (from < 2) { ...rewrite rows... }
+        if (from < 2) migrateToVersion2()
+        // Future steps: if (from < 3) { ...rewrite rows... }
+    }
+
+    /**
+     * Version 2 adds explicit consent for religion and heritage (UK GDPR special category data). Rows from before
+     * have no consent record, so a fictional seeded member is treated as consenting and anyone else loses their
+     * religion text. Safe on an empty store.
+     */
+    private fun migrateToVersion2() {
+        for (tableName in listOf("profiles", "drafts")) {
+            for ((id, row) in rows(tableName)) {
+                if (row.has("sensitiveConsent")) continue
+                val seeded = user(id)?.optBoolean("seed") == true
+                row.put("sensitiveConsent", seeded)
+                if (!seeded) row.put("religion", "")
+            }
+        }
     }
 
     companion object {
-        const val SCHEMA_VERSION = 1
+        const val SCHEMA_VERSION = 2
         private const val KEY_VERSION = "schemaVersion"
         private const val KEY_SESSION = "session"
     }

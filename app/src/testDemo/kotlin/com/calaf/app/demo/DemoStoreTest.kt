@@ -63,4 +63,30 @@ class DemoStoreTest {
         assertTrue(store.isBlockedEitherWay("b", "a"))
         assertFalse(store.isBlockedEitherWay("a", "c"))
     }
+
+    @Test fun `a version 1 store migrates so seeded members keep faith details and others lose them`() {
+        val directory = temp.newFolder("legacy")
+        val legacy = JSONObject()
+            .put("schemaVersion", 1)
+            .put("users", JSONObject()
+                .put("demo-hassan", JSONObject().put("email", "hassan@calaf.test").put("seed", true))
+                .put("member", JSONObject().put("email", "m@example.test")))
+            .put("profiles", JSONObject()
+                .put("demo-hassan", JSONObject().put("name", "Hassan").put("religion", "Islam"))
+                .put("member", JSONObject().put("name", "Member").put("religion", "Islam")))
+            .put("drafts", JSONObject().put("member", JSONObject().put("name", "Member").put("religion", "Islam")))
+            .put("meta", JSONObject().put("seeded", true))
+        File(directory, "demo.json").writeText(legacy.toString())
+        val store = DemoStore(directory)
+        val profiles = store.table("profiles")
+        assertEquals("Islam", profiles.getJSONObject("demo-hassan").getString("religion"))
+        assertTrue(profiles.getJSONObject("demo-hassan").getBoolean("sensitiveConsent"))
+        assertEquals("", profiles.getJSONObject("member").getString("religion"))
+        assertFalse(profiles.getJSONObject("member").getBoolean("sensitiveConsent"))
+        assertEquals("", store.table("drafts").getJSONObject("member").getString("religion"))
+        // Written back, so reopening does not migrate again and the version is current.
+        val saved = JSONObject(File(directory, "demo.json").readText())
+        assertEquals(DemoStore.SCHEMA_VERSION, saved.getInt("schemaVersion"))
+        assertFalse(saved.getJSONObject("profiles").getJSONObject("member").getBoolean("sensitiveConsent"))
+    }
 }

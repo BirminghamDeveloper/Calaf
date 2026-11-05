@@ -1,5 +1,5 @@
 # Calaf demo progress
-Last updated: 2026-11-05 07:19 UTC, after Task 1.3 (pull request 5, ready to merge)
+Last updated: 2026-11-05 07:31 UTC, after Task 2.1
 
 ## Done so far
 
@@ -20,11 +20,15 @@ The app now has a real bottom bar with icons: Discover, Matches, Activity, Profi
 Report and Block are one tap away on each match. Messages are reached from Matches. Settings is the gear icon at the top.
 Behind the scenes: the app is split into separate modules, each screen has its own tested logic, and a smoke test opens every tab on an emulator in CI.
 
+### Task 2.1 Richer profile and onboarding
+Setting up a profile is now five short steps with a progress bar and a "% complete" score: the basics, in your words, your life (marital status, height, children, work, education), faith and heritage, then review.
+Faith and heritage are optional and hidden behind a clear consent switch that is off by default. Turning it off deletes those details. Other members only ever see them if you agreed.
+Behind the scenes: the server refuses faith or heritage data without consent, the demo database upgrades old data safely, and there is still no clan field.
+
 ## In progress
-Task 1.3 is finished and being merged. Next up: Task 2.1 (not started).
+Task 2.1 is finished and being merged. Next up: Task 2.2 Photos (not started).
 
 ## Still to do
-- Task 2.1 Richer profile and onboarding (more profile fields, consent screen for religion and heritage, step by step setup)
 - Task 2.2 Photos (up to 6 illustrated demo photos per profile, photo manager, demo admin approves photos)
 - Task 3.1 Swipe cards on Discover
 - Task 3.2 Full profile screen and filters
@@ -35,9 +39,14 @@ Task 1.3 is finished and being merged. Next up: Task 2.1 (not started).
 ## Known issues
 - Nothing has been tried on a phone yet. Everything so far is checked by automatic tests only.
 - Somali text for several newer labels is still English (listed in docs/TRANSLATION_TODO.md).
+- GitHub does not let me delete merged branches, so old task branches stay on the repository (harmless).
 
 ## Decisions made without the owner
-- None yet beyond the approved UX decisions in PLAN.md.
+- hilt-smoke emulator CI job never blocks merging.
+- "Prays" is a four option prayer habit (always, usually, sometimes, never).
+- Religion, how practising, prayer and heritage all sit behind one consent switch that is off by default.
+- Old religion text without a consent record is cleared when the demo database upgrades (fictional seeded members keep theirs). The server rejects such data instead of silently dropping it.
+- New Somali strings are English copies for now (filled in at Task 3.5).
 
 ## How to try the demo
 1. Open the GitHub repository, go to the Actions tab and open the latest green run on master.

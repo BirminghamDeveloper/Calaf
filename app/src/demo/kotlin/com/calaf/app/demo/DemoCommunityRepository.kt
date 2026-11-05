@@ -169,6 +169,8 @@ class DemoCommunityRepository(
             id, p.name, age, if (privacy(id).showCity) p.city else "", p.country, p.biography, p.culture,
             tags(p.languages), tags(p.interests), tags(p.values), p.gender, p.religion, p.occupation, p.education,
             p.children, p.wantsChildren, p.smoking, p.relocation, p.timeline,
+            maritalStatus = p.maritalStatus, heightCm = p.heightCm, countryOfBirth = p.countryOfBirth,
+            religiosity = p.religiosity, prays = p.prays, heritage = p.heritage,
         )
     }
 

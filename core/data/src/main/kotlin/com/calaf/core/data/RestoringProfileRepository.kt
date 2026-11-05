@@ -26,7 +26,13 @@ class RestoringProfileRepository(private val local: ProfileRepository, app: Fire
                 enumValues<Answer>().firstOrNull { it.name == value("wantsChildren") } ?: Answer.UNSPECIFIED,
                 enumValues<Answer>().firstOrNull { it.name == value("smoking") } ?: Answer.UNSPECIFIED,
                 enumValues<Answer>().firstOrNull { it.name == value("relocation") } ?: Answer.UNSPECIFIED,
-                enumValues<MarriageTimeline>().firstOrNull { it.name == value("timeline") } ?: MarriageTimeline.WHEN_READY)
+                enumValues<MarriageTimeline>().firstOrNull { it.name == value("timeline") } ?: MarriageTimeline.WHEN_READY,
+                enumValues<MaritalStatus>().firstOrNull { it.name == value("maritalStatus") } ?: MaritalStatus.UNSPECIFIED,
+                (profile.getLong("heightCm") ?: 0L).toInt(), value("countryOfBirth"),
+                enumValues<Religiosity>().firstOrNull { it.name == value("religiosity") } ?: Religiosity.UNSPECIFIED,
+                enumValues<PrayerHabit>().firstOrNull { it.name == value("prays") } ?: PrayerHabit.UNSPECIFIED,
+                enumValues<Heritage>().firstOrNull { it.name == value("heritage") } ?: Heritage.UNSPECIFIED,
+                profile.getBoolean("sensitiveConsent") == true).withoutUnconsentedData()
             local.save(userId, restored)
             restored
         } catch (_: FirebaseFirestoreException) { draft }

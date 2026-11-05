@@ -48,7 +48,12 @@ object DemoSeed {
         .put("culture", "Somali / East African").put("languages", "Somali, English")
         .put("biography", "Fictional offline demonstration profile. Interested in family and a serious commitment.")
         .put("gender", if (name in women) "WOMAN" else "MAN")
-        .put("religion", "Islam").put("smoking", "NO").put("wantsChildren", "YES")
+        .put("smoking", "NO").put("wantsChildren", "YES")
+        // Fictional members consent to sharing faith and heritage, so the demo can show those fields.
+        .put("sensitiveConsent", true).put("religion", "Islam").put("religiosity", "PRACTISING")
+        .put("prays", "USUALLY").put("heritage", if (index % 2 == 0) "SOMALI" else "SOMALILAND")
+        .put("maritalStatus", "NEVER_MARRIED").put("heightCm", 165 + index * 4).put("countryOfBirth", "Somalia")
+        .put("occupation", "Teacher").put("education", "University degree")
 
     const val SAMPLE_REPORT_ID = "sample-report"
 }

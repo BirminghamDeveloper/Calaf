@@ -166,7 +166,10 @@ private fun profileFrom(id: String, d: Map<String, Any>): CommunityProfile {
         enumValue(d.string("timeline"), MarriageTimeline.WHEN_READY), enumValue(d.string("verification"), VerificationStatus.NOT_STARTED),
         CompatibilityResult((score?.get("score") as? Number)?.toInt(),
             (score?.get("strong") as? List<*>)?.filterIsInstance<String>()?.mapNotNull(::area).orEmpty(),
-            (score?.get("differences") as? List<*>)?.filterIsInstance<String>()?.mapNotNull(::area).orEmpty()))
+            (score?.get("differences") as? List<*>)?.filterIsInstance<String>()?.mapNotNull(::area).orEmpty()),
+        enumValue(d.string("maritalStatus"), MaritalStatus.UNSPECIFIED), d.number("heightCm").toInt(),
+        d.string("countryOfBirth"), enumValue(d.string("religiosity"), Religiosity.UNSPECIFIED),
+        enumValue(d.string("prays"), PrayerHabit.UNSPECIFIED), enumValue(d.string("heritage"), Heritage.UNSPECIFIED))
 }
 private fun ProfileDraft.payload(): Map<String, Any> = mapOf(
     "name" to name, "birthDate" to birthDate, "city" to city, "country" to country, "biography" to biography,
@@ -174,4 +177,7 @@ private fun ProfileDraft.payload(): Map<String, Any> = mapOf(
     "interests" to interests.split(',').map(String::trim).filter(String::isNotEmpty),
     "values" to values.split(',').map(String::trim).filter(String::isNotEmpty), "gender" to gender.name,
     "religion" to religion, "occupation" to occupation, "education" to education, "children" to children.name,
-    "wantsChildren" to wantsChildren.name, "smoking" to smoking.name, "relocation" to relocation.name, "timeline" to timeline.name)
+    "wantsChildren" to wantsChildren.name, "smoking" to smoking.name, "relocation" to relocation.name, "timeline" to timeline.name,
+    "maritalStatus" to maritalStatus.name, "heightCm" to heightCm, "countryOfBirth" to countryOfBirth,
+    "religiosity" to religiosity.name, "prays" to prays.name, "heritage" to heritage.name,
+    "sensitiveConsent" to sensitiveConsent)

@@ -1,6 +1,6 @@
 import { FieldValue, FieldPath } from 'firebase-admin/firestore';
 import { randomBytes, createHash } from 'node:crypto';
-import { ageOn, pairId, text, choice, preferences, eligible, validateProfile, messageWarnings, compatibility, requireThat } from './domain.js';
+import { ageOn, pairId, text, choice, preferences, eligible, validateProfile, messageWarnings, compatibility, requireThat, shareable } from './domain.js';
 
 const now = () => Date.now();
 const stamp = () => FieldValue.serverTimestamp();
@@ -97,15 +97,18 @@ export class CalafService {
       const [pair, user, settings] = await this.db.getAll(this.db.doc(`pairs/${pairId(uid, document.id)}`),
         this.db.doc(`users/${document.id}`), this.db.doc(`settings/${document.id}`));
       if (!user.exists || user.data().status !== 'ACTIVE' || pair.data()?.blockedBy?.length || pair.data()?.choices?.[uid]) continue;
-      const profile = { ...document.data(), age: ageOn(user.data().birthDate) };
+      // Faith and heritage are special category data: blank them unless their owner consented.
+      const profile = shareable({ ...document.data(), age: ageOn(user.data().birthDate) });
       if (profile.age < 18 || !eligible(profile, filter)) continue;
       if (settings.data()?.showCity === false) profile.city = '';
-      // Public projection is allowlisted; private DOB/email/phone never enter this response.
+      // Public projection is allowlisted; private DOB/email/phone and the consent flag never enter this response.
       const { name, age, city, country, biography, culture, languages, interests, values, gender,
-        religion, occupation, education, children, wantsChildren, smoking, relocation, timeline, verification, photos } = profile;
+        religion, religiosity, prays, heritage, occupation, education, children, wantsChildren, smoking, relocation,
+        timeline, maritalStatus, heightCm, countryOfBirth, verification, photos } = profile;
       candidates.push({ id: document.id, name, age, city, country, biography, culture, languages, interests,
-        values, gender, religion, occupation, education, children, wantsChildren, smoking, relocation,
-        timeline, verification, photos, compatibility: compatibility(own.data(), profile) });
+        values, gender, religion, religiosity, prays, heritage, occupation, education, children, wantsChildren,
+        smoking, relocation, timeline, maritalStatus, heightCm, countryOfBirth, verification, photos,
+        compatibility: compatibility(shareable(own.data()), profile) });
     }
     return { profiles: candidates, cursor: page.size === 40 ? page.docs.at(-1).id : null };
   }

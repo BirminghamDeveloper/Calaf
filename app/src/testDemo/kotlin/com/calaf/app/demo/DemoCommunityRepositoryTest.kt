@@ -119,4 +119,35 @@ class DemoCommunityRepositoryTest {
         val block = CommunityCommand.Block("demo-hassan")
         assertTrue(runCatching { runBlocking { demo.community.execute(block) } }.isFailure)
     }
+
+    @Test fun `discovery exposes the new profile fields only for members who consented`() = runBlocking {
+        val demo = fixture()
+        demo.loginAsMember("hodan")
+        val yusuf = demo.community.discover().profiles.first { it.id == "demo-yusuf" }
+        assertEquals(com.calaf.core.model.MaritalStatus.NEVER_MARRIED, yusuf.maritalStatus)
+        assertTrue(yusuf.heightCm in 120..230)
+        assertEquals("Somalia", yusuf.countryOfBirth)
+        assertEquals(com.calaf.core.model.Religiosity.PRACTISING, yusuf.religiosity)
+        // Withdraw Yusuf's consent in the stored row: faith and heritage must disappear from the projection.
+        val row = demo.store.table("profiles").getJSONObject("demo-yusuf")
+        row.put("sensitiveConsent", false)
+        val hidden = demo.community.discover().profiles.first { it.id == "demo-yusuf" }
+        assertEquals("", hidden.religion)
+        assertEquals(com.calaf.core.model.Religiosity.UNSPECIFIED, hidden.religiosity)
+        assertEquals(com.calaf.core.model.Heritage.UNSPECIFIED, hidden.heritage)
+        assertEquals("Somalia", hidden.countryOfBirth)
+    }
+
+    @Test fun `publishing faith details without consent is refused`() = runBlocking {
+        val demo = fixture()
+        demo.loginAsMember("hodan")
+        val draft = com.calaf.core.model.ProfileDraft(
+            "Hodan", "1993-11-05", "London", "UK", religion = "Islam",
+        )
+        assertTrue(runCatching { demo.community.execute(CommunityCommand.Publish(draft)) }.isFailure)
+        val consented = draft.copy(sensitiveConsent = true)
+        demo.community.execute(CommunityCommand.Publish(consented))
+        assertEquals("Islam", com.calaf.app.demo.DemoProfileCodec.toDraft(
+            demo.store.table("profiles").getJSONObject("demo-hodan")).religion)
+    }
 }
