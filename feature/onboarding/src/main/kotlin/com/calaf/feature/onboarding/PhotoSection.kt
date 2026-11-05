@@ -1,4 +1,4 @@
-package com.calaf.app.profile
+package com.calaf.feature.onboarding
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -17,7 +17,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.calaf.app.R
 import com.calaf.core.model.PhotoRepository
 
 @Composable fun PhotoSection(uid: String, repository: PhotoRepository) {

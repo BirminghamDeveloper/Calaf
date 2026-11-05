@@ -1,0 +1,11 @@
+<resources>
+    <string name="chat_safety">Waligaa ha dirin lacag hana wadaagin xogta aqoonsigaaga gaarka ah. Ka taxaddar xiriiriyeyaasha iyo codsiyada ka bixitaanka barnaamijka.</string>
+    <string name="earlier_messages">Soo rar farriimihii hore</string>
+    <string name="message_hint">Qor farriin ixtiraam leh</string>
+    <string name="message_read">La akhriyey</string>
+    <string name="please_wait">Fadlan sug…</string>
+    <string name="send">Dir</string>
+    <string name="sent_at">%1$s · %2$s</string>
+    <string name="warning_message">Xusuusin badbaado: farriintan waxay yeelan kartaa xiriiriye, xog xiriir ama codsi lacag.</string>
+    <string name="you">Adiga</string>
+</resources>

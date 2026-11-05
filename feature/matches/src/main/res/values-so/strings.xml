@@ -1,0 +1,10 @@
+<resources>
+    <string name="activity_description">100-ka ogeysiis ee ugu dambeeyey ee is-waafajinta iyo farriimaha. Fur wada hadalka ama calaamadee in la akhriyey.</string>
+    <string name="activity_empty">Weli wax dhaqdhaqaaq ah ma jiro. Is-waafajin iyo farriimo cusub ayaa halkan ka soo muuqan doona.</string>
+    <string name="activity_mark_read">Calaamadee in la akhriyey</string>
+    <string name="activity_match">Waxaad heshay is-waafajin cusub</string>
+    <string name="activity_message">Waxaad heshay farriin cusub</string>
+    <string name="empty_matches">Xiisaha wadajirka ahi wuxuu bilaabaa xiriir. Dadka aad is-waafaqdaan ayaa halkan ka muuqan doona.</string>
+    <string name="more_options">More options</string>
+    <string name="open_conversation">Fur wada hadalka</string>
+</resources>

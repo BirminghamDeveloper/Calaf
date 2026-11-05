@@ -1,0 +1,11 @@
+<resources>
+    <string name="chat_safety">Never send money or share private identity details. Be cautious with links and requests to move off the app.</string>
+    <string name="earlier_messages">Load older messages</string>
+    <string name="message_hint">Write a respectful message</string>
+    <string name="message_read">Read</string>
+    <string name="please_wait">Please wait…</string>
+    <string name="send">Send</string>
+    <string name="sent_at">%1$s · %2$s</string>
+    <string name="warning_message">Safety reminder: this message may contain a link, contact information, or a money request.</string>
+    <string name="you">You</string>
+</resources>

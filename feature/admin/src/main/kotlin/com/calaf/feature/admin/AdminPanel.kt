@@ -1,14 +1,14 @@
-package com.calaf.app.offline
+package com.calaf.feature.admin
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.calaf.app.demo.DemoAdminRepository
+import com.calaf.core.model.AdminRepository
 
 @Composable
-fun OfflineAdminSection(demo: DemoAdminRepository) {
+fun AdminPanel(demo: AdminRepository) {
     val revision by demo.revision.collectAsState()
     if (!demo.isAdmin) return
     var expanded by remember { mutableStateOf(false) }

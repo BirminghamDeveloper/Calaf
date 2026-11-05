@@ -1,10 +1,9 @@
-package com.calaf.app.profile
+package com.calaf.feature.onboarding
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.res.stringResource
-import com.calaf.app.R
 import com.calaf.core.model.*
 
 @Composable internal fun <T> ProfileChoice(label: Int, value: T, options: List<T>, display: @Composable (T) -> String, onChange: (T) -> Unit) {

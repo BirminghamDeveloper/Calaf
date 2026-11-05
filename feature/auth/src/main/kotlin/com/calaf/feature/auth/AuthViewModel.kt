@@ -1,8 +1,7 @@
-package com.calaf.app.auth
+package com.calaf.feature.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.calaf.app.AdminShortcut
 import com.calaf.core.model.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.*

@@ -1,5 +1,6 @@
-package com.calaf.app.profile
+package com.calaf.feature.onboarding
 
+import com.calaf.core.ui.R as CoreR
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
@@ -7,8 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
-import com.calaf.app.R
-import com.calaf.app.ui.*
+import com.calaf.core.ui.*
 import com.calaf.core.model.*
 
 @Composable
@@ -73,7 +73,7 @@ fun ProfileScreen(state: ProfileUiState, onEdit: (ProfileDraft) -> Unit, onSave:
             TextButton(onClick = onRetry) { Text(stringResource(R.string.reload_profile)) }
         }
         photos?.invoke()
-        TextButton(onClick = onLogout, enabled = !state.saving) { Text(stringResource(R.string.logout)) }
+        TextButton(onClick = onLogout, enabled = !state.saving) { Text(stringResource(CoreR.string.logout)) }
     }
 }
 

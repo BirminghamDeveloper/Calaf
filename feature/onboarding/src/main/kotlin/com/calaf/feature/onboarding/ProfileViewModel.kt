@@ -1,4 +1,4 @@
-package com.calaf.app.profile
+package com.calaf.feature.onboarding
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

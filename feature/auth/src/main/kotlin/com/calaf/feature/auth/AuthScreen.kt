@@ -1,5 +1,6 @@
-package com.calaf.app.auth
+package com.calaf.feature.auth
 
+import com.calaf.core.ui.R as CoreR
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -11,8 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.*
-import com.calaf.app.R
-import com.calaf.app.ui.*
+import com.calaf.core.ui.*
 import com.calaf.core.designsystem.CalafDimensions
 
 @Composable
@@ -26,7 +26,7 @@ fun AuthScreen(state: AuthUiState, register: Boolean, onSubmit: (String, String,
     var mismatch by remember { mutableStateOf(false) }
     var visible by remember { mutableStateOf(false) }
     var adult by rememberSaveable { mutableStateOf(false) }
-    FormPage(stringResource(if (register) R.string.create_account else R.string.login),
+    FormPage(stringResource(if (register) CoreR.string.create_account else CoreR.string.login),
         stringResource(if (register) R.string.register_subtitle else R.string.login_subtitle)) {
         notice?.let { StatusMessage(stringResource(it)) }
         OutlinedTextField(email, { email = it.take(254) }, label = { Text(stringResource(R.string.email)) },
@@ -59,10 +59,10 @@ fun AuthScreen(state: AuthUiState, register: Boolean, onSubmit: (String, String,
             if (!mismatch) onSubmit(email, password, adult)
         }, enabled = !state.busy,
             modifier = Modifier.fillMaxWidth().heightIn(min = CalafDimensions.touchTarget)) {
-            Text(stringResource(if (register) R.string.create_account else R.string.login))
+            Text(stringResource(if (register) CoreR.string.create_account else CoreR.string.login))
         }
         if (!register && canResetPassword) TextButton(onClick = { onReset(email) }, enabled = !state.busy) { Text(stringResource(R.string.forgot_password)) }
-        TextButton(onClick = onBack, enabled = !state.busy) { Text(stringResource(R.string.back)) }
+        TextButton(onClick = onBack, enabled = !state.busy) { Text(stringResource(CoreR.string.back)) }
     }
 }
 
@@ -80,6 +80,6 @@ fun VerificationScreen(state: AuthUiState, onSend: () -> Unit, onRefresh: () -> 
         if (state.busy) LinearProgressIndicator(Modifier.fillMaxWidth())
         Button(onClick = onSend, enabled = !state.busy, modifier = Modifier.fillMaxWidth()) { Text(stringResource(if (local) R.string.verify_local_email else R.string.send_verification)) }
         OutlinedButton(onClick = onRefresh, enabled = !state.busy, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.check_verification)) }
-        TextButton(onClick = onLogout, enabled = !state.busy) { Text(stringResource(R.string.logout)) }
+        TextButton(onClick = onLogout, enabled = !state.busy) { Text(stringResource(CoreR.string.logout)) }
     }
 }
