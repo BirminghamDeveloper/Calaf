@@ -142,6 +142,14 @@ export function messageWarnings(body) {
   if (/\b(send money|bank transfer|gift card|crypto|loan|wire transfer)\b/i.test(body)) warnings.push('MONEY_REQUEST');
   return warnings;
 }
+/**
+ * The member who shared this match with their guardian, if one of [ownerIds] (members whose guardian is the viewer)
+ * did. Only an active, unblocked match can be read. Sharing is opt in per match and per member.
+ */
+export function guardianSees(pair, ownerIds) {
+  if (!pair || pair.state !== 'ACTIVE' || pair.blockedBy?.length) return null;
+  return pair.members?.find(member => ownerIds.includes(member) && pair.guardianShares?.[member] === true) ?? null;
+}
 /** A note sent with a like, as the receiver may see it. Only while the author's like stands. */
 export function complimentFrom(pair, authorId) {
   const note = pair?.notes?.[authorId];

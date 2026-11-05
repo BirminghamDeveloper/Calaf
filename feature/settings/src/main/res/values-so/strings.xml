@@ -53,4 +53,7 @@
     <string name="woman">Haweeney</string>
     <string name="country">Waddanka (madhan uga tag mid kasta)</string>
     <string name="safety_body">Waqti qaado. Ha u dirin lacag qof aad internetka oo keliya ku baratay. Dukumentiyada aqoonsiga, xogta maaliyadeed iyo cinwaankaaga gaar u ilaali. Ku kulma meel dadweyne oo qof aad ku kalsoon tahay u sheeg.\n\nWaad xannibi kartaa, soo sheegi kartaa ama joojin kartaa is-waafajinta wakhti kasta. Haddii aad halis degdeg ah ku jirto, la xiriir adeegyada gurmadka deegaanka.</string>
+    <string name="set_guardian_shared_title">Conversations shared with you</string>
+    <string name="set_guardian_shared_item">%1$s is talking with %2$s</string>
+    <string name="set_guardian_open">Open conversation (read only)</string>
 </resources>

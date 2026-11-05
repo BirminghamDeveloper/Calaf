@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.calaf.core.model.ChatMessage
 import com.calaf.core.model.CommunityCommand
 import com.calaf.core.model.CommunityRepository
+import com.calaf.core.model.GuardianStatus
 import com.calaf.core.model.Match
 import com.calaf.core.model.MatchStatus
 import com.calaf.core.model.ReportCategory
@@ -32,6 +33,10 @@ data class ChatUiState(
     val readReceipts: Boolean = false,
     val loadingHistory: Boolean = false,
     val hasEarlierMessages: Boolean = false,
+    /** The member has an accepted guardian, so sharing a conversation with them is possible. */
+    val hasGuardian: Boolean = false,
+    /** The invitation code just created, to hand to the guardian. */
+    val guardianCode: String? = null,
     val action: ActionState = ActionState(),
 )
 
@@ -76,6 +81,14 @@ class ChatViewModel @AssistedInject constructor(
                 repository.matches(uid).catch { actions.fail(it) }.collect { data ->
                     val active = data.firstOrNull { it.id == matchId && it.status == MatchStatus.ACTIVE }
                     if (active == null) close() else open(active)
+                }
+            },
+            viewModelScope.launch {
+                repository.guardians(uid).catch { actions.fail(it) }.collect { data ->
+                    val accepted = data.any {
+                        it.ownerId == uid && it.status == GuardianStatus.ACCEPTED && it.guardianId != null
+                    }
+                    mutable.update { it.copy(hasGuardian = accepted) }
                 }
             },
             viewModelScope.launch {
@@ -182,6 +195,15 @@ class ChatViewModel @AssistedInject constructor(
     }
 
     fun unmatch() = actions.run(CommunityCommand.Unmatch(matchId), onSuccess = ::close)
+
+    /** Opt in, for this match only, to let the member's guardian read the conversation (read only), or stop. */
+    fun shareWithGuardian(share: Boolean) = actions.run(CommunityCommand.ShareWithGuardian(matchId, share))
+
+    /** Creates a guardian invitation, for a member who has not added a guardian yet. */
+    fun inviteGuardian() = actions.run(
+        CommunityCommand.InviteGuardian,
+        onResult = { result -> mutable.update { it.copy(guardianCode = result.invitationCode ?: it.guardianCode) } },
+    )
 
     fun block(userId: String) = actions.run(CommunityCommand.Block(userId), onSuccess = ::close)
 

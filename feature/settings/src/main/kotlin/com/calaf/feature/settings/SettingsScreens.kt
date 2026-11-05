@@ -41,9 +41,9 @@ fun SettingsMenuScreen(onOpen: (SettingsPage) -> Unit) {
 
 /** One settings page. Gets its ViewModel from Hilt, so previews and tests use the page screens directly. */
 @Composable
-fun SettingsPageRoute(uid: String, page: SettingsPage) {
+fun SettingsPageRoute(uid: String, page: SettingsPage, onOpenSharedChat: (String) -> Unit = {}) {
     when (page) {
-        SettingsPage.GUARDIAN -> GuardianRoute(uid)
+        SettingsPage.GUARDIAN -> GuardianRoute(uid, onOpenSharedChat)
         SettingsPage.SAFETY -> StaticPage(R.string.safety, R.string.safety_body)
         SettingsPage.GUIDELINES -> StaticPage(R.string.guidelines, R.string.guidelines_body)
         SettingsPage.VERIFICATION -> StaticPage(R.string.verification, R.string.verification_explanation)
@@ -53,7 +53,7 @@ fun SettingsPageRoute(uid: String, page: SettingsPage) {
 }
 
 @Composable
-private fun GuardianRoute(uid: String) {
+private fun GuardianRoute(uid: String, onOpenShared: (String) -> Unit) {
     val model = hiltViewModel<GuardianViewModel, GuardianViewModel.Factory>(
         key = "guardian_$uid",
         creationCallback = { it.create(uid) },
@@ -65,7 +65,10 @@ private fun GuardianRoute(uid: String) {
     }
     Column {
         ActionBanner(state.action)
-        GuardianScreen(state, onInvite = model::invite, onAccept = model::accept, onRevoke = model::revoke)
+        GuardianScreen(
+            state, onInvite = model::invite, onAccept = model::accept, onRevoke = model::revoke,
+            onOpenShared = onOpenShared,
+        )
     }
 }
 

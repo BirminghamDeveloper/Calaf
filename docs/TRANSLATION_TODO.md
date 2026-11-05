@@ -18,3 +18,5 @@ Keys whose `values-so` value is still the English text. Add the key here when yo
 | every key starting `disc_filter` (Task 3.2) | `feature/discovery/src/main/res/values-so/strings.xml` |
 | every key starting `match_` and `cmp_` (Task 3.3) | `core/ui/src/main/res/values-so/strings.xml` |
 | every key starting `ly_` (Task 3.3) | `feature/matches/src/main/res/values-so/strings.xml` |
+| every key starting `chat_` (Task 3.4) | `feature/chat/src/main/res/values-so/strings.xml` |
+| every key starting `set_guardian_` and `chat_guardian_stopped` (Task 3.4) | `feature/settings/src/main/res/values-so/strings.xml`, `feature/chat/src/main/res/values-so/strings.xml` |

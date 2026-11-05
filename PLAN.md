@@ -367,13 +367,35 @@ Done notes (Task 3.3):
 - Not verified: the match moment, tabs, compliment dialog and banners on a device.
 
 ### Task 3.4 Chat polish and guardian view
-Status: todo | Branch: `task/3.4-chat-guardian` | Depends on: 3.3
+Status: done | Branch: `task/3.4-chat-guardian` | Depends on: 3.3
 
 - Chat bubbles, day separators, sent and read state, safety warning banner on flagged messages,
   unmatch and report from the chat menu.
 - Guardian (wali): the member can invite a guardian to a specific match. Guardian sees that
   match's conversation read only, only after the member opts in for that match.
 - Demo: seeded matches send a scripted, clearly labelled demo reply after a short delay.
+
+Done notes (Task 3.4):
+- Chat polish: aligned bubbles (yours on the right), day separators (Today, Yesterday, then the date, computed in the
+  device time zone), sent and read state under your messages (Sending, Sent, Read; Read only once the other member has
+  receipts on), a red warning banner on messages with a link, contact details or a money request, a live hint while
+  you type such text, and a chat menu. Report and Block stay visible icon buttons in the header; Unmatch and Guardian
+  are in the menu. Pure rules in `ChatTimeline` (4 tests).
+- Guardian (wali): in the chat menu a member can turn on sharing for that one match (off by default) once they have an
+  accepted guardian, or invite one from there. Sharing is per match and per member. The other member always sees a
+  banner when their conversation is shared, and the sharer sees one too. A guardian opens shared conversations from
+  Settings, Guardian, in a read only screen with no composer. Turning sharing off, revoking the guardian, unmatching
+  or blocking closes it at once. Demo and live both: `CommunityCommand.ShareWithGuardian`, `Match` sharing flags,
+  `guardianMatches()` and `guardianMessages()`. Live uses callable actions only (`guardianShare`, `guardianMatches`,
+  `guardianMessages`, checked by `guardianSees`), so Firestore rules did not change; the live read only view refreshes
+  every 5 seconds.
+- Demo: seeded members answer with a scripted reply 2.5 seconds after you write, one reply at a time per match, five
+  lines in a loop, flagged `isDemo` and labelled "Demo reply, simulated" on the bubble. They also "read" your message.
+  The scheduler is an interface, so tests fire replies by hand. Read receipts now work in the demo.
+- Tests: 4 `ChatTimeline`, 2 `ChatViewModel`, 3 `GuardianChatViewModel`, 1 settings `GuardianViewModel`, 9 demo chat
+  (replies, receipts, warnings, guardian sharing end to end), 1 backend (14 pass), 1 navigation.
+- Not verified: the chat screen, bubbles, banners, menu and guardian screens on a device, and the live guardian
+  endpoints against the emulators.
 
 ### Task 3.5 Demo showcase polish
 Status: todo | Branch: `task/3.5-demo-showcase` | Depends on: 3.4
@@ -499,6 +521,12 @@ Choices made without the owner while following `docs/AUTOPILOT.md`. One line eac
 - 2.2: The main photo is always the first photo. Choosing a main photo or dragging one to the front are the same thing.
 - 2.2: Blur is a per photo owner choice carried in the public projection. The blur itself is drawn by the card in Task 3.1.
 - 2.2: Reordering has long press drag plus Move up and Move down buttons so it works with TalkBack and without gestures.
+- 3.4: Guardian sharing is per match and per member, off by default, and both members are always told when a
+  conversation is shared. A guardian can only read. Unmatching, blocking or revoking the guardian stops it at once.
+- 3.4: Message warnings flag and never block or rewrite, as for compliments. The sender gets a hint while typing.
+- 3.4: Demo replies are scripted, come only from seeded fictional members, wait 2.5 seconds, send one at a time per
+  match and are labelled as simulated on the bubble.
+- 3.4: The live guardian view polls a callable every 5 seconds instead of adding client Firestore read rules.
 - 3.3: Liked you is a second tab inside Matches, not a fifth bottom tab, so the bar stays at four.
 - 3.3: Risky compliments (links, contact details, money requests) are flagged to the receiver and warned about to the
   sender while typing, never blocked or rewritten. This is the same rule chat messages use.

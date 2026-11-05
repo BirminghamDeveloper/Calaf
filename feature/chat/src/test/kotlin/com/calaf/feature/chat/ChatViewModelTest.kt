@@ -2,7 +2,10 @@ package com.calaf.feature.chat
 
 import com.calaf.core.model.ChatMessage
 import com.calaf.core.model.CommunityCommand
+import com.calaf.core.model.CommandResult
 import com.calaf.core.model.CommunityError
+import com.calaf.core.model.Guardian
+import com.calaf.core.model.GuardianStatus
 import com.calaf.core.model.Match
 import com.calaf.core.model.MatchStatus
 import com.calaf.core.model.PrivacySettings
@@ -121,6 +124,46 @@ class ChatViewModelTest {
         model.send("Hello"); runCurrent()
         assertTrue(repository.commands.isEmpty())
         assertNull(model.state.value.conversation)
+        model.stop()
+    }
+
+    @Test fun `a member with an accepted guardian can share, and the match shows the sharing flags`() =
+        runTest(main.dispatcher) {
+            repository.liveMatches.value = listOf(match)
+            val model = model()
+            model.observe(); runCurrent()
+            assertFalse(model.state.value.hasGuardian)
+            repository.liveGuardians.value = listOf(
+                Guardian("g1", "me", "wali", GuardianStatus.INVITED),
+                Guardian("g2", "someone", "me", GuardianStatus.ACCEPTED),
+            )
+            runCurrent()
+            // An invitation that is not accepted, or a guardian role for someone else, does not count.
+            assertFalse(model.state.value.hasGuardian)
+            repository.liveGuardians.value = listOf(Guardian("g1", "me", "wali", GuardianStatus.ACCEPTED))
+            runCurrent()
+            assertTrue(model.state.value.hasGuardian)
+            model.shareWithGuardian(true); runCurrent()
+            assertEquals(listOf<CommunityCommand>(CommunityCommand.ShareWithGuardian("match", true)), repository.commands)
+            repository.liveMatches.value = listOf(match.copy(sharedWithGuardian = true, otherSharesWithGuardian = true))
+            runCurrent()
+            assertTrue(model.state.value.conversation!!.sharedWithGuardian)
+            assertTrue(model.state.value.conversation!!.otherSharesWithGuardian)
+            model.stop()
+        }
+
+    @Test fun `a failed share keeps the error and a guardian invitation keeps its code`() = runTest(main.dispatcher) {
+        repository.liveMatches.value = listOf(match)
+        val model = model()
+        model.observe(); runCurrent()
+        repository.failWith = CommunityError.INVALID
+        model.shareWithGuardian(true); runCurrent()
+        assertEquals(CommunityError.INVALID, model.state.value.action.error)
+        repository.failWith = null
+        repository.result = CommandResult(invitationCode = "code-9")
+        model.inviteGuardian(); runCurrent()
+        assertEquals("code-9", model.state.value.guardianCode)
+        assertEquals(CommunityCommand.InviteGuardian, repository.commands.last())
         model.stop()
     }
 }

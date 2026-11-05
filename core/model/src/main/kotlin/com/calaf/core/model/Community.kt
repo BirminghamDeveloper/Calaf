@@ -78,9 +78,22 @@ data class PartnerPreference(
 )
 data class PrivacySettings(val visible: Boolean = true, val readReceipts: Boolean = false, val showCity: Boolean = true,
     val notifications: Boolean = true, val analytics: Boolean = false, val marketing: Boolean = false)
-data class Match(val id: String, val otherId: String, val name: String, val status: MatchStatus, val blockedByMe: Boolean = false, val messageCount: Long = 0,
-    val otherReadAt: Long = 0)
-data class ChatMessage(val id: String, val senderId: String, val text: String, val createdAt: Long, val warnings: List<SafetyWarning>)
+data class Match(
+    val id: String, val otherId: String, val name: String, val status: MatchStatus,
+    val blockedByMe: Boolean = false, val messageCount: Long = 0, val otherReadAt: Long = 0,
+    /** I let my guardian read this conversation (read only). Off unless I turn it on for this match. */
+    val sharedWithGuardian: Boolean = false,
+    /** The other member lets their guardian read this conversation. I am always told. */
+    val otherSharesWithGuardian: Boolean = false,
+)
+data class ChatMessage(
+    val id: String, val senderId: String, val text: String, val createdAt: Long, val warnings: List<SafetyWarning>,
+    /** True for a scripted reply in the demo, which the screen labels as simulated. */
+    val isDemo: Boolean = false,
+)
+
+/** A conversation a member has chosen to share with you as their guardian. You can only read it. */
+data class GuardianMatch(val matchId: String, val ownerId: String, val ownerName: String, val otherName: String)
 data class Guardian(val id: String, val ownerId: String, val guardianId: String?, val status: GuardianStatus)
 data class DiscoveryPage(val profiles: List<CommunityProfile>, val cursor: String?)
 data class Subscription(val tier: SubscriptionTier = SubscriptionTier.FREE, val verifiedUntil: Long = 0)
@@ -103,6 +116,9 @@ sealed interface CommunityCommand {
     data object InviteGuardian : CommunityCommand
     data class AcceptGuardian(val code: String) : CommunityCommand
     data class RevokeGuardian(val id: String) : CommunityCommand
+
+    /** Lets the member's accepted guardian read one conversation, read only, or stops them. Off by default. */
+    data class ShareWithGuardian(val matchId: String, val share: Boolean) : CommunityCommand
     data object RevokeSessions : CommunityCommand
     data object RequestDeletion : CommunityCommand
     data object ExportData : CommunityCommand
@@ -129,5 +145,11 @@ interface CommunityRepository {
 
     /** Members who liked you and are waiting for an answer. */
     suspend fun likedYou(): LikedYou
+
+    /** Conversations that members you guard have shared with you. Empty unless you are an accepted guardian. */
+    suspend fun guardianMatches(): List<GuardianMatch>
+
+    /** A shared conversation, read only. Fails unless the owner shared that match with you. */
+    fun guardianMessages(matchId: String): Flow<List<ChatMessage>>
     suspend fun execute(command: CommunityCommand): CommandResult
 }

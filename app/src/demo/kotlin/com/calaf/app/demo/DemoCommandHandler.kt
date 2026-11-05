@@ -10,7 +10,14 @@ import org.json.JSONObject
 import java.util.UUID
 
 /** Applies the writes a member can make. Everything is checked against the signed in member first. */
-internal class DemoCommandHandler(private val store: DemoStore, private val session: DemoSession) {
+internal class DemoCommandHandler(
+    private val store: DemoStore,
+    private val session: DemoSession,
+    private val replies: ReplyScheduler = ReplyScheduler.None,
+) {
+    /** Matches with a scripted reply already on its way, so quick messages get one reply, not a pile. */
+    private val pendingReplies = mutableSetOf<String>()
+
     fun execute(command: CommunityCommand): CommandResult {
         val me = session.requireUid()
         var result = CommandResult()
@@ -21,7 +28,7 @@ internal class DemoCommandHandler(private val store: DemoStore, private val sess
             is CommunityCommand.Interest -> result = interest(me, command)
             is CommunityCommand.Send -> send(me, command)
             // There is no remote delivery in the offline demo, so a read receipt has nothing to do.
-            is CommunityCommand.Read -> requireActiveMatch(me, command.matchId)
+            is CommunityCommand.Read -> markRead(me, command)
             is CommunityCommand.ReadNotification -> markRead(me, command.id)
             is CommunityCommand.Unmatch -> requireMatchMember(me, command.matchId).put("status", "CLOSED")
             is CommunityCommand.Block -> block(me, command.userId)
@@ -29,6 +36,7 @@ internal class DemoCommandHandler(private val store: DemoStore, private val sess
             CommunityCommand.InviteGuardian -> result = inviteGuardian(me)
             is CommunityCommand.AcceptGuardian -> acceptGuardian(me, command.code)
             is CommunityCommand.RevokeGuardian -> revokeGuardian(me, command.id)
+            is CommunityCommand.ShareWithGuardian -> shareWithGuardian(me, command)
             CommunityCommand.RevokeSessions -> session.signOut()
             CommunityCommand.RequestDeletion -> store.user(me)?.put("deletionRequested", true)
             CommunityCommand.ExportData -> result = export(me)
@@ -96,6 +104,56 @@ internal class DemoCommandHandler(private val store: DemoStore, private val sess
         )
         val other = if (pair.optString("a") == me) pair.optString("b") else pair.optString("a")
         store.addNotification(other, "MESSAGE", command.matchId)
+        scheduleDemoReply(me, other, command.matchId)
+    }
+
+    /** A seeded member answers with the next scripted line a moment later, flagged as a demo reply. */
+    private fun scheduleDemoReply(member: String, seeded: String, matchId: String) {
+        if (store.user(seeded)?.optBoolean("seed") != true || !pendingReplies.add(matchId)) return
+        replies.schedule(DemoReplies.DELAY_MILLIS) {
+            pendingReplies.remove(matchId)
+            postDemoReply(member, seeded, matchId)
+        }
+    }
+
+    private fun postDemoReply(member: String, seeded: String, matchId: String) {
+        val pair = store.table("pairs").optJSONObject(matchId) ?: return
+        if (pair.optString("status") != "ACTIVE" || store.isSuspended(seeded) || store.isSuspended(member)) return
+        val sent = store.rows("messages").count { (_, m) -> m.optString("pair") == matchId && m.optBoolean("demo") }
+        val now = System.currentTimeMillis()
+        store.table("messages").put(
+            "demo-${UUID.randomUUID()}",
+            JSONObject().put("pair", matchId).put("sender", seeded).put("text", DemoReplies.line(sent))
+                .put("time", now).put("demo", true),
+        )
+        // The seeded member has read the message they are replying to.
+        pair.put("readAt_$seeded", now)
+        store.addNotification(member, "MESSAGE", matchId)
+        store.save()
+    }
+
+    /** Records that [me] has seen the conversation up to this message, which the other member sees as Read. */
+    private fun markRead(me: String, command: CommunityCommand.Read) {
+        val pair = requireActiveMatch(me, command.matchId)
+        val message = store.table("messages").optJSONObject(command.messageId) ?: return
+        if (message.optString("pair") != command.matchId || message.optString("sender") == me) return
+        val key = "readAt_$me"
+        pair.put(key, maxOf(pair.optLong(key), message.optLong("time")))
+    }
+
+    /** Opt in, per match, to let the member's accepted guardian read this conversation. Off by default. */
+    private fun shareWithGuardian(me: String, command: CommunityCommand.ShareWithGuardian) {
+        requireActiveMatch(me, command.matchId)
+        val key = "${command.matchId}_$me"
+        if (!command.share) {
+            store.table("guardianShares").remove(key)
+            return
+        }
+        val hasGuardian = store.rows("guardians").any { (_, g) ->
+            g.optString("owner") == me && g.optString("status") == "ACCEPTED" && g.optString("guardian").isNotEmpty()
+        }
+        if (!hasGuardian) throw CommunityException(CommunityError.INVALID)
+        store.table("guardianShares").put(key, true)
     }
 
     private fun markRead(me: String, id: String) {

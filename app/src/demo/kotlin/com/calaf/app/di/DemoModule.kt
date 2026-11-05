@@ -4,6 +4,8 @@ import android.content.Context
 import com.calaf.app.AppMode
 import com.calaf.app.DemoAppMode
 import com.calaf.app.AndroidAvatarSource
+import com.calaf.app.AndroidReplyScheduler
+import com.calaf.app.demo.ReplyScheduler
 import com.calaf.app.demo.AvatarSource
 import com.calaf.app.demo.DemoAdminRepository
 import com.calaf.app.demo.DemoAuthRepository
@@ -41,8 +43,11 @@ object DemoModule {
     fun profiles(store: DemoStore, session: DemoSession): ProfileRepository = DemoProfileRepository(store, session)
 
     @Provides @Singleton
-    fun community(store: DemoStore, session: DemoSession): CommunityRepository =
-        DemoCommunityRepository(store, session)
+    fun replies(): ReplyScheduler = AndroidReplyScheduler()
+
+    @Provides @Singleton
+    fun community(store: DemoStore, session: DemoSession, replies: ReplyScheduler): CommunityRepository =
+        DemoCommunityRepository(store, session, replies)
 
     @Provides @Singleton
     fun avatars(@ApplicationContext context: Context): AvatarSource = AndroidAvatarSource(context)

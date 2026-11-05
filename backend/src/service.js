@@ -1,6 +1,6 @@
 import { FieldValue, FieldPath } from 'firebase-admin/firestore';
 import { randomBytes, createHash } from 'node:crypto';
-import { ageOn, pairId, text, choice, preferences, eligible, validateProfile, messageWarnings, compatibility, requireThat, shareable, complimentFrom, COMPLIMENT_MAX } from './domain.js';
+import { ageOn, pairId, text, choice, preferences, eligible, validateProfile, messageWarnings, compatibility, requireThat, shareable, complimentFrom, COMPLIMENT_MAX, guardianSees } from './domain.js';
 
 const now = () => Date.now();
 const stamp = () => FieldValue.serverTimestamp();
@@ -26,6 +26,9 @@ export class CalafService {
       guardianInvite: () => this.guardianInvite(uid),
       guardianAccept: () => this.guardianAccept(uid, input),
       guardianRevoke: () => this.guardianRevoke(uid, input),
+      guardianShare: () => this.guardianShare(uid, input),
+      guardianMatches: () => this.guardianMatches(uid),
+      guardianMessages: () => this.guardianMessages(uid, input),
       revokeSessions: async () => {
         this.recent(token);
         await this.auth.revokeRefreshTokens(uid);
@@ -283,6 +286,48 @@ export class CalafService {
       tx.update(reference, { state: 'REVOKED', permissions: [], updatedAt: stamp() });
     });
     return { ok: true };
+  }
+  /** Opt in, per match, to let your accepted guardian read this conversation. Off by default. */
+  async guardianShare(uid, input) {
+    const id = text(input.matchId, 64, 64), share = input.share === true;
+    await this.db.runTransaction(async tx => {
+      const { reference } = await this.activePair(tx, uid, id);
+      if (share) {
+        const guardians = await tx.get(this.db.collection('guardians').where('ownerId', '==', uid).where('state', '==', 'ACCEPTED'));
+        requireThat(!guardians.empty, 'Add a guardian first.', 'failed-precondition');
+      }
+      tx.update(reference, { [`guardianShares.${uid}`]: share, updatedAt: stamp() });
+    });
+    return { ok: true };
+  }
+  /** Owners whose accepted guardian is this member. */
+  async wards(uid) {
+    const guardians = await this.db.collection('guardians').where('guardianId', '==', uid).get();
+    return guardians.docs.map(document => document.data()).filter(data => data.state === 'ACCEPTED').map(data => data.ownerId);
+  }
+  async guardianMatches(uid) {
+    const owners = await this.wards(uid);
+    const matches = [];
+    for (const owner of owners) {
+      const pairs = await this.db.collection('pairs').where('members', 'array-contains', owner).get();
+      for (const document of pairs.docs) {
+        const pair = document.data();
+        if (guardianSees(pair, [owner]) !== owner) continue;
+        const other = pair.members.find(member => member !== owner);
+        matches.push({ matchId: document.id, ownerId: owner, ownerName: pair.names?.[owner] ?? '', otherName: pair.names?.[other] ?? '' });
+      }
+    }
+    return { matches };
+  }
+  /** A shared conversation, read only. Never writes, and never reaches a match that was not shared with you. */
+  async guardianMessages(uid, input) {
+    const id = text(input.matchId, 64, 64);
+    const [owners, pair] = await Promise.all([this.wards(uid), this.db.doc(`pairs/${id}`).get()]);
+    requireThat(pair.exists && guardianSees(pair.data(), owners), 'This conversation is not shared with you.', 'permission-denied');
+    const snapshot = await this.db.collection(`pairs/${id}/messages`).orderBy('createdAt', 'desc').limit(100).get();
+    const messages = snapshot.docs.reverse().map(document => ({ id: document.id, senderId: document.data().senderId,
+      text: document.data().text, createdAt: document.data().createdAt?.toMillis?.() ?? 0, warnings: document.data().warnings ?? [] }));
+    return { messages };
   }
   async requestDeletion(uid) {
     // Immediately remove discovery access; a privileged worker must finish erasure.
