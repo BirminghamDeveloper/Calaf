@@ -10,6 +10,9 @@ the owner decides to go live. Never start a `deferred` task. When a task asks yo
 the live flavour must still compile and pass its tests, but put the effort into the demo experience.
 Demo track order: 1.2, 1.3, 2.1, 2.2, 3.1, 3.2, 3.3, 3.4, 3.5.
 
+**AUTOPILOT is on.** The owner asked for the whole demo track in one run. Read `docs/AUTOPILOT.md` and `docs/PROGRESS.md`
+and carry on from the first demo task that is not done. Its rules override "one task per session".
+
 ---
 
 ## Phase 0: make the project buildable anywhere
@@ -378,17 +381,22 @@ Status: deferred | Branch: `task/5.6-release` | Depends on: all above
 
 ---
 
-## UX decisions pending owner approval
+## Decisions
 
-Changes a session made that go beyond a pure refactor. Each stays in place until the owner signs it off or reverses it.
-Mark an item `approved` or `reverse` and the next session will act on it.
+Owner decisions. Items below were listed as pending in Task 1.3 and are **approved** (AUTOPILOT, see `docs/AUTOPILOT.md`).
 
 | # | Decision | Where | Status |
-| --- | --- | --- |
-| 1 | The Messages tab is merged into Matches. A conversation opens from a match card or from Activity. The tab bar is Discover, Matches, Activity, Profile, as Task 1.3 specified. | `app/.../SignedInApp.kt`, `feature:matches` | pending |
-| 2 | Activity is a tab with an unread count badge. The old header "Activity (n)" button is gone. | `app/.../SignedInApp.kt` | pending |
-| 3 | Settings is an icon button in the header. Back (on settings pages) pops one screen instead of always returning to Profile. | `app/.../SignedInApp.kt` | pending |
-| 4 | On a match card Report and Block are visible icon buttons. Unmatch moved into a "more" menu. | `feature:matches` | pending |
+| --- | --- | --- | --- |
+| 1 | The Messages tab is merged into Matches. A conversation opens from a match card or from Activity. The tab bar is Discover, Matches, Activity, Profile. | `app/.../SignedInApp.kt`, `feature:matches` | approved |
+| 2 | Activity is a tab with an unread count badge. The old header "Activity (n)" button is gone. | `app/.../SignedInApp.kt` | approved |
+| 3 | Settings is an icon button in the header. Back (on settings pages) pops one screen instead of always returning to Profile. | `app/.../SignedInApp.kt` | approved |
+| 4 | On a match card Report and Block are visible icon buttons. Unmatch is in a "more" menu. | `feature:matches` | approved |
+
+## Decisions made on autopilot
+
+Choices made without the owner while following `docs/AUTOPILOT.md`. One line each, newest last.
+
+- The `hilt-smoke` emulator job is `continue-on-error: true`. Only the `android` and `backend` jobs gate merges.
 
 ## Found issues
 
