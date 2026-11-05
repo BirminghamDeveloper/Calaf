@@ -16,7 +16,9 @@ import com.calaf.core.model.Match
 import com.calaf.core.model.MatchStatus
 import com.calaf.core.model.MemberNotification
 import com.calaf.core.model.PartnerPreference
+import com.calaf.core.model.PhotoState
 import com.calaf.core.model.PrivacySettings
+import com.calaf.core.model.PublicPhoto
 import com.calaf.core.model.Subscription
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -171,6 +173,9 @@ class DemoCommunityRepository(
             p.children, p.wantsChildren, p.smoking, p.relocation, p.timeline,
             maritalStatus = p.maritalStatus, heightCm = p.heightCm, countryOfBirth = p.countryOfBirth,
             religiosity = p.religiosity, prays = p.prays, heritage = p.heritage,
+            // Only approved photos are ever visible to other members, main photo first.
+            photos = DemoPhotoRows.ownerPhotos(store, id).filter { it.state == PhotoState.APPROVED }
+                .map { PublicPhoto(it.id, it.blurForNonMatches) },
         )
     }
 

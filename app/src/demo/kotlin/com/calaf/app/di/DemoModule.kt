@@ -3,6 +3,8 @@ package com.calaf.app.di
 import android.content.Context
 import com.calaf.app.AppMode
 import com.calaf.app.DemoAppMode
+import com.calaf.app.AndroidAvatarSource
+import com.calaf.app.demo.AvatarSource
 import com.calaf.app.demo.DemoAdminRepository
 import com.calaf.app.demo.DemoAuthRepository
 import com.calaf.app.demo.DemoCommunityRepository
@@ -43,11 +45,15 @@ object DemoModule {
         DemoCommunityRepository(store, session)
 
     @Provides @Singleton
-    fun admin(store: DemoStore, session: DemoSession): DemoAdminRepository = DemoAdminRepository(store, session)
+    fun avatars(@ApplicationContext context: Context): AvatarSource = AndroidAvatarSource(context)
+
+    @Provides @Singleton
+    fun admin(store: DemoStore, session: DemoSession, avatars: AvatarSource): DemoAdminRepository =
+        DemoAdminRepository(store, session, avatars)
 
     @Provides
-    fun photoRepositories(store: DemoStore, session: DemoSession): PhotoRepositoryFactory =
-        PhotoRepositoryFactory { uid -> DemoPhotoRepository(store, session, uid) }
+    fun photoRepositories(store: DemoStore, session: DemoSession, avatars: AvatarSource): PhotoRepositoryFactory =
+        PhotoRepositoryFactory { uid -> DemoPhotoRepository(store, session, avatars, uid) }
 
     @Provides
     fun appMode(admin: DemoAdminRepository): AppMode = DemoAppMode(admin)

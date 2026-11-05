@@ -89,6 +89,7 @@ dependencies {
     androidTestImplementation(libs.test.runner)
     androidTestImplementation(libs.exif)
     androidTestImplementation(libs.hilt.android.testing)
+    androidTestImplementation(project(":core:testing"))
     kspAndroidTest(libs.hilt.compiler)
     debugImplementation(libs.compose.test.manifest)
 }

@@ -1,5 +1,5 @@
 # Calaf demo progress
-Last updated: 2026-11-05 07:31 UTC, after Task 2.1
+Last updated: 2026-11-05 07:47 UTC, after Task 2.2
 
 ## Done so far
 
@@ -25,11 +25,15 @@ Setting up a profile is now five short steps with a progress bar and a "% comple
 Faith and heritage are optional and hidden behind a clear consent switch that is off by default. Turning it off deletes those details. Other members only ever see them if you agreed.
 Behind the scenes: the server refuses faith or heritage data without consent, the demo database upgrades old data safely, and there is still no clan field.
 
+### Task 2.2 Photos
+Your profile now has a photo manager: up to six photos, the first is your main photo, drag to reorder (or use Move up and Move down), make any photo the main one, blur a photo for people you have not matched with, and remove photos. Each photo shows whether it is approved.
+Ten illustrated demo avatars come with the app (abstract art, no real people), and every demo member has two or three. In the demo new photos are approved straight away. The demo administrator has a photo review list on the Profile tab to approve or reject any photo, and a rejected photo disappears for everyone else.
+Behind the scenes: photos have a proper model (approved, pending, rejected), the old demo photo files upgrade automatically, and the real app only shows your own pending photos until the live photo pipeline is built.
+
 ## In progress
-Task 2.1 is finished and being merged. Next up: Task 2.2 Photos (not started).
+Task 2.2 is finished and being merged. Next up: Task 3.1 Swipe cards (not started).
 
 ## Still to do
-- Task 2.2 Photos (up to 6 illustrated demo photos per profile, photo manager, demo admin approves photos)
 - Task 3.1 Swipe cards on Discover
 - Task 3.2 Full profile screen and filters
 - Task 3.3 "It's a match" moment, who liked you, compliments
@@ -47,6 +51,9 @@ Task 2.1 is finished and being merged. Next up: Task 2.2 Photos (not started).
 - Religion, how practising, prayer and heritage all sit behind one consent switch that is off by default.
 - Old religion text without a consent record is cleared when the demo database upgrades (fictional seeded members keep theirs). The server rejects such data instead of silently dropping it.
 - New Somali strings are English copies for now (filled in at Task 3.5).
+- The main photo is always the first photo, so choosing a main photo and dragging to the front are the same thing.
+- Blur is chosen per photo by the owner. The card that actually draws the blur arrives with the swipe cards (Task 3.1).
+- Photo reordering works by long press drag and by Move up and Move down buttons.
 
 ## How to try the demo
 1. Open the GitHub repository, go to the Actions tab and open the latest green run on master.

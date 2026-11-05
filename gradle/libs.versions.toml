@@ -18,6 +18,7 @@ ksp = "2.3.13"
 json = "20260814"
 hiltNavigation = "1.4.0"
 serialization = "1.12.0"
+coil = "3.6.3"
 
 [libraries]
 compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
@@ -50,6 +51,7 @@ hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", ve
 serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
 compose-tooling = { module = "androidx.compose.ui:ui-tooling" }
 compose-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 test-runner = { module = "androidx.test:runner", version.ref = "testRunner" }
 
 [plugins]
