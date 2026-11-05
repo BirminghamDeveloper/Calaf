@@ -115,10 +115,14 @@ internal fun SignedInApp(
             )
             NavHost(navigation, startDestination = ProfileDestination, modifier = Modifier.weight(1f)) {
                 composable<DiscoverDestination> {
-                    DiscoveryRoute(uid) { navigation.navigate(SettingsPageDestination(SettingsPage.PREFERENCES)) }
+                    DiscoveryRoute(
+                        uid,
+                        onPreferences = { navigation.navigate(SettingsPageDestination(SettingsPage.PREFERENCES)) },
+                        onOpenChat = { matchId -> navigation.navigate(ChatDestination(matchId)) },
+                    )
                 }
                 composable<MatchesDestination> {
-                    MatchesRoute(uid) { match -> navigation.navigate(ChatDestination(match.id)) }
+                    MatchesRoute(uid) { matchId -> navigation.navigate(ChatDestination(matchId)) }
                 }
                 composable<ActivityDestination> {
                     ActivityScreen(

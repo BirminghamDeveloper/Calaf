@@ -40,6 +40,8 @@ import com.calaf.core.model.CommunityProfile
 import com.calaf.core.model.CompatibilityArea
 import com.calaf.core.model.PublicPhoto
 import com.calaf.core.ui.PhotoBlur
+import com.calaf.core.ui.ComplimentBanner
+import com.calaf.core.ui.MemberPhoto
 import com.calaf.core.ui.labelRes
 import com.calaf.core.ui.R as CoreR
 import kotlinx.coroutines.Dispatchers
@@ -62,7 +64,14 @@ internal fun ProfileCard(
     val summary = stringResource(R.string.disc_card_summary, profile.name, profile.age, profile.city)
     Card(modifier.fillMaxSize().semantics { contentDescription = summary }) {
         Box(Modifier.fillMaxSize()) {
-            MemberPhoto(profile, profile.photos.getOrNull(index), index, photoCount, photoLoader)
+            val description = stringResource(R.string.disc_photo_description, profile.name, index + 1, photoCount)
+            MemberPhoto(profile, profile.photos.getOrNull(index), description, photoLoader)
+            profile.compliment?.let { compliment ->
+                ComplimentBanner(
+                    profile.name, compliment,
+                    Modifier.align(Alignment.TopCenter).padding(top = BANNER_TOP_PADDING, start = 8.dp, end = 8.dp),
+                )
+            }
             Scrim(Modifier.align(Alignment.BottomStart))
             if (photoCount > 1) {
                 PhotoSegments(photoCount, index, Modifier.align(Alignment.TopStart))
@@ -160,6 +169,7 @@ private fun FactLines(profile: CommunityProfile, modifier: Modifier) {
     }
 }
 
+private val BANNER_TOP_PADDING = 20.dp
 private val SCRIM_HEIGHT = 220.dp
 private val FACTS_CLEARANCE = 160.dp
 private const val SCRIM_COLOR = 0xCC000000

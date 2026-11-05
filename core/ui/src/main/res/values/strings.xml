@@ -84,4 +84,21 @@
     <string name="lbl_answer_yes">Yes</string>
     <string name="lbl_answer_no">No</string>
     <string name="lbl_answer_open">Open to it</string>
+    <string name="match_title">It’s a match!</string>
+    <string name="match_subtitle">You and %1$s liked each other.</string>
+    <string name="match_message">Send a message</string>
+    <string name="match_keep_browsing">Keep browsing</string>
+    <string name="match_photo_you">Your main photo</string>
+    <string name="match_photo_them">%1$s’s main photo</string>
+    <string name="cmp_title">Like %1$s with a note</string>
+    <string name="cmp_hint">A short, kind note (up to 140 characters)</string>
+    <string name="cmp_counter">%1$d of %2$d</string>
+    <string name="cmp_send">Send like with note</string>
+    <string name="cmp_cancel">Cancel</string>
+    <string name="cmp_warning_link">This note has a link. Calaf will warn the other person.</string>
+    <string name="cmp_warning_personal">This note has contact details. For your safety, keep them out of first notes.</string>
+    <string name="cmp_warning_money">This note mentions money. Never ask for or send money to someone you have just met.</string>
+    <string name="cmp_received">%1$s sent you a note</string>
+    <string name="cmp_note_with_warning">Be careful: this note has a link, contact details or a money request.</string>
+    <string name="cmp_action">Like with a note</string>
 </resources>

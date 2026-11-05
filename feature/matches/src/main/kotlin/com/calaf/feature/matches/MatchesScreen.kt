@@ -2,7 +2,9 @@ package com.calaf.feature.matches
 
 import com.calaf.core.ui.R as CoreR
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
@@ -12,10 +14,13 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -29,11 +34,14 @@ import com.calaf.core.designsystem.CalafIcon
 import com.calaf.core.designsystem.CalafIcons
 import com.calaf.core.designsystem.CalafSpacing
 import com.calaf.core.designsystem.CalafTheme
+import com.calaf.core.model.CommunityProfile
 import com.calaf.core.model.Match
 import com.calaf.core.model.MatchStatus
+import com.calaf.core.model.PublicPhoto
 import com.calaf.core.model.ReportCategory
 import com.calaf.core.ui.CalafListScreen
 import com.calaf.core.ui.ConfirmDialog
+import com.calaf.core.ui.MatchMomentOverlay
 import com.calaf.core.ui.ReportDialog
 
 private sealed interface Pending {
@@ -43,7 +51,7 @@ private sealed interface Pending {
 
 /** The Matches tab. Gets its ViewModel from Hilt, so previews and tests use [MatchesScreen] directly. */
 @Composable
-fun MatchesRoute(uid: String, onOpenConversation: (Match) -> Unit) {
+fun MatchesRoute(uid: String, onOpenChat: (String) -> Unit) {
     val model = hiltViewModel<MatchesViewModel, MatchesViewModel.Factory>(
         key = "matches_$uid",
         creationCallback = { it.create(uid) },
@@ -54,13 +62,66 @@ fun MatchesRoute(uid: String, onOpenConversation: (Match) -> Unit) {
         onDispose { model.stop() }
     }
     MatchesScreen(
-        state, onOpenConversation, onReport = model::report, onBlock = model::block, onUnmatch = model::unmatch,
-        onRetry = model::observe,
+        state, onOpenChat, onReport = model::report, onBlock = model::block, onUnmatch = model::unmatch,
+        onRetry = model::observe, photoLoader = model::photo, matchPhotos = model::matchPhotos,
+        onLikeBack = model::likeBack, onPass = model::pass, onRefreshLikedYou = model::refreshLikedYou,
+        onDismissMatch = model::dismissMatchMoment,
     )
 }
 
+/** Two tabs: your matches, and the members who liked you and are waiting for an answer. */
 @Composable
 fun MatchesScreen(
+    state: MatchesUiState,
+    onOpenChat: (String) -> Unit,
+    onReport: (String, ReportCategory, String, () -> Unit) -> Unit,
+    onBlock: (String) -> Unit,
+    onUnmatch: (String) -> Unit,
+    onRetry: () -> Unit,
+    photoLoader: suspend (String, PublicPhoto) -> ByteArray?,
+    matchPhotos: suspend (CommunityProfile) -> Pair<ByteArray?, ByteArray?>,
+    onLikeBack: (CommunityProfile, String) -> Unit,
+    onPass: (CommunityProfile) -> Unit,
+    onRefreshLikedYou: () -> Unit,
+    onDismissMatch: () -> Unit,
+) {
+    val moment = state.matchMoment
+    if (moment != null) {
+        MatchMomentOverlay(
+            moment, yourName = "", loadPhotos = matchPhotos,
+            onMessage = { matchId ->
+                onDismissMatch()
+                onOpenChat(matchId)
+            },
+            onKeepBrowsing = onDismissMatch,
+        )
+        return
+    }
+    var tab by rememberSaveable { mutableIntStateOf(0) }
+    Column(Modifier.fillMaxSize()) {
+        TabRow(selectedTabIndex = tab) {
+            Tab(selected = tab == 0, onClick = { tab = 0 }, text = { Text(stringResource(CoreR.string.matches)) })
+            Tab(
+                selected = tab == 1,
+                onClick = {
+                    tab = 1
+                    onRefreshLikedYou()
+                },
+                text = { Text(stringResource(R.string.ly_tab, state.likedYou?.count ?: 0)) },
+            )
+        }
+        Box(Modifier.weight(1f)) {
+            if (tab == 0) {
+                MatchesList(state, { onOpenChat(it.id) }, onReport, onBlock, onUnmatch, onRetry)
+            } else {
+                LikedYouList(state, photoLoader, onLikeBack, onPass, onRefreshLikedYou, onRetry)
+            }
+        }
+    }
+}
+
+@Composable
+private fun MatchesList(
     state: MatchesUiState,
     onOpenConversation: (Match) -> Unit,
     onReport: (String, ReportCategory, String, () -> Unit) -> Unit,
@@ -149,7 +210,9 @@ private fun MatchesScreenPreview() {
     CalafTheme {
         MatchesScreen(
             MatchesUiState(listOf(Match("a_b", "b", "Hodan (Demo)", MatchStatus.ACTIVE))),
-            onOpenConversation = {}, onReport = { _, _, _, _ -> }, onBlock = {}, onUnmatch = {}, onRetry = {},
+            onOpenChat = {}, onReport = { _, _, _, _ -> }, onBlock = {}, onUnmatch = {}, onRetry = {},
+            photoLoader = { _, _ -> null }, matchPhotos = { null to null }, onLikeBack = { _, _ -> }, onPass = {},
+            onRefreshLikedYou = {}, onDismissMatch = {},
         )
     }
 }

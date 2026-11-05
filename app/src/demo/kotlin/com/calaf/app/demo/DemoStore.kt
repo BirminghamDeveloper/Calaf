@@ -93,6 +93,7 @@ class DemoStore(
     private fun migrate(from: Int) {
         if (from < 2) migrateToVersion2()
         if (from < 3) migrateToVersion3()
+        if (from < 4) DemoSeed.seedLikes(this)
         // Future steps: if (from < 3) { ...rewrite rows... }
     }
 
@@ -136,7 +137,7 @@ class DemoStore(
     }
 
     companion object {
-        const val SCHEMA_VERSION = 3
+        const val SCHEMA_VERSION = 4
         private const val KEY_VERSION = "schemaVersion"
         private const val KEY_SESSION = "session"
     }

@@ -154,33 +154,34 @@ class DemoCommunityRepositoryTest {
     @Test fun `discovery lists approved photos main first with the blur choice`() = runBlocking {
         val demo = fixture()
         demo.loginAsMember("hodan")
-        val photos = demo.community.discover().profiles.first { it.id == "demo-hassan" }.photos
+        val photos = demo.community.discover().profiles.first { it.id == "demo-yusuf" }.photos
         assertTrue(photos.size in 2..3)
-        assertEquals(DemoPhotoRows.ownerPhotos(demo.store, "demo-hassan").map { it.id }, photos.map { it.id })
+        assertEquals(DemoPhotoRows.ownerPhotos(demo.store, "demo-yusuf").map { it.id }, photos.map { it.id })
         assertTrue(photos.none { it.blurred })
         val firstId = photos.first().id
         DemoPhotoRows.row(demo.store, firstId)!!.put("blur", true)
-        assertTrue(demo.community.discover().profiles.first { it.id == "demo-hassan" }.photos.first().blurred)
+        assertTrue(demo.community.discover().profiles.first { it.id == "demo-yusuf" }.photos.first().blurred)
         DemoPhotoRows.row(demo.store, firstId)!!.put("state", "PENDING")
-        assertFalse(firstId in demo.community.discover().profiles.first { it.id == "demo-hassan" }.photos.map { it.id })
+        assertFalse(firstId in demo.community.discover().profiles.first { it.id == "demo-yusuf" }.photos.map { it.id })
     }
 
     @Test fun `saved phase 2 filters narrow discovery and survive a restart`() = runBlocking<Unit> {
         val demo = fixture()
-        demo.loginAsMember("hodan")
+        // Amina is already matched with Hassan and the admin, so her candidates are Hodan and Yusuf.
+        demo.loginAsMember("amina")
         fun ids() = runBlocking { demo.community.discover().profiles.map { it.id }.sorted() }
-        assertEquals(listOf("demo-admin", "demo-amina", "demo-hassan", "demo-yusuf"), ids())
+        assertEquals(listOf("demo-hodan", "demo-yusuf"), ids())
         val filters = com.calaf.core.model.PartnerPreference(
             heritage = setOf(com.calaf.core.model.Heritage.SOMALILAND),
             maritalStatuses = setOf(com.calaf.core.model.MaritalStatus.NEVER_MARRIED),
-            willingToRelocate = null, minHeightCm = 160,
+            minHeightCm = 160,
         )
         demo.community.execute(CommunityCommand.Preferences(filters))
-        assertEquals(listOf("demo-hassan"), ids())
+        assertEquals(listOf("demo-hodan"), ids())
         val reopened = demo.reopen()
         reopened.auth.refresh()
-        assertEquals(filters, reopened.community.preferences("demo-hodan").first())
-        demo.community.execute(CommunityCommand.Preferences(filters.copy(minHeightCm = 175, heritage = emptySet())))
+        assertEquals(filters, reopened.community.preferences("demo-amina").first())
+        demo.community.execute(CommunityCommand.Preferences(filters.copy(minHeightCm = 180, heritage = emptySet())))
         assertEquals(listOf("demo-yusuf"), ids())
         demo.community.execute(CommunityCommand.Preferences(com.calaf.core.model.PartnerPreference(profession = "nurse")))
         assertEquals(emptyList<String>(), ids())
@@ -202,5 +203,89 @@ class DemoCommunityRepositoryTest {
         assertEquals(null, loaded.willingToRelocate)
         assertEquals("", loaded.profession)
         assertTrue(demo.community.discover().profiles.isNotEmpty())
+    }
+
+    private fun newMemberDraft(name: String = "Newcomer") =
+        com.calaf.core.model.ProfileDraft(name, "1994-05-06", "Leeds", "United Kingdom")
+
+    @Test fun `liked you lists admirers with their compliment, and liking back makes a match with its id`() =
+        runBlocking<Unit> {
+            val demo = fixture()
+            demo.loginAsMember("hodan")
+            val liked = demo.community.likedYou()
+            assertEquals(1, liked.count)
+            assertTrue(liked.simulated && !liked.locked)
+            val yusuf = liked.profiles.single()
+            assertEquals("demo-yusuf", yusuf.id)
+            assertTrue(yusuf.compliment!!.note.startsWith("Salaam Hodan"))
+            assertEquals(emptyList<com.calaf.core.model.SafetyWarning>(), yusuf.compliment!!.warnings)
+            val result = demo.community.execute(CommunityCommand.Interest("demo-yusuf", like = true))
+            assertTrue(result.matched)
+            assertEquals(demo.store.pairId("demo-hodan", "demo-yusuf"), result.matchId)
+            assertEquals(0, demo.community.likedYou().count)
+        }
+
+    @Test fun `passing or blocking removes someone from liked you`() = runBlocking<Unit> {
+        val demo = fixture()
+        demo.loginAsMember("hodan")
+        demo.community.execute(CommunityCommand.Interest("demo-yusuf", like = false))
+        assertEquals(0, demo.community.likedYou().count)
+        demo.auth.logout()
+        demo.loginAsMember("hassan")
+        assertEquals(listOf("demo-hodan"), demo.community.likedYou().profiles.map { it.id })
+        demo.community.execute(CommunityCommand.Block("demo-hodan"))
+        assertEquals(0, demo.community.likedYou().count)
+    }
+
+    @Test fun `a compliment shows on the receivers card with safety warnings and only while the like stands`() =
+        runBlocking<Unit> {
+            val demo = fixture()
+            demo.auth.register("a@example.test", "DemoPass!2026")
+            val a = demo.session.requireUid()
+            demo.community.execute(CommunityCommand.Publish(newMemberDraft("Alpha Member")))
+            demo.auth.logout()
+            demo.auth.register("b@example.test", "DemoPass!2026")
+            val b = demo.session.requireUid()
+            demo.community.execute(CommunityCommand.Publish(newMemberDraft("Beta Member")))
+            demo.auth.logout()
+            demo.auth.login("a@example.test", "DemoPass!2026")
+            demo.community.execute(
+                CommunityCommand.Interest(b, like = true, note = "  Lovely profile, mail me a@example.org  "),
+            )
+            demo.auth.logout()
+            demo.auth.login("b@example.test", "DemoPass!2026")
+            val card = demo.community.likedYou().profiles.first { it.id == a }.compliment!!
+            assertEquals("Lovely profile, mail me a@example.org", card.note)
+            assertEquals(listOf(com.calaf.core.model.SafetyWarning.PERSONAL_INFORMATION), card.warnings)
+            assertEquals(card, demo.community.discover().profiles.first { it.id == a }.compliment)
+            // Liking back matches. The note is no longer a pending like, so it stops showing.
+            assertTrue(demo.community.execute(CommunityCommand.Interest(a, like = true)).matched)
+            assertEquals(null, demo.community.likedYou().profiles.firstOrNull { it.id == a })
+        }
+
+    @Test fun `a compliment must be one to 140 characters and only goes with a like`() = runBlocking<Unit> {
+        val demo = fixture()
+        demo.loginAsMember("hassan")
+        val tooLong = CommunityCommand.Interest("demo-hodan", like = true, note = "x".repeat(141))
+        assertTrue(runCatching { demo.community.execute(tooLong) }.exceptionOrNull() is com.calaf.core.model.CommunityException)
+        assertTrue(demo.store.table("notes").length() == 0 || !demo.store.table("notes").has("demo-hassan_demo-hodan"))
+        demo.community.execute(CommunityCommand.Interest("demo-hodan", like = true, note = "x".repeat(140)))
+        assertEquals(140, demo.store.table("notes").getJSONObject("demo-hassan_demo-hodan").getString("note").length)
+        demo.community.execute(CommunityCommand.Interest("demo-yusuf", like = false, note = "ignored"))
+        assertFalse(demo.store.table("notes").has("demo-hassan_demo-yusuf"))
+    }
+
+    @Test fun `a new member gets simulated admirers once, when they first publish`() = runBlocking<Unit> {
+        val demo = fixture()
+        demo.auth.register("new@example.test", "DemoPass!2026")
+        assertEquals(0, demo.community.likedYou().count)
+        demo.community.execute(CommunityCommand.Publish(newMemberDraft()))
+        val liked = demo.community.likedYou()
+        assertEquals(setOf("demo-hodan", "demo-yusuf"), liked.profiles.map { it.id }.toSet())
+        assertTrue(liked.profiles.single { it.id == "demo-hodan" }.compliment != null)
+        assertEquals(null, liked.profiles.single { it.id == "demo-yusuf" }.compliment)
+        demo.community.execute(CommunityCommand.Interest("demo-hodan", like = true))
+        demo.community.execute(CommunityCommand.Publish(newMemberDraft("Newcomer Two")))
+        assertEquals(listOf("demo-yusuf"), demo.community.likedYou().profiles.map { it.id })
     }
 }

@@ -2,6 +2,7 @@ package com.calaf.app.demo
 
 import com.calaf.core.model.AccountValidation
 import com.calaf.core.model.CommandResult
+import com.calaf.core.model.Compliments
 import com.calaf.core.model.CommunityCommand
 import com.calaf.core.model.CommunityError
 import com.calaf.core.model.CommunityException
@@ -38,7 +39,10 @@ internal class DemoCommandHandler(private val store: DemoStore, private val sess
 
     private fun publish(me: String, command: CommunityCommand.Publish) {
         if (AccountValidation.profile(command.profile) != null) throw CommunityException(CommunityError.INVALID)
+        val firstPublish = !store.table("profiles").has(me)
         store.table("profiles").put(me, DemoProfileCodec.toJson(command.profile))
+        // The demo simulates admirers for a new member, so Liked you is worth opening straight away.
+        if (firstPublish && store.user(me)?.optBoolean("seed") != true) DemoSeed.seedAdmirers(store, me)
     }
 
     private fun savePreferences(me: String, command: CommunityCommand.Preferences) {
@@ -65,11 +69,15 @@ internal class DemoCommandHandler(private val store: DemoStore, private val sess
         }
         store.table("choices").put("${me}_$other", command.like)
         // Seed profiles simulate reciprocal interest. Device created members must both like.
+        // A compliment is a short note with a like. Risky content is flagged for the receiver, never rewritten.
+        if (command.like && command.note.isNotBlank()) {
+            val note = Compliments.clean(command.note) ?: throw CommunityException(CommunityError.INVALID)
+            store.table("notes").put("${me}_$other", JSONObject().put("note", note))
+        }
         val reciprocal = store.user(other)?.optBoolean("seed") == true ||
             store.table("choices").optBoolean("${other}_$me")
         if (command.like && reciprocal) {
-            store.createMatch(me, other)
-            return CommandResult(matched = true)
+            return CommandResult(matched = true, matchId = store.createMatch(me, other))
         }
         return CommandResult()
     }

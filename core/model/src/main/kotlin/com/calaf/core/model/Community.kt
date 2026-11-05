@@ -32,12 +32,32 @@ data class CommunityProfile(
     val heritage: Heritage = Heritage.UNSPECIFIED,
     /** Approved photos only, main photo first. */
     val photos: List<PublicPhoto> = emptyList(),
+    /** A note this member sent with their like to you. Shown on their card, with safety warnings if it has any. */
+    val compliment: Compliment? = null,
 )
 /**
  * Who a member wants to see. Empty sets, null answers, blank text and 0 heights all mean "any". The fields from
  * [maritalStatuses] on were added in Task 3.2. Religiosity, prayer and heritage can only match members who chose to
  * share them, because everyone else has those left unspecified.
  */
+/** A short note sent with a like. [warnings] flags links, contact details and money requests. */
+data class Compliment(val note: String, val warnings: List<SafetyWarning> = emptyList())
+
+/**
+ * Members who liked you and are waiting for your answer. [count] is always the real number. When [locked] the
+ * [profiles] are withheld, which is how the live app will gate this list behind premium. The demo never locks it.
+ */
+data class LikedYou(
+    val count: Int,
+    val profiles: List<CommunityProfile>,
+    val locked: Boolean = false,
+    /** True in the demo, where the admirers are simulated and the screen must say so. */
+    val simulated: Boolean = false,
+)
+
+/** Shown full screen when a like becomes a match, with the chat to open if the member wants to say hello. */
+data class MatchMoment(val profile: CommunityProfile, val matchId: String)
+
 data class PartnerPreference(
     val minAge: Int = 18, val maxAge: Int = 70, val gender: Gender? = null,
     val country: String = "", val language: String = "", val nonSmokerOnly: Boolean = false,
@@ -72,7 +92,8 @@ sealed interface CommunityCommand {
     data class Publish(val profile: ProfileDraft) : CommunityCommand
     data class Preferences(val value: PartnerPreference) : CommunityCommand
     data class Privacy(val value: PrivacySettings) : CommunityCommand
-    data class Interest(val userId: String, val like: Boolean) : CommunityCommand
+    /** [note] is an optional compliment (see [Compliments]) and only goes with a like. */
+    data class Interest(val userId: String, val like: Boolean, val note: String = "") : CommunityCommand
     data class Send(val matchId: String, val messageId: String, val text: String) : CommunityCommand
     data class Read(val matchId: String, val messageId: String) : CommunityCommand
     data class ReadNotification(val id: String, val createdAt: Long) : CommunityCommand
@@ -86,7 +107,13 @@ sealed interface CommunityCommand {
     data object RequestDeletion : CommunityCommand
     data object ExportData : CommunityCommand
 }
-data class CommandResult(val matched: Boolean = false, val invitationCode: String? = null, val exportJson: String? = null)
+data class CommandResult(
+    val matched: Boolean = false,
+    val invitationCode: String? = null,
+    val exportJson: String? = null,
+    /** The new match, when [matched] is true. */
+    val matchId: String? = null,
+)
 
 interface CommunityRepository {
     fun profile(userId: String): Flow<CommunityProfile?>
@@ -99,5 +126,8 @@ interface CommunityRepository {
     fun messages(matchId: String): Flow<List<ChatMessage>>
     suspend fun earlierMessages(matchId: String, beforeId: String): List<ChatMessage>
     suspend fun discover(cursor: String? = null): DiscoveryPage
+
+    /** Members who liked you and are waiting for an answer. */
+    suspend fun likedYou(): LikedYou
     suspend fun execute(command: CommunityCommand): CommandResult
 }

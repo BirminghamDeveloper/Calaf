@@ -24,5 +24,7 @@ dependencies {
     implementation(libs.lifecycle.compose)
     implementation(libs.lifecycle.viewmodel)
     implementation(libs.coroutines.core)
+    implementation(libs.coil.compose)
+    implementation(libs.activity.compose)
     testImplementation(project(":core:testing"))
 }

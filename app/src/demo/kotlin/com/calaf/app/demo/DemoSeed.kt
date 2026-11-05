@@ -31,6 +31,7 @@ object DemoSeed {
             store.table("profiles").put(id, profile(name, index))
         }
         seedPhotos(store)
+        seedLikes(store)
         store.createMatch(ADMIN_ID, "demo-amina")
         store.createMatch("demo-hassan", "demo-amina")
         store.table("reports").put(
@@ -41,6 +42,37 @@ object DemoSeed {
         )
         store.table("meta").put("seeded", true)
         store.save()
+    }
+
+    /**
+     * Likes between fictional members that nobody has answered yet, so Liked you has something to show. Yusuf also
+     * sends Hodan a compliment. Safe to repeat: existing answers are never overwritten.
+     */
+    fun seedLikes(store: DemoStore) {
+        val likes = listOf(
+            Triple("demo-yusuf", "demo-hodan", "Salaam Hodan, I enjoyed reading about your family values."),
+            Triple("demo-hodan", "demo-hassan", ""),
+            Triple("demo-hassan", "demo-yusuf", ""),
+        )
+        for ((from, to, note) in likes) {
+            if (store.user(from) == null || store.user(to) == null) continue
+            like(store, from, to, note)
+        }
+    }
+
+    /** Two simulated admirers for a new member: Hodan with a compliment and Yusuf without one. */
+    fun seedAdmirers(store: DemoStore, member: String) {
+        like(store, "demo-hodan", member, "Salaam, your profile made me smile. Would you like to talk?")
+        like(store, "demo-yusuf", member, "")
+    }
+
+    private fun like(store: DemoStore, from: String, to: String, note: String) {
+        if (from == to || store.user(from) == null) return
+        val choices = store.table("choices")
+        if (choices.has("${from}_$to") || choices.has("${to}_$from")) return
+        if (store.table("pairs").has(store.pairId(from, to))) return
+        choices.put("${from}_$to", true)
+        if (note.isNotBlank()) store.table("notes").put("${from}_$to", JSONObject().put("note", note))
     }
 
     /** Gives each seeded member two or three bundled avatars, if they have no photos yet. Safe to repeat. */

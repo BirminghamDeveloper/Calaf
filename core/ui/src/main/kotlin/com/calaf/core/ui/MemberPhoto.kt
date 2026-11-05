@@ -1,4 +1,4 @@
-package com.calaf.feature.discovery
+package com.calaf.core.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -11,11 +11,9 @@ import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.stringResource
 import coil3.compose.AsyncImage
 import com.calaf.core.model.CommunityProfile
 import com.calaf.core.model.PublicPhoto
-import com.calaf.core.ui.PhotoBlur
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -24,11 +22,10 @@ import kotlinx.coroutines.withContext
  * reaches the screen. With no photo, or while it loads, a calm initial is shown instead of an empty box.
  */
 @Composable
-internal fun MemberPhoto(
+fun MemberPhoto(
     profile: CommunityProfile,
     photo: PublicPhoto?,
-    index: Int,
-    count: Int,
+    description: String,
     loader: suspend (PublicPhoto) -> ByteArray?,
     modifier: Modifier = Modifier,
 ) {
@@ -45,7 +42,7 @@ internal fun MemberPhoto(
     if (shown != null) {
         AsyncImage(
             model = shown,
-            contentDescription = stringResource(R.string.disc_photo_description, profile.name, index + 1, count),
+            contentDescription = description,
             modifier = modifier.fillMaxSize(),
             contentScale = ContentScale.Crop,
         )
