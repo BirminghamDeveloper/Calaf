@@ -15,6 +15,7 @@ testRunner = "1.6.2"
 exif = "1.4.2"
 hilt = "2.60.1"
 ksp = "2.3.13"
+json = "20260814"
 
 [libraries]
 compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
@@ -41,6 +42,7 @@ compose-test = { module = "androidx.compose.ui:ui-test-junit4" }
 compose-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
 hilt-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt" }
+json = { module = "org.json:json", version.ref = "json" }
 test-runner = { module = "androidx.test:runner", version.ref = "testRunner" }
 
 [plugins]
