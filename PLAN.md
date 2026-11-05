@@ -169,7 +169,8 @@ Done notes (Task 1.3):
 - `CalafIcons` in `core:designsystem`: Material Symbols Rounded vector drawables copied from
   `google/material-design-icons` (`symbols/android`), outlined and filled for the five tab icons, plus back,
   more, report, block, send and settings. Used for the bottom bar, header settings and back buttons, chat header,
-  send button and a new overflow menu on match cards. Every icon has a content description.
+  send button and a "more" menu on match cards (Unmatch only; Report and Block are icon buttons on the card).
+  Every icon has a content description.
 - Strings were split by use into each module with English and Somali values (shared ones in `core:ui`). A few
   keys exist twice on purpose because the old app and community wording differed (`country`, `safety_body`).
 - Tests: 39 JVM tests for the new ViewModels, the shared `ActionRunner` and the moved auth and profile tests, plus
@@ -179,6 +180,11 @@ Done notes (Task 1.3):
   :core:model:test`, both `compile*DebugAndroidTestKotlin`, `scripts/check-demo-manifest.sh`, backend `npm test` 5 of 5.
 - Not verified: the app running (no emulator), so Hilt and navigation wiring, icon rendering and the new layout are
   only compile and unit tested. Instrumented tests were adjusted but not run. The GitHub Actions run.
+- Follow up commits on this branch (owner review of PR 5): Report and Block restored as visible icon buttons on the
+  match card; `LocalBackendFlowTest` no longer uses `admin/admin` (it takes a seeded account from instrumentation
+  arguments, see `backend/scripts/seed.mjs`); `HiltSmokeTest` (demo) launches `MainActivity` through
+  `HiltAndroidRule` and opens every tab, run by the new `hilt-smoke` job in `.github/workflows/android.yml`.
+  The instrumented tests that launch `MainActivity` are now `@HiltAndroidTest`, and the runner is `HiltTestRunner`.
 
 ### Task 1.4 Code style and backend bug fixes
 Status: deferred | Branch: `task/1.4-style-backend-fixes` | Depends on: 1.3
@@ -372,6 +378,18 @@ Status: deferred | Branch: `task/5.6-release` | Depends on: all above
 
 ---
 
+## UX decisions pending owner approval
+
+Changes a session made that go beyond a pure refactor. Each stays in place until the owner signs it off or reverses it.
+Mark an item `approved` or `reverse` and the next session will act on it.
+
+| # | Decision | Where | Status |
+| --- | --- | --- |
+| 1 | The Messages tab is merged into Matches. A conversation opens from a match card or from Activity. The tab bar is Discover, Matches, Activity, Profile, as Task 1.3 specified. | `app/.../SignedInApp.kt`, `feature:matches` | pending |
+| 2 | Activity is a tab with an unread count badge. The old header "Activity (n)" button is gone. | `app/.../SignedInApp.kt` | pending |
+| 3 | Settings is an icon button in the header. Back (on settings pages) pops one screen instead of always returning to Profile. | `app/.../SignedInApp.kt` | pending |
+| 4 | On a match card Report and Block are visible icon buttons. Unmatch moved into a "more" menu. | `feature:matches` | pending |
+
 ## Found issues
 
 (Sessions add problems they notice outside their task scope here.)
@@ -385,8 +403,6 @@ Status: deferred | Branch: `task/5.6-release` | Depends on: all above
   Task 1.3 or 1.4 touches that line.
 - `assembleDemoRelease` and `assembleLiveRelease` (R8) were not tried in Task 1.1. Task 5.6 owns release
   hardening.
-- `LocalBackendFlowTest` (live instrumented test) still signs in with `admin/admin`, which the live flavour lost in
-  Task 1.1. It needs a real emulator seeded login. Not fixed here.
 - Moved legacy files keep their old long lines and wildcard imports (`AuthScreen`, `ProfileScreen`,
   `PhotoSection`, `FormComponents`, `AdminPanel`, `PhotoSectionTest`). Spotless (Task 1.4, deferred) will fix them.
 - Unused strings carried over into `core:ui`: `activity_count`, `empty_messages`, `development_notice`,

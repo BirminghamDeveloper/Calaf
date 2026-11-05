@@ -15,7 +15,8 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = "0.1.0"
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        // Swaps in HiltTestApplication so instrumented tests can use HiltAndroidRule.
+        testInstrumentationRunner = "com.calaf.app.HiltTestRunner"
     }
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
@@ -87,6 +88,8 @@ dependencies {
     androidTestImplementation(libs.compose.test)
     androidTestImplementation(libs.test.runner)
     androidTestImplementation(libs.exif)
+    androidTestImplementation(libs.hilt.android.testing)
+    kspAndroidTest(libs.hilt.compiler)
     debugImplementation(libs.compose.test.manifest)
 }
 

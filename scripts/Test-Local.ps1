@@ -11,6 +11,7 @@ foreach ($port in @(9099, 8080, 9199, 5001)) {
         throw "Local backend port $port is unavailable. Run scripts/Start-LocalBackend.ps1 first."
     }
 }
+if (-not $env:CALAF_TEST_PASSWORD) { $env:CALAF_TEST_PASSWORD = 'CalafDemo!2026' }
 & "$PSScriptRoot/Seed-LocalBackend.ps1"
 if ($LASTEXITCODE -ne 0) { throw 'Local seed failed.' }
 Set-Location -LiteralPath $workspace
@@ -19,12 +20,14 @@ try {
     & node --test --test-concurrency=1 test/domain.test.js test/integration.test.js
     if ($LASTEXITCODE -ne 0) { throw 'Backend tests failed.' }
 } finally { Pop-Location }
-$tasks = @(':app:assembleDebug', ':core:model:test', ':app:testDebugUnitTest', ':feature:community:testDebugUnitTest', ':app:lintDebug', ':feature:community:lintDebug')
+$tasks = @(':app:assembleLiveDebug', ':core:model:test', ':app:testLiveDebugUnitTest', 'testDebugUnitTest', ':app:lintLiveDebug')
 if (-not $SkipDevice) {
     $adb = Join-Path $env:LOCALAPPDATA 'Android/Sdk/platform-tools/adb.exe'
     $devices = & $adb devices
     if (-not ($devices -match '^emulator-\d+\s+device')) { throw 'Start an Android Studio emulator first, or use -SkipDevice for non-device checks.' }
-    $tasks += ':app:connectedDebugAndroidTest'
+    $tasks += ':app:connectedLiveDebugAndroidTest'
+    $tasks += '-Pandroid.testInstrumentationRunnerArguments.calafTestEmail=hassan@calaf.test'
+    $tasks += "-Pandroid.testInstrumentationRunnerArguments.calafTestPassword=$($env:CALAF_TEST_PASSWORD)"
 }
 & (Join-Path $workspace 'gradlew.bat') @tasks '--max-workers=1' '-Dorg.gradle.jvmargs=-Xmx1024m -Dfile.encoding=UTF-8' '-Pkotlin.compiler.execution.strategy=in-process' '--console=plain'
 if ($LASTEXITCODE -ne 0) { throw 'Android verification failed. Inspect the build reports.' }
