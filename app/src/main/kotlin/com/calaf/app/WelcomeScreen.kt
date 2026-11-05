@@ -1,5 +1,6 @@
 package com.calaf.app
 
+import com.calaf.core.ui.R as CoreR
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -34,10 +35,10 @@ internal fun WelcomeScreen(onRegister: () -> Unit, onLogin: () -> Unit) {
                 Text(stringResource(R.string.welcome_body), style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Button(onClick = onRegister, modifier = Modifier.fillMaxWidth().heightIn(min = CalafDimensions.touchTarget)) {
-                    Text(stringResource(R.string.create_account))
+                    Text(stringResource(CoreR.string.create_account))
                 }
                 OutlinedButton(onClick = onLogin, modifier = Modifier.fillMaxWidth().heightIn(min = CalafDimensions.touchTarget)) {
-                    Text(stringResource(R.string.login))
+                    Text(stringResource(CoreR.string.login))
                 }
                 ElevatedCard(colors = CardDefaults.elevatedCardColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,

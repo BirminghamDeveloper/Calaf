@@ -11,8 +11,6 @@
     <string name="privacy_body">You choose what to share, and whether to involve someone you trust.</string>
     <string name="safety_action">Our approach to safety</string>
     <string name="safety_title">Take your time. Stay in control.</string>
-    <string name="safety_body">Never send money to someone you have only met online. Keep your address, financial details and identity documents private. When meeting, choose a public place and tell someone you trust.\n\nCalaf is for adults aged 18 and over. Family involvement must always be your choice.</string>
     <string name="close">Close</string>
-    <string name="development_notice">Development build · Account registration is not connected yet.</string>
     <string name="adult_notice">For adults 18+ seeking a serious commitment</string>
 </resources>

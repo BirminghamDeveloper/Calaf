@@ -6,6 +6,9 @@ import { CalafService } from '../src/service.js';
 if (process.env.FIREBASE_AUTH_EMULATOR_HOST !== '127.0.0.1:9099' || process.env.FIRESTORE_EMULATOR_HOST !== '127.0.0.1:8080') {
   throw new Error('This seed script is restricted to localhost emulators.');
 }
+// Test only: this script refuses to run unless both emulators are on localhost. CALAF_TEST_PASSWORD overrides the
+// shared fixture password for the fictional members, so tests never need it written into the app.
+const memberPassword = process.env.CALAF_TEST_PASSWORD ?? 'CalafDemo!2026';
 initializeApp({ projectId: 'demo-calaf' });
 const auth = getAuth(), db = getFirestore(), service = new CalafService(db, auth);
 const people = [
@@ -16,7 +19,7 @@ const people = [
   ['demo-yusuf', 'yusuf@calaf.test', 'Yusuf (Demo)', 'MAN', '1992-02-09'],
 ];
 for (const [uid, email, name, gender, birthDate] of people) {
-  const password = uid === 'demo-admin' ? 'CalafAdmin!2026' : 'CalafDemo!2026';
+  const password = uid === 'demo-admin' ? 'CalafAdmin!2026' : memberPassword;
   try { await auth.getUser(uid); }
   catch (error) {
     if (error.code !== 'auth/user-not-found') throw error;
@@ -33,5 +36,7 @@ await service.execute('demo-amina', { action: 'interest', userId: 'demo-hassan',
 await service.execute('demo-hassan', { action: 'interest', userId: 'demo-amina', decision: 'LIKE' });
 await service.execute('demo-admin', { action: 'interest', userId: 'demo-amina', decision: 'LIKE' });
 await service.execute('demo-amina', { action: 'interest', userId: 'demo-admin', decision: 'LIKE' });
-console.log('Local demo login: admin / admin in the Android debug app. This is a regular demo member, not a privileged administrator.');
-console.log('Local fixtures ready. Sign in with hassan@calaf.test / CalafDemo!2026. All profiles are fictional.');
+console.log('Local fixtures ready. All profiles are fictional and exist only in the local emulators.');
+console.log('Sign in as hassan@calaf.test (matched with Amina) with the fixture password.');
+console.log('Instrumented tests: -Pandroid.testInstrumentationRunnerArguments.calafTestEmail=hassan@calaf.test'
+  + ' -Pandroid.testInstrumentationRunnerArguments.calafTestPassword=<the fixture password>');

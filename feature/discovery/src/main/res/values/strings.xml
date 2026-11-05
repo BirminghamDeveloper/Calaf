@@ -1,0 +1,24 @@
+<resources>
+    <string name="area_children">Children preferences</string>
+    <string name="area_interests">Interests</string>
+    <string name="area_languages">Languages</string>
+    <string name="area_religion">Religion</string>
+    <string name="area_relocation">Relocation</string>
+    <string name="area_smoking">Smoking</string>
+    <string name="area_timeline">Marriage timeline</string>
+    <string name="area_values">Values</string>
+    <string name="candidate_title">%1$s, %2$d</string>
+    <string name="compatibility">%1$d%% shared-answer alignment</string>
+    <string name="compatibility_explanation">A transparent comparison of your answers—not a prediction of marriage success.</string>
+    <string name="compatibility_unknown">Not enough shared answers for a score yet.</string>
+    <string name="differences">Potential differences: %1$s</string>
+    <string name="email_verified">Email verified · Identity not verified</string>
+    <string name="empty_discovery">No profiles to show yet. Publish your profile, review your preferences, or check again later.</string>
+    <string name="interest">Express interest</string>
+    <string name="load_more">Load more</string>
+    <string name="location">%1$s · %2$s</string>
+    <string name="pass">Pass</string>
+    <string name="publish_first">Complete and publish your profile from the Profile tab to start discovering people.</string>
+    <string name="refresh">Refresh</string>
+    <string name="strong_areas">Shared answers: %1$s</string>
+</resources>

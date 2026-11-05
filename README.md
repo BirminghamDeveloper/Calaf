@@ -36,17 +36,13 @@ The Android Studio virtual device connects to the computer through `10.0.2.2`.
 
 
 
-Local shortcut: enter **admin** in the email field and **admin** as the password on Log in.
-
-This works only in the local debug build and signs in as a regular fictional member,
-
-with a completed profile and a match with Amina. It does not grant administrator privileges.
+There is no login shortcut in the live flavour. After `scripts/Seed-LocalBackend.ps1`, sign in as
+`hassan@calaf.test`, a regular fictional member with a completed profile and a match with Amina.
+(The `admin` / `admin` shortcut exists only in the offline demo flavour.)
 
 Run `scripts/Seed-LocalBackend.ps1` if the account is missing.
 
-
-
-Other seeded accounts: `hassan@calaf.test`, `amina@calaf.test`, `hodan@calaf.test`,
+Seeded accounts: `hassan@calaf.test`, `amina@calaf.test`, `hodan@calaf.test`,
 
 `yusuf@calaf.test`; password `CalafDemo!2026`. These are fictional local fixtures.
 

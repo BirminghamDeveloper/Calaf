@@ -1,0 +1,24 @@
+<resources>
+    <string name="area_children">Doorbidyada carruurta</string>
+    <string name="area_interests">Xiisaha</string>
+    <string name="area_languages">Luqadaha</string>
+    <string name="area_religion">Diinta</string>
+    <string name="area_relocation">Guurid</string>
+    <string name="area_smoking">Sigaar cabbid</string>
+    <string name="area_timeline">Waqtiga guurka</string>
+    <string name="area_values">Qiyamka</string>
+    <string name="candidate_title">%1$s, %2$d</string>
+    <string name="compatibility">%1$d%% jawaabaha ayaa is-waafaqa</string>
+    <string name="compatibility_explanation">Tani waa isbarbardhig cad oo jawaabahaaga ah; ma saadaalinayso guul guur.</string>
+    <string name="compatibility_unknown">Weli ma jiraan jawaabo ku filan oo dhibco lagu bixiyo.</string>
+    <string name="differences">Kala duwanaansho suurtagal ah: %1$s</string>
+    <string name="email_verified">Iimaylka waa la xaqiijiyey · Aqoonsiga lama xaqiijin</string>
+    <string name="empty_discovery">Weli ma jiraan bogag la soo bandhigo. Daabac boggaaga, eeg doorbidyadaada ama mar dambe hubi.</string>
+    <string name="interest">Muuji xiise</string>
+    <string name="load_more">Soo rar wax badan</string>
+    <string name="location">%1$s · %2$s</string>
+    <string name="pass">Dhaaf</string>
+    <string name="publish_first">Buuxi oo daabac boggaaga si aad u bilowdo helitaanka dadka.</string>
+    <string name="refresh">Cusboonaysii</string>
+    <string name="strong_areas">Jawaabaha la wadaago: %1$s</string>
+</resources>

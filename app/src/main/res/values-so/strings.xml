@@ -11,8 +11,6 @@
     <string name="privacy_body">Adiga ayaa dooranaya waxa aad wadaagayso iyo qofka aad ku kalsoon tahay ee aad ka qaybgelinayso.</string>
     <string name="safety_action">Habkayaga badbaadada</string>
     <string name="safety_title">Waqti qaado. Go’aanka adigaa leh.</string>
-    <string name="safety_body">Ha u dirin lacag qof aad internetka oo keliya ku baratay. Ilaali cinwaankaaga, xogtaada maaliyadeed iyo dukumentiyada aqoonsiga. Markaad kulmaysaan, dooro meel dadweyne oo u sheeg qof aad ku kalsoon tahay.\n\nCalaf waxaa loogu talagalay dadka jira 18 sano iyo ka weyn. Ka qaybgalka qoysku waa inuu had iyo jeer ahaadaa doorashadaada.</string>
     <string name="close">Xir</string>
-    <string name="development_notice">Nooc horumarineed · Diiwaangelinta akoonka weli lama xiriirin.</string>
     <string name="adult_notice">Dadka 18+ ee doonaya xiriir dhab ah</string>
 </resources>

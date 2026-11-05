@@ -4,7 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import androidx.exifinterface.media.ExifInterface
 import androidx.test.platform.app.InstrumentationRegistry
-import com.calaf.app.profile.PhotoProcessor
+import com.calaf.feature.onboarding.PhotoProcessor
 import org.junit.Assert.*
 import org.junit.Test
 import java.io.File

@@ -10,6 +10,9 @@ the owner decides to go live. Never start a `deferred` task. When a task asks yo
 the live flavour must still compile and pass its tests, but put the effort into the demo experience.
 Demo track order: 1.2, 1.3, 2.1, 2.2, 3.1, 3.2, 3.3, 3.4, 3.5.
 
+**AUTOPILOT is on.** The owner asked for the whole demo track in one run. Read `docs/AUTOPILOT.md` and `docs/PROGRESS.md`
+and carry on from the first demo task that is not done. Its rules override "one task per session".
+
 ---
 
 ## Phase 0: make the project buildable anywhere
@@ -137,7 +140,7 @@ Done notes (Task 1.2):
 - Not verified: instrumented tests (no emulator), the demo on a device, the GitHub Actions run.
 
 ### Task 1.3 Feature modules and ViewModels
-Status: todo | Branch: `task/1.3-feature-modules` | Depends on: 1.2
+Status: done | Branch: `task/1.3-feature-modules` | Depends on: 1.2
 
 - Create `core:ui`, `core:testing` (fake repositories, test dispatcher rule) and the feature
   modules listed in CLAUDE.md.
@@ -153,6 +156,38 @@ Status: todo | Branch: `task/1.3-feature-modules` | Depends on: 1.2
   settings buttons that currently use text only.
 - Move existing unit tests to the right modules and add tests for each new ViewModel.
 - Behaviour must stay the same. This task is a refactor, not a redesign.
+
+Done notes (Task 1.3):
+- New modules: `core:ui` (shared strings, `ActionRunner`/`ActionState`/`Notice`, dialogs, `CalafListScreen`,
+  form components), `core:testing` (`FakeCommunityRepository`, `FakeAuthRepository`, `FakeProfileRepository`,
+  `MainDispatcherRule`), `feature:auth`, `feature:onboarding`, `feature:discovery`, `feature:matches`,
+  `feature:chat`, `feature:settings`, `feature:admin` (demo only dependency of `app`). `feature:community` is gone.
+- `CommunityViewModel` is split into `DiscoveryViewModel`, `MatchesViewModel`, `ChatViewModel`, `SettingsViewModel`,
+  `GuardianViewModel`, `ActivityViewModel`, plus `PublishViewModel` (publishing the profile). All are
+  `@HiltViewModel` with assisted factories taking the member id. State is an immutable data class with a nested
+  `ActionState` (busy, error, notice). The chat "left the conversation" signal is a one shot `Channel` event.
+- Type safe navigation (`@Serializable` destinations in `app/navigation`) with a bottom bar Discover, Matches,
+  Activity, Profile. Activity shows an unread badge. A conversation opens from Matches (the old Messages tab is
+  merged into Matches). Settings is a header icon and its pages are destinations.
+- `CalafIcons` in `core:designsystem`: Material Symbols Rounded vector drawables copied from
+  `google/material-design-icons` (`symbols/android`), outlined and filled for the five tab icons, plus back,
+  more, report, block, send and settings. Used for the bottom bar, header settings and back buttons, chat header,
+  send button and a "more" menu on match cards (Unmatch only; Report and Block are icon buttons on the card).
+  Every icon has a content description.
+- Strings were split by use into each module with English and Somali values (shared ones in `core:ui`). A few
+  keys exist twice on purpose because the old app and community wording differed (`country`, `safety_body`).
+- Tests: 39 JVM tests for the new ViewModels, the shared `ActionRunner` and the moved auth and profile tests, plus
+  3 destination serialization tests. Old `AccountFlowTest` and `CommunityViewModelTest` were moved and extended.
+- CI and the CLAUDE.md verify commands now run `testDebugUnitTest` (every library module) and `:core:model:test`.
+- Verified: `assembleDemoDebug assembleLiveDebug testDemoDebugUnitTest testLiveDebugUnitTest testDebugUnitTest
+  :core:model:test`, both `compile*DebugAndroidTestKotlin`, `scripts/check-demo-manifest.sh`, backend `npm test` 5 of 5.
+- Not verified: the app running (no emulator), so Hilt and navigation wiring, icon rendering and the new layout are
+  only compile and unit tested. Instrumented tests were adjusted but not run. The GitHub Actions run.
+- Follow up commits on this branch (owner review of PR 5): Report and Block restored as visible icon buttons on the
+  match card; `LocalBackendFlowTest` no longer uses `admin/admin` (it takes a seeded account from instrumentation
+  arguments, see `backend/scripts/seed.mjs`); `HiltSmokeTest` (demo) launches `MainActivity` through
+  `HiltAndroidRule` and opens every tab, run by the new `hilt-smoke` job in `.github/workflows/android.yml`.
+  The instrumented tests that launch `MainActivity` are now `@HiltAndroidTest`, and the runner is `HiltTestRunner`.
 
 ### Task 1.4 Code style and backend bug fixes
 Status: deferred | Branch: `task/1.4-style-backend-fixes` | Depends on: 1.3
@@ -346,6 +381,23 @@ Status: deferred | Branch: `task/5.6-release` | Depends on: all above
 
 ---
 
+## Decisions
+
+Owner decisions. Items below were listed as pending in Task 1.3 and are **approved** (AUTOPILOT, see `docs/AUTOPILOT.md`).
+
+| # | Decision | Where | Status |
+| --- | --- | --- | --- |
+| 1 | The Messages tab is merged into Matches. A conversation opens from a match card or from Activity. The tab bar is Discover, Matches, Activity, Profile. | `app/.../SignedInApp.kt`, `feature:matches` | approved |
+| 2 | Activity is a tab with an unread count badge. The old header "Activity (n)" button is gone. | `app/.../SignedInApp.kt` | approved |
+| 3 | Settings is an icon button in the header. Back (on settings pages) pops one screen instead of always returning to Profile. | `app/.../SignedInApp.kt` | approved |
+| 4 | On a match card Report and Block are visible icon buttons. Unmatch is in a "more" menu. | `feature:matches` | approved |
+
+## Decisions made on autopilot
+
+Choices made without the owner while following `docs/AUTOPILOT.md`. One line each, newest last.
+
+- The `hilt-smoke` emulator job is `continue-on-error: true`. Only the `android` and `backend` jobs gate merges.
+
 ## Found issues
 
 (Sessions add problems they notice outside their task scope here.)
@@ -359,3 +411,8 @@ Status: deferred | Branch: `task/5.6-release` | Depends on: all above
   Task 1.3 or 1.4 touches that line.
 - `assembleDemoRelease` and `assembleLiveRelease` (R8) were not tried in Task 1.1. Task 5.6 owns release
   hardening.
+- Moved legacy files keep their old long lines and wildcard imports (`AuthScreen`, `ProfileScreen`,
+  `PhotoSection`, `FormComponents`, `AdminPanel`, `PhotoSectionTest`). Spotless (Task 1.4, deferred) will fix them.
+- Unused strings carried over into `core:ui`: `activity_count`, `empty_messages`, `development_notice`,
+  `last_messages`. Safe to delete in a later cleanup.
+- Somali for `more_options` is an English copy (listed in `docs/TRANSLATION_TODO.md`).

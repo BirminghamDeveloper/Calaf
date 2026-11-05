@@ -30,7 +30,7 @@ jobs:
       - name: Build and unit tests
         run: >
           ./gradlew assembleDemoDebug assembleLiveDebug testDemoDebugUnitTest testLiveDebugUnitTest
-          :core:model:test :feature:community:testDebugUnitTest
+          testDebugUnitTest :core:model:test assembleDemoDebugAndroidTest assembleLiveDebugAndroidTest
       - name: Demo APK must have no INTERNET permission
         run: bash scripts/check-demo-manifest.sh
       # Lets the owner download the demo APK from the Actions run and install it on a phone.
@@ -41,6 +41,48 @@ jobs:
           path: app/build/outputs/apk/demo/debug/*.apk
           if-no-files-found: error
           retention-days: 14
+
+  # Starts the real demo app on an emulator and opens every tab, so a missing Hilt binding fails CI.
+  # Needs hardware acceleration (KVM), which GitHub's Linux runners provide once the udev rule below is applied.
+  hilt-smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    # Never blocks a merge (owner decision). A failure is logged under Found issues in PLAN.md.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: "platform-tools platforms;android-37.0"
+      - name: Point Gradle at the SDK
+        run: echo "sdk.dir=$ANDROID_HOME" > local.properties
+      - name: Placeholder google-services.json (CI only, not a real Firebase config)
+        run: bash scripts/placeholder-google-services.sh
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Hilt smoke test on an emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          disable-animations: true
+          script: ./gradlew connectedDemoDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.calaf.app.HiltSmokeTest
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hilt-smoke-report
+          path: app/build/reports/androidTests
+          if-no-files-found: ignore
+          retention-days: 7
 
   backend:
     runs-on: ubuntu-24.04

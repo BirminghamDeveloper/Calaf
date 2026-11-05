@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.google.services)
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlin.serialization)
 }
 android {
     namespace = "com.calaf.app"
@@ -14,7 +15,8 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = "0.1.0"
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        // Swaps in HiltTestApplication so instrumented tests can use HiltAndroidRule.
+        testInstrumentationRunner = "com.calaf.app.HiltTestRunner"
     }
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
@@ -49,17 +51,26 @@ kotlin { compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarg
 dependencies {
     implementation(project(":core:model"))
     implementation(project(":core:designsystem"))
-    implementation(project(":feature:community"))
+    implementation(project(":core:ui"))
+    implementation(project(":feature:auth"))
+    implementation(project(":feature:onboarding"))
+    implementation(project(":feature:discovery"))
+    implementation(project(":feature:matches"))
+    implementation(project(":feature:chat"))
+    implementation(project(":feature:settings"))
+    // Moderation tools exist only in the demo flavour.
+    "demoImplementation"(project(":feature:admin"))
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.material3)
     implementation(libs.compose.foundation)
     implementation(libs.activity.compose)
-    implementation(libs.exif)
     implementation(libs.lifecycle.compose)
     implementation(libs.lifecycle.viewmodel)
     implementation(libs.navigation.compose)
     implementation(libs.coroutines.core)
     implementation(libs.hilt.android)
+    implementation(libs.hilt.navigation.compose)
+    implementation(libs.serialization.json)
     ksp(libs.hilt.compiler)
     // Firebase and its data layer exist only in the live flavour. The demo APK never contains them.
     "liveImplementation"(project(":core:data"))
@@ -76,6 +87,9 @@ dependencies {
     androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.compose.test)
     androidTestImplementation(libs.test.runner)
+    androidTestImplementation(libs.exif)
+    androidTestImplementation(libs.hilt.android.testing)
+    kspAndroidTest(libs.hilt.compiler)
     debugImplementation(libs.compose.test.manifest)
 }
 

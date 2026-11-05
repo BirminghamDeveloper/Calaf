@@ -2,11 +2,19 @@ package com.calaf.app
 
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
+@HiltAndroidTest
 class OfflineDemoScreenTest {
-    @get:Rule val compose = createAndroidComposeRule<MainActivity>()
+    @get:Rule(order = 0) val hilt = HiltAndroidRule(this)
+    @get:Rule(order = 1) val compose = createAndroidComposeRule<MainActivity>()
+
+    @Before fun inject() = hilt.inject()
+
     @Test fun adminLoginOpensPrivilegedPanel() {
         compose.runOnIdle { compose.activity.appEntryPoint().auth().logout() }
         compose.mainClock.advanceTimeBy(3000)

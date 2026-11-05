@@ -1,5 +1,6 @@
 package com.calaf.app
 
+import com.calaf.core.ui.R as CoreR
 import android.provider.Settings
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
@@ -48,7 +49,7 @@ fun IntroScreen(onFinished: () -> Unit) {
             }
             Spacer(Modifier.height(CalafSpacing.large))
             Text(stringResource(R.string.app_name), style = MaterialTheme.typography.displaySmall)
-            Text(stringResource(R.string.intro_tagline), style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.Center)
+            Text(stringResource(CoreR.string.intro_tagline), style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.Center)
             Spacer(Modifier.height(CalafSpacing.section))
             Text(stringResource(R.string.credit_idea), style = MaterialTheme.typography.titleMedium)
             Text(stringResource(R.string.credit_developer), style = MaterialTheme.typography.bodyLarge)

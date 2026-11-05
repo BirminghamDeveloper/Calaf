@@ -76,14 +76,18 @@ Run, at minimum, before you open a pull request:
 cd backend && npm ci && npm test
 ```
 
-Until Task 1.4 adds Spotless, leave out `spotlessCheck` and add the library tests, then check the demo
+Until Task 1.4 adds Spotless, leave out `spotlessCheck` and add the library module tests
+(`testDebugUnitTest` runs every library module, `:core:model:test` the plain Kotlin one), then check the demo
 manifest:
 
 ```bash
 ./gradlew assembleDemoDebug assembleLiveDebug testDemoDebugUnitTest testLiveDebugUnitTest \
-  :core:model:test :feature:community:testDebugUnitTest
+  testDebugUnitTest :core:model:test assembleDemoDebugAndroidTest assembleLiveDebugAndroidTest
 bash scripts/check-demo-manifest.sh
 ```
+
+`assemble*AndroidTest` compiles the instrumented tests and the Hilt test graph. The `hilt-smoke` CI job launches
+the demo app on an emulator and opens every tab. It cannot run in a cloud session.
 
 Instrumented tests (`androidTest`) cannot run in the cloud. Keep logic in ViewModels and
 repositories so it can be unit tested on the JVM, and use Robolectric for Compose UI tests
@@ -100,7 +104,8 @@ If a download is blocked by the network, stop and report the blocked host. Do no
 
 - Do not read the whole repo. Read CLAUDE.md, PLAN.md, then only files the task touches.
 - Do not re run a full build after every small edit. Compile the module you changed
-  (for example `./gradlew :feature:chat:compileDemoDebugKotlin`), run the full verify once at the end.
+  (for example `./gradlew :feature:chat:compileDebugKotlin`, library modules have no flavour), but run the
+  full verify before every commit you push (see the next section).
 - Use `--offline` for Gradle after the first successful build in a session.
 - If the same error survives three fix attempts, stop, record it in PLAN.md and the PR, and finish.
 - `429 Too Many Requests` from Maven Central is a rate limit, not a code problem. Do not investigate
@@ -118,5 +123,8 @@ If a download is blocked by the network, stop and report the blocked host. Do no
    `PLAN.md` under "Found issues" instead of fixing it.
 4. Update the task status in `PLAN.md` to `done`, with a short note of what changed and
    what you verified.
-5. Commit in small logical commits, open one pull request against `master`, and list:
+5. **Every commit you push must build and pass the full verify on its own.** Run the full verify above before
+   each commit, not only at the end, so any commit can be checked out, built and bisected. Group changes so each
+   commit is complete (code, its tests, its resources and build files together) instead of splitting by file type.
+6. Commit in small logical commits, open one pull request against `master`, and list:
    what changed, how it was verified, what could not be verified, and follow ups.

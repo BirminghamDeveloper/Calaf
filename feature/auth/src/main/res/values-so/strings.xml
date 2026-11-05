@@ -1,0 +1,23 @@
+<resources>
+    <string name="adult_confirmation">Waxaan jiraa ugu yaraan 18 sano, waxaanan doonayaa xiriir dhab ah ama guur.</string>
+    <string name="check_verification">Waan xaqiijiyey iimaylkayga</string>
+    <string name="confirm_password">Xaqiiji erayga sirta ah</string>
+    <string name="email">Cinwaanka iimaylka</string>
+    <string name="forgot_password">Dir iimaylka dib u dejinta furaha</string>
+    <string name="hide_password">Qari</string>
+    <string name="local_reset_help">Firebase-ka maxalliga ahi iimayl dib-u-dejin ma diro. Kombiyuutarka ka fur xiriirka terminal-ka Start-LocalBackend. Qiimaha newPassword ku beddel erayga sirta ah ee aad dooratay.</string>
+    <string name="local_verification_help">Horumarinta maxalliga ahi iimayl ma dirto. Badhankani wuxuu isticmaalaa koodhka emulator-ka. Akoonnada dhabta ahi waxay u baahan yihiin xaqiijinta iimaylka.</string>
+    <string name="login_subtitle">Ku soo dhawoow mar kale.</string>
+    <string name="not_verified">Iimaylka weli lama xaqiijin. Fur xiriiriyaha iimaylka oo mar kale hubi.</string>
+    <string name="password">Furaha sirta ah</string>
+    <string name="password_hint">Isticmaal ugu yaraan 8 xaraf. Firebase wuxuu dalban karaa furaha sirta ah oo ka xoog badan.</string>
+    <string name="password_mismatch">Erayada sirta ahi isma waafaqaan. Fadlan mar kale geli.</string>
+    <string name="register_subtitle">Bilow safarkaaga xiriir dhab ah.</string>
+    <string name="reset_sent">Haddii akoon uu leeyahay iimaylkan, waxaa la diray xiriiriyaha dib u dejinta furaha. Hubi sanduuqa iimaylka iyo spam-ka.</string>
+    <string name="send_verification">Dir iimaylka xaqiijinta</string>
+    <string name="show_password">Muuji</string>
+    <string name="verification_sent">Iimaylka xaqiijinta waa la diray. Hubi sanduuqaaga iyo spam-ka.</string>
+    <string name="verify_body">Akoonkaagu waa diyaar. U dir xiriiriyaha xaqiijinta %1$s, fur iimaylka, dabadeed halkan ku soo noqo.</string>
+    <string name="verify_local_email">Xaqiiji iimaylka tijaabada</string>
+    <string name="verify_title">Xaqiiji iimaylkaaga</string>
+</resources>

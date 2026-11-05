@@ -1,0 +1,23 @@
+<resources>
+    <string name="adult_confirmation">I am at least 18 and seeking a serious relationship or marriage.</string>
+    <string name="check_verification">I have verified my email</string>
+    <string name="confirm_password">Confirm password</string>
+    <string name="email">Email address</string>
+    <string name="forgot_password">Send password reset email</string>
+    <string name="hide_password">Hide</string>
+    <string name="local_reset_help">Local Firebase does not send reset emails. Open the reset link printed in the Start-LocalBackend terminal on your computer. Replace the newPassword value in that link with your chosen password.</string>
+    <string name="local_verification_help">Local development does not send email. This button uses a verification code from the local emulator. Real accounts still require inbox verification.</string>
+    <string name="login_subtitle">Welcome back. Your next chapter starts here.</string>
+    <string name="not_verified">Your email is not verified yet. Open the link in your email, then check again.</string>
+    <string name="password">Password</string>
+    <string name="password_hint">Use at least 8 characters. Firebase may require additional password strength.</string>
+    <string name="password_mismatch">The passwords do not match. Please enter them again.</string>
+    <string name="register_subtitle">Start your journey towards a meaningful commitment.</string>
+    <string name="reset_sent">If an account exists for this email, a password reset link has been sent. Check your inbox and spam folder.</string>
+    <string name="send_verification">Send verification email</string>
+    <string name="show_password">Show</string>
+    <string name="verification_sent">Verification email sent. Check your inbox and spam folder.</string>
+    <string name="verify_body">Your account is ready. Send a verification link to %1$s, open it in your inbox, then return here to continue to your profile.</string>
+    <string name="verify_local_email">Verify local demo email</string>
+    <string name="verify_title">Verify your email</string>
+</resources>
