@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.calaf.core.model.CommunityCommand
 import com.calaf.core.model.CommunityProfile
 import com.calaf.core.model.CommunityRepository
+import com.calaf.core.model.MatchMoment
+import com.calaf.core.model.MemberPhotoCache
 import com.calaf.core.model.PartnerPreference
 import com.calaf.core.model.PhotoRepositoryFactory
 import com.calaf.core.model.PublicPhoto
@@ -15,7 +17,6 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -32,6 +33,8 @@ data class DiscoveryUiState(
     val cursor: String? = null,
     val discovering: Boolean = false,
     val loaded: Boolean = false,
+    /** Set when a like becomes a match. Shown full screen until dismissMatchMoment() is called. */
+    val matchMoment: MatchMoment? = null,
     val action: ActionState = ActionState(),
 )
 
@@ -49,7 +52,7 @@ class DiscoveryViewModel @AssistedInject constructor(
     private val mutable = MutableStateFlow(DiscoveryUiState())
     val state = mutable.asStateFlow()
     private var observers = listOf<Job>()
-    private val photoCache = mutableMapOf<String, ByteArray>()
+    private val memberPhotos = MemberPhotoCache(photos, uid)
     private val actions = ActionRunner(repository, viewModelScope, { mutable.value.action }) { change ->
         mutable.update { it.copy(action = change(it.action)) }
     }
@@ -125,13 +128,19 @@ class DiscoveryViewModel @AssistedInject constructor(
      * Likes or passes. The card leaves the stack at once so the next one shows straight away, and comes back to the
      * front if the request fails. When only a few cards are left the next page is fetched.
      */
-    fun interest(userId: String, like: Boolean) {
+    fun interest(userId: String, like: Boolean, note: String = "") {
         if (state.value.action.busy) return
         val index = state.value.candidates.indexOfFirst { it.id == userId }
         val removed = state.value.candidates.getOrNull(index)
         removeCandidate(userId)
         actions.run(
-            CommunityCommand.Interest(userId, like),
+            CommunityCommand.Interest(userId, like, if (like) note else ""),
+            onResult = { result ->
+                val matchId = result.matchId
+                if (result.matched && matchId != null && removed != null) {
+                    mutable.update { it.copy(matchMoment = MatchMoment(removed, matchId)) }
+                }
+            },
             onSuccess = ::prefetchIfNeeded,
             onFailure = { if (removed != null) restoreCandidate(removed, index) },
         )
@@ -146,16 +155,14 @@ class DiscoveryViewModel @AssistedInject constructor(
     }
 
     /** The bytes of another member's photo, or null if it cannot be read. Blurring is applied by the screen. */
-    suspend fun photo(ownerId: String, photo: PublicPhoto): ByteArray? {
-        val key = "$ownerId/${photo.id}"
-        photoCache[key]?.let { return it }
-        return try {
-            photos.create(uid).readMemberPhoto(ownerId, photo.id).also { photoCache[key] = it }
-        } catch (cancelled: CancellationException) {
-            throw cancelled
-        } catch (_: Exception) {
-            null
-        }
+    suspend fun photo(ownerId: String, photo: PublicPhoto): ByteArray? = memberPhotos.photo(ownerId, photo)
+
+    /** Both main photos for the match moment, shown clear because matched members see each other. */
+    suspend fun matchPhotos(profile: CommunityProfile): Pair<ByteArray?, ByteArray?> =
+        memberPhotos.matchPhotos(profile)
+
+    fun dismissMatchMoment() {
+        mutable.update { it.copy(matchMoment = null) }
     }
 
     fun block(userId: String) = actions.run(CommunityCommand.Block(userId), onResult = { removeCandidate(userId) })

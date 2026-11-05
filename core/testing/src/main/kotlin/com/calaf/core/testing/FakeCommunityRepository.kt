@@ -9,6 +9,7 @@ import com.calaf.core.model.CommunityProfile
 import com.calaf.core.model.CommunityRepository
 import com.calaf.core.model.DiscoveryPage
 import com.calaf.core.model.Guardian
+import com.calaf.core.model.LikedYou
 import com.calaf.core.model.Match
 import com.calaf.core.model.MemberNotification
 import com.calaf.core.model.PartnerPreference
@@ -29,6 +30,9 @@ class FakeCommunityRepository : CommunityRepository {
 
     /** What [earlierMessages] returns. */
     var older = emptyList<ChatMessage>()
+
+    /** What [likedYou] returns. */
+    var liked = LikedYou(0, emptyList())
 
     /** What [discover] returns. */
     var page = DiscoveryPage(emptyList(), null)
@@ -52,6 +56,7 @@ class FakeCommunityRepository : CommunityRepository {
     override fun messages(matchId: String) = liveMessages
     override suspend fun earlierMessages(matchId: String, beforeId: String) = older
     override suspend fun discover(cursor: String?) = page
+    override suspend fun likedYou() = liked
 
     override suspend fun execute(command: CommunityCommand): CommandResult {
         commands += command

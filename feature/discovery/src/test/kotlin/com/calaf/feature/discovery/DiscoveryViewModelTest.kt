@@ -213,4 +213,50 @@ class DiscoveryViewModelTest {
         assertEquals(18, cleared.minAge)
         assertTrue(cleared.heritage.isEmpty())
     }
+
+    @Test fun `a compliment goes with a like and is dropped from a pass`() = runTest(main.dispatcher) {
+        val model = model()
+        repository.page = DiscoveryPage(profiles(3), null)
+        model.discover(); runCurrent()
+        model.interest("p1", like = true, note = "Salaam, I liked your biography"); runCurrent()
+        model.interest("p2", like = false, note = "should not be sent"); runCurrent()
+        assertEquals(
+            listOf<CommunityCommand>(
+                CommunityCommand.Interest("p1", true, "Salaam, I liked your biography"),
+                CommunityCommand.Interest("p2", false, ""),
+            ),
+            repository.commands,
+        )
+    }
+
+    @Test fun `a match shows the match moment with the match id until it is dismissed`() = runTest(main.dispatcher) {
+        val model = model()
+        repository.page = DiscoveryPage(profiles(2), null)
+        model.discover(); runCurrent()
+        repository.result = CommandResult(matched = true, matchId = "p1_me")
+        model.interest("p1", like = true); runCurrent()
+        val moment = model.state.value.matchMoment!!
+        assertEquals("p1", moment.profile.id)
+        assertEquals("p1_me", moment.matchId)
+        model.dismissMatchMoment()
+        assertNull(model.state.value.matchMoment)
+    }
+
+    @Test fun `a like that is not a match shows no match moment`() = runTest(main.dispatcher) {
+        val model = model()
+        repository.page = DiscoveryPage(profiles(2), null)
+        model.discover(); runCurrent()
+        model.interest("p1", like = true); runCurrent()
+        assertNull(model.state.value.matchMoment)
+    }
+
+    @Test fun `a failed like never shows a match moment`() = runTest(main.dispatcher) {
+        val model = model()
+        repository.page = DiscoveryPage(profiles(2), null)
+        model.discover(); runCurrent()
+        repository.result = CommandResult(matched = true, matchId = "p1_me")
+        repository.failWith = CommunityError.OFFLINE
+        model.interest("p1", like = true); runCurrent()
+        assertNull(model.state.value.matchMoment)
+    }
 }

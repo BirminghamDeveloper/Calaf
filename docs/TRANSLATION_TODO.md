@@ -16,3 +16,5 @@ Keys whose `values-so` value is still the English text. Add the key here when yo
 | `lbl_answer_*` (Task 3.2) | `core/ui/src/main/res/values-so/strings.xml` |
 | every key starting `disc_detail_` and `disc_f_`, and `disc_fact` (Task 3.2) | `feature/discovery/src/main/res/values-so/strings.xml` |
 | every key starting `disc_filter` (Task 3.2) | `feature/discovery/src/main/res/values-so/strings.xml` |
+| every key starting `match_` and `cmp_` (Task 3.3) | `core/ui/src/main/res/values-so/strings.xml` |
+| every key starting `ly_` (Task 3.3) | `feature/matches/src/main/res/values-so/strings.xml` |

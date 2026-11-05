@@ -1,5 +1,5 @@
 # Calaf demo progress
-Last updated: 2026-11-05 08:11 UTC, after Task 3.2
+Last updated: 2026-11-05 08:26 UTC, after Task 3.3
 
 ## Done so far
 
@@ -41,11 +41,16 @@ Tap the info button (or the name area) on a card to open that person's full prof
 The new Filters button on Discover opens a sheet: age, language, non smokers, marital status, children, height, marriage timeline, willing to relocate, country of birth, profession, education, and (only for people who shared it) how practising, prayer and heritage. The button shows how many filters are on. Show results saves them and reloads the cards.
 Behind the scenes: one filter rule is shared and tested, the server mirrors it, and a filter never matches someone who left that field blank.
 
+### Task 3.3 Match moment, likes and compliments
+When a like turns into a match, a full screen "It's a match!" appears with both your photos, a Send a message button that opens the chat, and Keep browsing.
+The Matches tab now has two tabs: Matches and Liked you. Liked you lists people who liked you with their photo and note, and you can Like back (a match) or Pass. In the demo these admirers are simulated and labelled; a new demo member gets two as soon as they publish their profile. In the real app this list stays locked until premium exists.
+Next to Pass and Like there is now a "Like with a note" button: write up to 140 characters, with a counter and safety warnings as you type. The other person sees your note on your card, with a warning if it has a link, contact details or a money request.
+Behind the scenes: the server checks the note, the same safety rule is shared with chat, and older demo data upgrades automatically.
+
 ## In progress
-Task 3.2 is finished and being merged. Next up: Task 3.3 Match moment, likes and compliments (not started).
+Task 3.3 is finished and being merged. Next up: Task 3.4 Chat polish and guardian view (not started).
 
 ## Still to do
-- Task 3.3 "It's a match" moment, who liked you, compliments
 - Task 3.4 Chat polish and guardian (wali) view
 - Task 3.5 Demo showcase polish (20 demo profiles, walkthrough, Try the demo button, reset, icon, Somali, demo script)
 
@@ -62,6 +67,7 @@ Task 3.2 is finished and being merged. Next up: Task 3.3 Match moment, likes and
 - New Somali strings are English copies for now (filled in at Task 3.5).
 - The main photo is always the first photo, so choosing a main photo and dragging to the front are the same thing.
 - Blur is chosen per photo by the owner. The card that actually draws the blur arrives with the swipe cards (Task 3.1).
+- Liked you is a second tab inside Matches. Risky notes are flagged, never blocked. In the real app Liked you stays locked until premium.
 - The full profile opens inside Discover and closes with the Back button. A filter never matches someone who left that field blank. Heritage and faith filters only match people who chose to share them.
 - A swiped card disappears immediately and comes back if the action fails. More cards load when three are left.
 - Blurred photos are blurred on the phone by shrinking and enlarging them, so the sharp image is never drawn. The real app will need blurred copies made by the server.

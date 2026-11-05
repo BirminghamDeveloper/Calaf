@@ -142,6 +142,13 @@ export function messageWarnings(body) {
   if (/\b(send money|bank transfer|gift card|crypto|loan|wire transfer)\b/i.test(body)) warnings.push('MONEY_REQUEST');
   return warnings;
 }
+/** A note sent with a like, as the receiver may see it. Only while the author's like stands. */
+export function complimentFrom(pair, authorId) {
+  const note = pair?.notes?.[authorId];
+  if (!note || pair?.choices?.[authorId] !== 'LIKE') return null;
+  return { note, warnings: pair.noteWarnings?.[authorId] ?? messageWarnings(note) };
+}
+export const COMPLIMENT_MAX = 140;
 export function compatibility(a, b) {
   const strong = [], differences = [];
   for (const field of ['timeline', 'wantsChildren', 'smoking', 'relocation', 'religion']) {

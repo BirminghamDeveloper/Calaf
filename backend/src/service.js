@@ -1,6 +1,6 @@
 import { FieldValue, FieldPath } from 'firebase-admin/firestore';
 import { randomBytes, createHash } from 'node:crypto';
-import { ageOn, pairId, text, choice, preferences, eligible, validateProfile, messageWarnings, compatibility, requireThat, shareable } from './domain.js';
+import { ageOn, pairId, text, choice, preferences, eligible, validateProfile, messageWarnings, compatibility, requireThat, shareable, complimentFrom, COMPLIMENT_MAX } from './domain.js';
 
 const now = () => Date.now();
 const stamp = () => FieldValue.serverTimestamp();
@@ -16,6 +16,7 @@ export class CalafService {
       saveSettings: () => this.saveSettings(uid, input),
       discover: () => this.discover(uid, input),
       interest: () => this.interest(uid, input),
+      likedYou: () => this.likedYou(uid),
       sendMessage: () => this.sendMessage(uid, input),
       markRead: () => this.markRead(uid, input),
       readNotification: () => this.readNotification(uid, input),
@@ -101,20 +102,49 @@ export class CalafService {
       const profile = shareable({ ...document.data(), age: ageOn(user.data().birthDate) });
       if (profile.age < 18 || !eligible(profile, filter)) continue;
       if (settings.data()?.showCity === false) profile.city = '';
-      // Public projection is allowlisted; private DOB/email/phone and the consent flag never enter this response.
-      const { name, age, city, country, biography, culture, languages, interests, values, gender,
-        religion, religiosity, prays, heritage, occupation, education, children, wantsChildren, smoking, relocation,
-        timeline, maritalStatus, heightCm, countryOfBirth, verification, photos } = profile;
-      candidates.push({ id: document.id, name, age, city, country, biography, culture, languages, interests,
-        values, gender, religion, religiosity, prays, heritage, occupation, education, children, wantsChildren,
-        smoking, relocation, timeline, maritalStatus, heightCm, countryOfBirth, verification, photos,
-        compatibility: compatibility(shareable(own.data()), profile) });
+      candidates.push(this.projection(document.id, profile, own.data(), complimentFrom(pair.data(), document.id)));
     }
     return { profiles: candidates, cursor: page.size === 40 ? page.docs.at(-1).id : null };
+  }
+  /** The allowlisted public view of a profile. Private DOB, email, phone and the consent flag never appear here. */
+  projection(id, profile, viewer, compliment) {
+    const { name, age, city, country, biography, culture, languages, interests, values, gender,
+      religion, religiosity, prays, heritage, occupation, education, children, wantsChildren, smoking, relocation,
+      timeline, maritalStatus, heightCm, countryOfBirth, verification, photos } = profile;
+    return { id, name, age, city, country, biography, culture, languages, interests,
+      values, gender, religion, religiosity, prays, heritage, occupation, education, children, wantsChildren,
+      smoking, relocation, timeline, maritalStatus, heightCm, countryOfBirth, verification, photos,
+      compatibility: compatibility(shareable(viewer), profile), compliment };
+  }
+  /** Members who liked you and are waiting. Locked unless premium, like the daily interest limit in interest(). */
+  async likedYou(uid) {
+    await this.adult(uid);
+    const [own, subscription] = await this.db.getAll(this.db.doc(`profiles/${uid}`), this.db.doc(`subscriptions/${uid}`));
+    const premium = subscription.data()?.verifiedUntil > now();
+    const pairs = await this.db.collection('pairs').where('members', 'array-contains', uid).get();
+    const waiting = pairs.docs.map(document => ({ data: document.data() })).filter(({ data }) => {
+      const other = data.members.find(member => member !== uid);
+      return data.state !== 'ACTIVE' && data.state !== 'CLOSED' && !data.blockedBy?.length &&
+        data.choices?.[other] === 'LIKE' && !data.choices?.[uid];
+    }).map(({ data }) => ({ data, other: data.members.find(member => member !== uid) }));
+    if (!premium) return { count: waiting.length, profiles: [], locked: true };
+    const profiles = [];
+    for (const { data, other } of waiting) {
+      const [profile, user, settings] = await this.db.getAll(this.db.doc(`profiles/${other}`),
+        this.db.doc(`users/${other}`), this.db.doc(`settings/${other}`));
+      if (!profile.exists || profile.data().visibility !== 'VISIBLE' || user.data()?.status !== 'ACTIVE') continue;
+      const shared = shareable({ ...profile.data(), age: ageOn(user.data().birthDate) });
+      if (shared.age < 18) continue;
+      if (settings.data()?.showCity === false) shared.city = '';
+      profiles.push(this.projection(other, shared, own.data(), complimentFrom(data, other)));
+    }
+    return { count: waiting.length, profiles, locked: false };
   }
   async interest(uid, input) {
     await this.adult(uid);
     const other = text(input.userId, 128, 1), decision = choice(input.decision, ['LIKE', 'PASS']);
+    // An optional compliment (at most 140 characters) only goes with a like. Risky content is flagged, not removed.
+    const note = decision === 'LIKE' ? text(input.note ?? '', COMPLIMENT_MAX) : '';
     const id = pairId(uid, other), pairRef = this.db.doc(`pairs/${id}`);
     const quotaRef = this.db.doc(`quotas/${uid}_${new Date().toISOString().slice(0, 10)}`);
     let matched = false;
@@ -135,6 +165,7 @@ export class CalafService {
       matched = choices[uid] === 'LIKE' && choices[other] === 'LIKE' && previous?.state !== 'CLOSED';
       tx.set(pairRef, { members: [uid, other].sort(), names: { [uid]: me.data().name, [other]: candidate.data().name },
         choices, blockedBy: [], state: matched ? 'ACTIVE' : (previous?.state ?? 'PENDING'),
+        ...(note ? { notes: { [uid]: note }, noteWarnings: { [uid]: messageWarnings(note) } } : {}),
         updatedAt: stamp(), ...(matched && previous?.state !== 'ACTIVE' ? { matchedAt: stamp() } : {}) }, { merge: true });
       if (decision === 'LIKE') tx.set(quotaRef, { likes: count + 1, expiresAt: new Date(now() + 172800000) });
       if (matched && previous?.state !== 'ACTIVE') {

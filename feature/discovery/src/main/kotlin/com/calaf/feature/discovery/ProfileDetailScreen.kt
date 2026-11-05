@@ -38,6 +38,8 @@ import com.calaf.core.model.PrayerHabit
 import com.calaf.core.model.PublicPhoto
 import com.calaf.core.model.Religiosity
 import com.calaf.core.model.VerificationStatus
+import com.calaf.core.ui.ComplimentBanner
+import com.calaf.core.ui.MemberPhoto
 import com.calaf.core.ui.SwipeButtons
 import com.calaf.core.ui.labelRes
 import com.calaf.core.ui.R as CoreR
@@ -54,6 +56,7 @@ internal fun ProfileDetailScreen(
     enabled: Boolean,
     onBack: () -> Unit,
     onInterest: (Boolean) -> Unit,
+    onCompliment: () -> Unit,
     onReport: () -> Unit,
     onBlock: () -> Unit,
 ) {
@@ -72,6 +75,7 @@ internal fun ProfileDetailScreen(
                 verticalArrangement = Arrangement.spacedBy(CalafSpacing.medium),
             ) {
                 Header(profile)
+                profile.compliment?.let { ComplimentBanner(profile.name, it) }
                 About(profile)
                 Basics(profile)
                 Values(profile)
@@ -88,6 +92,7 @@ internal fun ProfileDetailScreen(
                     passLabel = pass, likeLabel = like, enabled = enabled,
                     reportLabel = stringResource(CoreR.string.report), blockLabel = stringResource(CoreR.string.block),
                     onReport = onReport, onBlock = onBlock,
+                    complimentLabel = stringResource(CoreR.string.cmp_action), onCompliment = onCompliment,
                 )
             }
         }
@@ -101,7 +106,8 @@ private fun Gallery(profile: CommunityProfile, loader: suspend (PublicPhoto) -> 
     val pager = rememberPagerState { count.coerceAtLeast(1) }
     Box(Modifier.fillMaxWidth().height(GALLERY_HEIGHT)) {
         HorizontalPager(pager, Modifier.fillMaxSize()) { page ->
-            MemberPhoto(profile, profile.photos.getOrNull(page), page, count, loader)
+            val description = stringResource(R.string.disc_photo_description, profile.name, page + 1, count)
+            MemberPhoto(profile, profile.photos.getOrNull(page), description, loader)
         }
         if (count > 1) {
             Surface(
@@ -256,6 +262,8 @@ private fun ProfileDetailPreview() {
         photos = listOf(PublicPhoto("p1", false), PublicPhoto("p2", true)),
     )
     CalafTheme {
-        ProfileDetailScreen(demo, { null }, true, onBack = {}, onInterest = {}, onReport = {}, onBlock = {})
+        ProfileDetailScreen(
+            demo, { null }, true, onBack = {}, onInterest = {}, onCompliment = {}, onReport = {}, onBlock = {},
+        )
     }
 }

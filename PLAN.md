@@ -339,13 +339,32 @@ Done notes (Task 3.2):
 - Not verified: the detail screen, pager, filter sheet and chips on a device.
 
 ### Task 3.3 Match moment, likes and compliments
-Status: todo | Branch: `task/3.3-match-likes` | Depends on: 3.1
+Status: done | Branch: `task/3.3-match-likes` | Depends on: 3.1
 (Can run in parallel with 3.2.)
 
 - Full screen "It's a match" with both photos, send a message or keep browsing.
 - "Liked you" list. In live, gate it behind premium (Phase 5). In demo, show it with a demo label.
 - Compliment: a like with a short note (max 140 characters) shown on the receiver's card.
   Backend validation and safety warnings apply.
+
+Done notes (Task 3.3):
+- "It's a match": a full screen with both main photos (shown clear because matched members see each other), "Send a
+  message" (opens that chat) and "Keep browsing". Shown after a like that becomes a match from Discover or from Liked
+  you. `CommandResult` now carries `matchId` (the live backend already returned it). `MatchMomentOverlay` in `core:ui`.
+- Liked you: a second tab on the Matches screen (`Matches` and `Liked you (n)`), with photo, name, age, city, their
+  compliment, Like back and Pass. `CommunityRepository.likedYou()` returns a `LikedYou` (count, profiles, locked,
+  simulated). Demo: simulated and labelled as demo, fictional members already like some seeded accounts and a new member
+  gets two simulated admirers when they first publish. Live: the backend `likedYou` action returns only the count
+  with `locked = true` unless the (existing) premium flag is set, so it stays gated until Phase 5.
+- Compliments: a like can carry a note of 1 to 140 characters (`Compliments`). A "Like with a note" button next to pass
+  and like opens a dialog with a counter and live safety warnings. The receiver sees the note on the card, the full
+  profile and in Liked you, with a warning when it has a link, contact details or a money request (`MessageSafety`,
+  the same three rules as the backend). Backend: `interest` validates and stores the note and its warnings, discovery
+  and liked you return `compliment` only while the author's like stands. 1 new backend test (13 pass).
+- Tests: 3 `MessageSafety`/`Compliments`, 3 `MemberPhotoCache` (core:model), 4 `DiscoveryViewModel` and 5
+  `MatchesViewModel` additions, 5 demo repository tests (liked you, compliments, validation, simulated admirers).
+- Demo store schema version 4 seeds the pending likes for older stores.
+- Not verified: the match moment, tabs, compliment dialog and banners on a device.
 
 ### Task 3.4 Chat polish and guardian view
 Status: todo | Branch: `task/3.4-chat-guardian` | Depends on: 3.3
@@ -480,6 +499,12 @@ Choices made without the owner while following `docs/AUTOPILOT.md`. One line eac
 - 2.2: The main photo is always the first photo. Choosing a main photo or dragging one to the front are the same thing.
 - 2.2: Blur is a per photo owner choice carried in the public projection. The blur itself is drawn by the card in Task 3.1.
 - 2.2: Reordering has long press drag plus Move up and Move down buttons so it works with TalkBack and without gestures.
+- 3.3: Liked you is a second tab inside Matches, not a fifth bottom tab, so the bar stays at four.
+- 3.3: Risky compliments (links, contact details, money requests) are flagged to the receiver and warned about to the
+  sender while typing, never blocked or rewritten. This is the same rule chat messages use.
+- 3.3: In the live flavour Liked you shows only the count and stays locked, because premium does not exist yet. It uses
+  the same (misnamed) premium flag as the daily like limit until Task 5.4 (deferred) replaces it.
+- 3.3: Liking back from Liked you sends no note. Notes are written from Discover.
 - 3.2: The full profile opens inside the Discover tab, not as a separate destination, because the candidate data lives in the stack. System Back closes it.
 - 3.2: A filter on a field a member left blank never matches them, so people who chose not to share are not guessed at.
   "Willing to relocate: Yes" also accepts "open to it".

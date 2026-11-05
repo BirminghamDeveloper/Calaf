@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ageOn, validateProfile, pairId, preferences, eligible, messageWarnings, compatibility, shareable, hasSpecialCategoryData, SPECIAL_CATEGORY_FIELDS } from '../src/domain.js';
+import { ageOn, validateProfile, pairId, preferences, eligible, messageWarnings, compatibility, shareable, hasSpecialCategoryData, SPECIAL_CATEGORY_FIELDS, complimentFrom, COMPLIMENT_MAX } from '../src/domain.js';
 
 test('age gate handles the eighteenth birthday and invalid calendar dates', () => {
   const today = new Date('2026-10-28T12:00:00Z');
@@ -112,4 +112,16 @@ test('new filters match like the Kotlin rules and never match unspecified fields
   assert.equal(eligible(reserved, preferences({ religiosity: ['PRACTISING'] })), false);
   assert.equal(eligible(reserved, preferences({ heritage: ['SOMALI'] })), false);
   assert.equal(eligible(reserved, preferences({ countryOfBirth: 'Somalia' })), false);
+});
+
+test('a compliment is shown to the receiver only while the author like stands, with its warnings', () => {
+  const pair = { choices: { a: 'LIKE' }, notes: { a: 'Salaam, lovely profile' }, noteWarnings: { a: [] } };
+  assert.deepEqual(complimentFrom(pair, 'a'), { note: 'Salaam, lovely profile', warnings: [] });
+  assert.equal(complimentFrom(pair, 'b'), null);
+  assert.equal(complimentFrom({ ...pair, choices: { a: 'PASS' } }, 'a'), null);
+  assert.equal(complimentFrom({ choices: { a: 'LIKE' } }, 'a'), null);
+  assert.equal(complimentFrom(undefined, 'a'), null);
+  const risky = { choices: { a: 'LIKE' }, notes: { a: 'mail me a@example.org' } };
+  assert.deepEqual(complimentFrom(risky, 'a').warnings, ['PERSONAL_INFORMATION']);
+  assert.equal(COMPLIMENT_MAX, 140);
 });

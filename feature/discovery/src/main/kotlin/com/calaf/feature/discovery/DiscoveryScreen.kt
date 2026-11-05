@@ -38,7 +38,9 @@ import com.calaf.core.model.activeFilterCount
 import com.calaf.core.model.PublicPhoto
 import com.calaf.core.model.ReportCategory
 import com.calaf.core.ui.ActionBanner
+import com.calaf.core.ui.ComplimentDialog
 import com.calaf.core.ui.ConfirmDialog
+import com.calaf.core.ui.MatchMomentOverlay
 import com.calaf.core.ui.NoticeCard
 import com.calaf.core.ui.R as CoreR
 import com.calaf.core.ui.ReportDialog
@@ -49,7 +51,7 @@ import com.calaf.core.ui.SwipeStackController
 
 /** The Discover tab. Gets its ViewModel from Hilt, so previews and tests use [DiscoveryScreen] directly. */
 @Composable
-fun DiscoveryRoute(uid: String, onPreferences: () -> Unit) {
+fun DiscoveryRoute(uid: String, onPreferences: () -> Unit, onOpenChat: (String) -> Unit) {
     val model = hiltViewModel<DiscoveryViewModel, DiscoveryViewModel.Factory>(
         key = "discovery_$uid",
         creationCallback = { it.create(uid) },
@@ -61,9 +63,10 @@ fun DiscoveryRoute(uid: String, onPreferences: () -> Unit) {
     }
     LaunchedEffect(model) { model.discoverIfNeeded() }
     DiscoveryScreen(
-        state, photoLoader = model::photo, onRefresh = { model.discover() },
+        state, photoLoader = model::photo, matchPhotos = model::matchPhotos, onRefresh = { model.discover() },
         onInterest = model::interest, onBlock = model::block, onReport = model::report,
         onApplyFilters = model::applyFilters, onPreferences = onPreferences, onRetry = model::retry,
+        onDismissMatch = model::dismissMatchMoment, onOpenChat = onOpenChat,
     )
 }
 
@@ -71,21 +74,39 @@ fun DiscoveryRoute(uid: String, onPreferences: () -> Unit) {
 fun DiscoveryScreen(
     state: DiscoveryUiState,
     photoLoader: suspend (String, PublicPhoto) -> ByteArray?,
+    matchPhotos: suspend (CommunityProfile) -> Pair<ByteArray?, ByteArray?>,
     onRefresh: () -> Unit,
-    onInterest: (String, Boolean) -> Unit,
+    onInterest: (String, Boolean, String) -> Unit,
     onBlock: (String) -> Unit,
     onReport: (String, ReportCategory, String, () -> Unit) -> Unit,
     onApplyFilters: (PartnerPreference, () -> Unit) -> Unit,
     onPreferences: () -> Unit,
     onRetry: () -> Unit,
+    onDismissMatch: () -> Unit,
+    onOpenChat: (String) -> Unit,
 ) {
     var detailId by rememberSaveable { mutableStateOf<String?>(null) }
     var showFilters by rememberSaveable { mutableStateOf(false) }
     var reportUser by rememberSaveable { mutableStateOf<String?>(null) }
     var blockUser by remember { mutableStateOf<String?>(null) }
     val controller = remember { SwipeStackController() }
+    var complimentFor by remember { mutableStateOf<CommunityProfile?>(null) }
+    // A note chosen in the compliment dialog, sent with the next like from the stack.
+    var pendingNote by remember { mutableStateOf("") }
     val busy = state.action.busy
     // The open profile is looked up by id, so it closes by itself once that member leaves the stack.
+    val moment = state.matchMoment
+    if (moment != null) {
+        MatchMomentOverlay(
+            moment, yourName = state.profile?.name.orEmpty(), loadPhotos = matchPhotos,
+            onMessage = { matchId ->
+                onDismissMatch()
+                onOpenChat(matchId)
+            },
+            onKeepBrowsing = onDismissMatch,
+        )
+        return
+    }
     val detail = state.candidates.firstOrNull { it.id == detailId }
     BackHandler(enabled = detail != null) { detailId = null }
     Column(Modifier.fillMaxSize().testTag("discovery_list")) {
@@ -96,8 +117,9 @@ fun DiscoveryScreen(
                 onBack = { detailId = null },
                 onInterest = { like ->
                     detailId = null
-                    onInterest(detail.id, like)
+                    onInterest(detail.id, like, "")
                 },
+                onCompliment = { complimentFor = detail },
                 onReport = { reportUser = detail.id }, onBlock = { blockUser = detail.id },
             )
             return@Column
@@ -110,7 +132,11 @@ fun DiscoveryScreen(
         when {
             state.candidates.isNotEmpty() -> Deck(
                 state, controller, photoLoader, enabled = !busy,
-                onInterest = onInterest,
+                onInterest = { id, like ->
+                    onInterest(id, like, if (like) pendingNote else "")
+                    pendingNote = ""
+                },
+                onCompliment = { complimentFor = state.candidates.firstOrNull() },
                 onOpenDetails = { detailId = state.candidates.firstOrNull()?.id },
                 onReport = { reportUser = state.candidates.firstOrNull()?.id },
                 onBlock = { blockUser = state.candidates.firstOrNull()?.id },
@@ -124,6 +150,19 @@ fun DiscoveryScreen(
         ReportDialog(onDismiss = { reportUser = null }) { category, details ->
             onReport(userId, category, details) { reportUser = null }
         }
+    }
+    complimentFor?.let { target ->
+        ComplimentDialog(target.name, enabled = !busy, onDismiss = { complimentFor = null }, onSend = { note ->
+            complimentFor = null
+            if (detail != null && detail.id == target.id) {
+                detailId = null
+                onInterest(target.id, true, note)
+            } else {
+                // Swipe the top card away like a normal like, carrying the note.
+                pendingNote = note
+                controller.swipe(SwipeDirection.LIKE)
+            }
+        })
     }
     if (showFilters) {
         FilterSheet(
@@ -177,6 +216,7 @@ private fun Deck(
     photoLoader: suspend (String, PublicPhoto) -> ByteArray?,
     enabled: Boolean,
     onInterest: (String, Boolean) -> Unit,
+    onCompliment: () -> Unit,
     onOpenDetails: () -> Unit,
     onReport: () -> Unit,
     onBlock: () -> Unit,
@@ -205,6 +245,7 @@ private fun Deck(
             modifier = Modifier.align(Alignment.CenterHorizontally),
             reportLabel = stringResource(CoreR.string.report), blockLabel = stringResource(CoreR.string.block),
             onReport = onReport, onBlock = onBlock,
+            complimentLabel = stringResource(CoreR.string.cmp_action), onCompliment = onCompliment,
         )
     }
 }
@@ -247,10 +288,10 @@ private fun DiscoveryScreenPreview() {
     CalafTheme {
         DiscoveryScreen(
             DiscoveryUiState(profile = demo, candidates = listOf(demo, demo.copy(id = "b")), loaded = true),
-            photoLoader = { _, _ -> null }, onRefresh = {}, onInterest = { _, _ -> },
-            onBlock = {},
+            photoLoader = { _, _ -> null }, matchPhotos = { null to null }, onRefresh = {},
+            onInterest = { _, _, _ -> }, onBlock = {},
             onReport = { _, _, _, _ -> }, onApplyFilters = { _, _ -> },
-            onPreferences = {}, onRetry = {},
+            onPreferences = {}, onRetry = {}, onDismissMatch = {}, onOpenChat = {},
         )
     }
 }
@@ -260,9 +301,10 @@ private fun DiscoveryScreenPreview() {
 private fun DiscoveryEmptyPreview() {
     CalafTheme {
         DiscoveryScreen(
-            DiscoveryUiState(loaded = true), photoLoader = { _, _ -> null }, onRefresh = {},
-            onInterest = { _, _ -> }, onBlock = {}, onReport = { _, _, _, _ -> },
+            DiscoveryUiState(loaded = true), photoLoader = { _, _ -> null }, matchPhotos = { null to null },
+            onRefresh = {}, onInterest = { _, _, _ -> }, onBlock = {}, onReport = { _, _, _, _ -> },
             onApplyFilters = { _, _ -> }, onPreferences = {}, onRetry = {},
+            onDismissMatch = {}, onOpenChat = {},
         )
     }
 }

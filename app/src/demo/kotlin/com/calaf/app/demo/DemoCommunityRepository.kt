@@ -5,13 +5,16 @@ import com.calaf.core.model.accepts
 import com.calaf.core.model.ChatMessage
 import com.calaf.core.model.CommunityError
 import com.calaf.core.model.CommunityCommand
+import com.calaf.core.model.Compliment
 import com.calaf.core.model.CommunityException
 import com.calaf.core.model.CommunityProfile
 import com.calaf.core.model.CommunityRepository
 import com.calaf.core.model.DiscoveryPage
 import com.calaf.core.model.Guardian
 import com.calaf.core.model.GuardianStatus
+import com.calaf.core.model.LikedYou
 import com.calaf.core.model.Match
+import com.calaf.core.model.MessageSafety
 import com.calaf.core.model.MatchStatus
 import com.calaf.core.model.MemberNotification
 import com.calaf.core.model.PartnerPreference
@@ -107,12 +110,38 @@ class DemoCommunityRepository(
         val preference = preference(me)
         if (!privacy(me).visible) throw CommunityException(CommunityError.PERMISSION)
         val candidates = store.rows("profiles").filter { (id, _) -> isCandidate(me, id) }
-            .map { (id, data) -> publicProfile(id, data) }
+            .map { (id, data) -> publicProfile(id, data, viewer = me) }
             .filter { preference.accepts(it) }
         return DiscoveryPage(candidates, null)
     }
 
+    override suspend fun likedYou(): LikedYou {
+        val me = session.requireUid()
+        val choices = store.table("choices")
+        val admirers = choices.keys().asSequence().filter { it.endsWith("_$me") && choices.optBoolean(it) }
+            .map { it.removeSuffix("_$me") }
+            .filter { other ->
+                other != me && store.table("profiles").has(other) && isWaiting(me, other)
+            }.toList()
+        val profiles = admirers.map { id -> publicProfile(id, store.table("profiles").getJSONObject(id), viewer = me) }
+        return LikedYou(profiles.size, profiles, locked = false, simulated = true)
+    }
+
     override suspend fun execute(command: CommunityCommand) = commands.execute(command)
+
+    /** [other] liked [me], and neither answered the other, matched, blocked nor left the demo. */
+    private fun isWaiting(me: String, other: String) = !store.isSuspended(other) &&
+        privacy(other).visible &&
+        !store.table("choices").has("${me}_$other") &&
+        !store.table("pairs").has(store.pairId(me, other)) &&
+        !store.isBlockedEitherWay(me, other)
+
+    /** The note [author] sent with a like to [viewer], flagged for safety, if the like still stands. */
+    private fun compliment(author: String, viewer: String): Compliment? {
+        if (!store.table("choices").optBoolean("${author}_$viewer")) return null
+        val note = store.table("notes").optJSONObject("${author}_$viewer")?.optString("note").orEmpty()
+        return if (note.isBlank()) null else Compliment(note, MessageSafety.warnings(note))
+    }
 
     private fun isCandidate(me: String, id: String) = id != me &&
         !store.isSuspended(id) &&
@@ -147,7 +176,7 @@ class DemoCommunityRepository(
     private fun preference(id: String): PartnerPreference =
         DemoPreferenceCodec.fromJson(store.table("preferences").optJSONObject(id) ?: JSONObject())
 
-    private fun publicProfile(id: String, json: JSONObject): CommunityProfile {
+    private fun publicProfile(id: String, json: JSONObject, viewer: String? = null): CommunityProfile {
         val p = DemoProfileCodec.toDraft(json)
         fun tags(text: String) = text.split(',').map(String::trim).filter(String::isNotBlank)
         val age = Period.between(LocalDate.parse(p.birthDate), LocalDate.now()).years
@@ -160,6 +189,7 @@ class DemoCommunityRepository(
             // Only approved photos are ever visible to other members, main photo first.
             photos = DemoPhotoRows.ownerPhotos(store, id).filter { it.state == PhotoState.APPROVED }
                 .map { PublicPhoto(it.id, it.blurForNonMatches) },
+            compliment = viewer?.let { compliment(id, it) },
         )
     }
 

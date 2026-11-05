@@ -94,6 +94,14 @@ class FirebaseCommunityRepository(private val db: FirebaseFirestore, private val
         }
         return DiscoveryPage(profiles, data["cursor"] as? String)
     }
+    override suspend fun likedYou(): LikedYou {
+        val data = call(mapOf("action" to "likedYou"))
+        val profiles = (data["profiles"] as? List<*>).orEmpty().mapNotNull { raw ->
+            @Suppress("UNCHECKED_CAST") val profile = raw as? Map<String, Any> ?: return@mapNotNull null
+            profileFrom(profile.string("id"), profile)
+        }
+        return LikedYou(data.number("count").toInt(), profiles, data["locked"] == true)
+    }
     override suspend fun execute(command: CommunityCommand): CommandResult {
         val payload: Map<String, Any?> = when (command) {
             is CommunityCommand.Publish -> mapOf("action" to "saveProfile", "profile" to command.profile.payload())
@@ -109,7 +117,10 @@ class FirebaseCommunityRepository(private val db: FirebaseFirestore, private val
             is CommunityCommand.Privacy -> with(command.value) { mapOf("action" to "saveSettings", "settings" to mapOf(
                 "visible" to visible, "readReceipts" to readReceipts, "showCity" to showCity, "notifications" to notifications,
                 "analytics" to analytics, "marketing" to marketing)) }
-            is CommunityCommand.Interest -> mapOf("action" to "interest", "userId" to command.userId, "decision" to if (command.like) "LIKE" else "PASS")
+            is CommunityCommand.Interest -> mapOf(
+                "action" to "interest", "userId" to command.userId, "decision" to if (command.like) "LIKE" else "PASS",
+                "note" to command.note,
+            )
             is CommunityCommand.Send -> mapOf("action" to "sendMessage", "matchId" to command.matchId, "messageId" to command.messageId, "text" to command.text)
             is CommunityCommand.Read -> mapOf("action" to "markRead", "matchId" to command.matchId, "messageId" to command.messageId)
             is CommunityCommand.ReadNotification -> mapOf("action" to "readNotification", "id" to command.id, "createdAt" to command.createdAt)
@@ -125,7 +136,8 @@ class FirebaseCommunityRepository(private val db: FirebaseFirestore, private val
         }
         val result = call(payload)
         return CommandResult(result["matched"] == true, result["code"] as? String,
-            if (command == CommunityCommand.ExportData) JSONObject(result).toString(2) else null)
+            if (command == CommunityCommand.ExportData) JSONObject(result).toString(2) else null,
+            result["matchId"] as? String)
     }
     private suspend fun call(payload: Map<String, Any?>): Map<String, Any> = try {
         @Suppress("UNCHECKED_CAST")
@@ -185,7 +197,12 @@ private fun profileFrom(id: String, d: Map<String, Any>): CommunityProfile {
             (score?.get("differences") as? List<*>)?.filterIsInstance<String>()?.mapNotNull(::area).orEmpty()),
         enumValue(d.string("maritalStatus"), MaritalStatus.UNSPECIFIED), d.number("heightCm").toInt(),
         d.string("countryOfBirth"), enumValue(d.string("religiosity"), Religiosity.UNSPECIFIED),
-        enumValue(d.string("prays"), PrayerHabit.UNSPECIFIED), enumValue(d.string("heritage"), Heritage.UNSPECIFIED))
+        enumValue(d.string("prays"), PrayerHabit.UNSPECIFIED), enumValue(d.string("heritage"), Heritage.UNSPECIFIED),
+        compliment = (d["compliment"] as? Map<*, *>)?.let { raw ->
+            val note = raw["note"] as? String ?: return@let null
+            Compliment(note, (raw["warnings"] as? List<*>)?.filterIsInstance<String>()
+                ?.mapNotNull { name -> SafetyWarning.entries.firstOrNull { it.name == name } }.orEmpty())
+        })
 }
 private fun ProfileDraft.payload(): Map<String, Any> = mapOf(
     "name" to name, "birthDate" to birthDate, "city" to city, "country" to country, "biography" to biography,

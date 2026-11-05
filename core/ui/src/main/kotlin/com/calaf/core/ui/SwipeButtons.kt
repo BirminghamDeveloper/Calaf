@@ -31,6 +31,8 @@ fun SwipeButtons(
     blockLabel: String? = null,
     onReport: () -> Unit = {},
     onBlock: () -> Unit = {},
+    complimentLabel: String? = null,
+    onCompliment: () -> Unit = {},
 ) {
     Row(
         modifier, horizontalArrangement = Arrangement.spacedBy(CalafSpacing.medium),
@@ -43,6 +45,11 @@ fun SwipeButtons(
             onClick = onPass, enabled = enabled,
             modifier = Modifier.size(BUTTON_SIZE),
         ) { CalafIcon(CalafIcons.Close, passLabel) }
+        if (complimentLabel != null) {
+            FilledTonalIconButton(onClick = onCompliment, enabled = enabled) {
+                CalafIcon(CalafIcons.Messages, complimentLabel)
+            }
+        }
         FilledIconButton(
             onClick = onLike, enabled = enabled,
             modifier = Modifier.size(BUTTON_SIZE),
