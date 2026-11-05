@@ -3,4 +3,16 @@
     <string name="profile">Bogga qofka</string>
     <string name="safety_body">Ha u dirin lacag qof aad internetka oo keliya ku baratay. Ilaali cinwaankaaga, xogtaada maaliyadeed iyo dukumentiyada aqoonsiga. Markaad kulmaysaan, dooro meel dadweyne oo u sheeg qof aad ku kalsoon tahay.\n\nCalaf waxaa loogu talagalay dadka jira 18 sano iyo ka weyn. Ka qaybgalka qoysku waa inuu had iyo jeer ahaadaa doorashadaada.</string>
     <string name="local_development">HORUMARIN MAXALLI AH · Firebase emulators · Akoonno tijaabo ah</string>
+
+    <string name="try_demo">Tijaabi demo-ga</string>
+    <string name="tour_skip">Ka bood</string>
+    <string name="tour_next">Xiga</string>
+    <string name="tour_start">Bilow</string>
+    <string name="tour_progress">%1$d ka mid ah %2$d</string>
+    <string name="tour_discover_title">La kulan dad ujeeddo cad leh</string>
+    <string name="tour_discover_body">Faraha ku jiid ama riix badhamada si aad u ka tagto, u jeceshahay ama u dirto ammaan. Qof kasta halkan waa xubin demo ah oo khayaali ah.</string>
+    <string name="tour_chat_title">Isku dhacyadu waxay noqdaan wadahadal</string>
+    <string name="tour_chat_body">Marka xiisuhu labada dhinac yahay waad wada sheekaysan kartaan. Demo-gan jawaabuhu waa qoran yihiin oo si cad ayaa loo calaamadeeyay.</string>
+    <string name="tour_privacy_title">Asturnaanta iyo qoysku waa ugu horreeya</string>
+    <string name="tour_privacy_body">Adigu ayaa dooranaya waxa la wadaagayo, sawirradana waa la ruxruxin karaa, waalina wuu daba socon karaa haddii aad rabto.</string>
 </resources>

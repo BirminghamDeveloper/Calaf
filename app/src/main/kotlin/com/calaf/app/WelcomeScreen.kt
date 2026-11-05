@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -16,7 +17,7 @@ import com.calaf.core.designsystem.CalafDimensions
 import com.calaf.core.designsystem.CalafSpacing
 
 @Composable
-internal fun WelcomeScreen(onRegister: () -> Unit, onLogin: () -> Unit) {
+internal fun WelcomeScreen(onRegister: () -> Unit, onLogin: () -> Unit, onTryDemo: (() -> Unit)? = null) {
     var showSafety by rememberSaveable { mutableStateOf(false) }
     Scaffold { padding ->
         Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.TopCenter) {
@@ -34,6 +35,13 @@ internal fun WelcomeScreen(onRegister: () -> Unit, onLogin: () -> Unit) {
                     modifier = Modifier.semantics { heading() })
                 Text(stringResource(R.string.welcome_body), style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (onTryDemo != null) {
+                    Button(
+                        onClick = onTryDemo,
+                        modifier = Modifier.fillMaxWidth().heightIn(min = CalafDimensions.touchTarget)
+                            .testTag("try_demo"),
+                    ) { Text(stringResource(R.string.try_demo)) }
+                }
                 Button(onClick = onRegister, modifier = Modifier.fillMaxWidth().heightIn(min = CalafDimensions.touchTarget)) {
                     Text(stringResource(CoreR.string.create_account))
                 }

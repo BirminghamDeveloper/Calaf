@@ -1,5 +1,7 @@
 package com.calaf.feature.matches
 
+import com.calaf.core.ui.IllustrationKind
+import com.calaf.core.ui.EmptyState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -48,7 +50,7 @@ internal fun LikedYouList(
         when {
             liked == null -> Unit
             liked.locked -> item { NoticeCard(stringResource(R.string.ly_locked, liked.count)) }
-            liked.profiles.isEmpty() -> item { Text(stringResource(R.string.ly_empty)) }
+            liked.profiles.isEmpty() -> item { EmptyState(IllustrationKind.Calm, stringResource(R.string.ly_empty)) }
         }
         items(liked?.profiles.orEmpty(), key = CommunityProfile::id) { profile ->
             LikedYouCard(profile, photoLoader, !state.action.busy, onLikeBack, onPass)

@@ -3,6 +3,8 @@ package com.calaf.app.di
 import android.content.Context
 import com.calaf.app.AppMode
 import com.calaf.app.DemoAppMode
+import com.calaf.app.PreferencesWalkthrough
+import com.calaf.app.WalkthroughState
 import com.calaf.app.AndroidAvatarSource
 import com.calaf.app.AndroidReplyScheduler
 import com.calaf.app.demo.ReplyScheduler
@@ -11,6 +13,8 @@ import com.calaf.app.demo.DemoAdminRepository
 import com.calaf.app.demo.DemoAuthRepository
 import com.calaf.app.demo.DemoCommunityRepository
 import com.calaf.app.demo.DemoPhotoRepository
+import com.calaf.app.demo.DemoResetter
+import com.calaf.app.demo.DemoSeed
 import com.calaf.app.demo.DemoProfileRepository
 import com.calaf.app.demo.DemoSession
 import com.calaf.app.demo.DemoStore
@@ -31,7 +35,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object DemoModule {
     @Provides @Singleton
-    fun store(@ApplicationContext context: Context): DemoStore = DemoStore(File(context.filesDir, "calaf_demo"))
+    fun store(@ApplicationContext context: Context): DemoStore = DemoStore(File(context.filesDir, "calaf_demo"), seed = DemoSeed::seedEverything)
 
     @Provides @Singleton
     fun session(store: DemoStore): DemoSession = DemoSession(store)
@@ -60,6 +64,14 @@ object DemoModule {
     fun photoRepositories(store: DemoStore, session: DemoSession, avatars: AvatarSource): PhotoRepositoryFactory =
         PhotoRepositoryFactory { uid -> DemoPhotoRepository(store, session, avatars, uid) }
 
+    @Provides @Singleton
+    fun walkthrough(@ApplicationContext context: Context): WalkthroughState = PreferencesWalkthrough(context)
+
+    @Provides @Singleton
+    fun resetter(store: DemoStore, session: DemoSession, tour: WalkthroughState): DemoResetter =
+        DemoResetter(store, session) { tour.seen = false }
+
     @Provides
-    fun appMode(admin: DemoAdminRepository): AppMode = DemoAppMode(admin)
+    fun appMode(admin: DemoAdminRepository, resetter: DemoResetter, tour: WalkthroughState): AppMode =
+        DemoAppMode(admin, resetter, tour)
 }

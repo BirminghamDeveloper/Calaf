@@ -2,4 +2,10 @@
     <string name="app_name">Calaf Demo</string>
     <string name="demo_banner">DEMO · Fictional people, local accounts and simulated matches. No messages leave this device.</string>
     <string name="demo_auth_notice">Demo: accounts stay on this device. No verification or password-reset emails are sent. Use fictional details. Administrator login: admin / admin.</string>
+    <string name="demo_reset">Dib u deji xogta demo-ga</string>
+    <string name="demo_reset_title">Ma dib u bilaabaysaa demo-ga?</string>
+    <string name="demo_reset_body">Tani waxay tirtirtaa akoon kasta, sawir kasta iyo fariin kasta oo ku jira qalabkan, waxayna soo celisaa xubnihii asalka ahaa ee khayaaliga ahaa.</string>
+    <string name="demo_reset_confirm">Dib u deji</string>
+    <string name="demo_reset_cancel">Jooji</string>
+    <string name="demo_reset_note">Demo keliya. Waxba lagama keydiyo khadka.</string>
 </resources>

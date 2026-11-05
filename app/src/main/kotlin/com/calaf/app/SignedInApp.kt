@@ -143,7 +143,10 @@ internal fun SignedInApp(
                     )
                 }
                 composable<SettingsDestination> {
-                    SettingsMenuScreen { page -> navigation.navigate(SettingsPageDestination(page)) }
+                    SettingsMenuScreen(
+                        onOpen = { page -> navigation.navigate(SettingsPageDestination(page)) },
+                        extras = { appMode.SettingsExtras() },
+                    )
                 }
                 composable<SettingsPageDestination> { entry ->
                     SettingsPageRoute(

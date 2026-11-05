@@ -14,7 +14,7 @@ import java.util.UUID
  */
 class DemoStore(
     private val directory: File,
-    seed: (DemoStore) -> Unit = DemoSeed::seedIfNeeded,
+    private val seed: (DemoStore) -> Unit = DemoSeed::seedIfNeeded,
 ) {
     private val file = File(directory, "demo.json")
     private val root: JSONObject = load()
@@ -39,6 +39,18 @@ class DemoStore(
             if (value == null) root.remove(KEY_SESSION) else root.put(KEY_SESSION, value)
             save()
         }
+
+    /**
+     * Puts the demo back as it was on first launch: every account, photo, message and setting is deleted and the seed is
+     * applied again. The caller signs the member out.
+     */
+    fun reset() {
+        root.keys().asSequence().toList().forEach(root::remove)
+        photoRoot.deleteRecursively()
+        root.put(KEY_VERSION, SCHEMA_VERSION)
+        seed(this)
+        save()
+    }
 
     fun table(name: String): JSONObject = root.optJSONObject(name) ?: JSONObject().also { root.put(name, it) }
 

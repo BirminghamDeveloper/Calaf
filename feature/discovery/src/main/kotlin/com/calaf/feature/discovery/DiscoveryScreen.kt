@@ -1,5 +1,7 @@
 package com.calaf.feature.discovery
 
+import com.calaf.core.ui.IllustrationKind
+import com.calaf.core.ui.Illustration
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -143,7 +145,7 @@ fun DiscoveryScreen(
                 modifier = Modifier.weight(1f),
             )
             state.discovering || !state.loaded -> Loading(Modifier.weight(1f))
-            else -> EmptyState(onRefresh, onPreferences, Modifier.weight(1f))
+            else -> DiscoveryEmpty(onRefresh, onPreferences, Modifier.weight(1f))
         }
     }
     reportUser?.let { userId ->
@@ -264,12 +266,13 @@ private fun Loading(modifier: Modifier) {
 }
 
 @Composable
-private fun EmptyState(onRefresh: () -> Unit, onPreferences: () -> Unit, modifier: Modifier) {
+private fun DiscoveryEmpty(onRefresh: () -> Unit, onPreferences: () -> Unit, modifier: Modifier) {
     Box(modifier.fillMaxWidth().padding(CalafSpacing.large), contentAlignment = Alignment.Center) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(CalafSpacing.medium),
         ) {
+            Illustration(IllustrationKind.Discover)
             Text(stringResource(R.string.disc_empty_title), style = MaterialTheme.typography.titleLarge)
             Text(stringResource(R.string.empty_discovery), textAlign = TextAlign.Center)
             Button(onClick = onRefresh) { Text(stringResource(R.string.refresh)) }

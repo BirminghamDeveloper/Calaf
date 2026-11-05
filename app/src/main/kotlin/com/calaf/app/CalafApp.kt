@@ -76,6 +76,12 @@ private fun CalafRoutes(
         IntroScreen { introFinished = true }
         return
     }
+    val tour = appMode.walkthrough
+    var tourSeen by rememberSaveable { mutableStateOf(tour?.seen ?: true) }
+    if (!tourSeen && state.account == null) {
+        WalkthroughScreen { tour?.seen = true; tourSeen = true }
+        return
+    }
     val account = state.account
     if (account == null) {
         SignedOutNavigation(auth, state, appMode)
@@ -113,6 +119,7 @@ private fun SignedOutNavigation(auth: AuthViewModel, state: com.calaf.feature.au
             WelcomeScreen(
                 onRegister = { auth.clearMessage(); navigation.navigate(RegisterDestination) },
                 onLogin = { auth.clearMessage(); navigation.navigate(LoginDestination) },
+                onTryDemo = appMode.quickLogin?.let { login -> { auth.quickLogin(login.email, login.password) } },
             )
         }
         composable<LoginDestination> {

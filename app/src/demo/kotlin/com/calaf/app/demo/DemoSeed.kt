@@ -14,6 +14,12 @@ object DemoSeed {
     /** Public password shared by every seeded member. */
     const val MEMBER_PASSWORD = "CalafDemo!2026"
 
+    /** The seed the app uses: the five core members plus the twenty person showcase and the ready made guest. */
+    fun seedEverything(store: DemoStore) {
+        seedIfNeeded(store)
+        DemoShowcase.seedShowcase(store)
+    }
+
     fun memberEmail(name: String) = "$name@calaf.test"
 
     private val names = listOf("admin", "hassan", "amina", "hodan", "yusuf")

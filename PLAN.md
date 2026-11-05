@@ -398,7 +398,7 @@ Done notes (Task 3.4):
   endpoints against the emulators.
 
 ### Task 3.5 Demo showcase polish
-Status: todo | Branch: `task/3.5-demo-showcase` | Depends on: 3.4
+Status: done | Branch: `task/3.5-demo-showcase` | Depends on: 3.4
 
 The demo is shown to investors and the community. Make the first five minutes impressive.
 - Seed 20 fictional demo profiles (balanced women and men, ages 21 to 45, UK, Somaliland, Somalia,
@@ -414,6 +414,16 @@ The demo is shown to investors and the community. Make the first five minutes im
 - `docs/DEMO_SCRIPT.md`: a 5 minute walkthrough the owner can follow when presenting.
 
 Done when: both flavours build, unit tests pass, demo manifest check passes.
+
+Result: 20 fictional showcase members (all named "<Name> (Demo)", flagged `demo`), plus a ready made "Demo Guest" with 2
+matches, a 3 message chat, a compliment and 2 plain likes, are seeded once (`meta.showcase`) by
+`DemoSeed.seedEverything`. First launch tour (3 screens, Skip, remembered in SharedPreferences), "Try the demo" button
+on the welcome screen (demo only, signs in the guest), "Reset demo data" in Settings with a confirm dialog
+(`DemoStore.reset`, `DemoResetter`, the tour shows again). Adaptive icon plus legacy PNGs, androidx splash screen,
+code drawn `Illustration` and `EmptyState` in core:ui used by Discover, Matches, Liked you and Activity. Somali first
+drafts for the new strings (flagged for native review). `docs/DEMO_SCRIPT.md` written.
+Verified: unit tests (showcase seed, labels, photos, idempotence, guest content, reset), full verify, demo manifest.
+Not verified: the tour, icon, splash and empty states on a device.
 
 ---
 
@@ -543,6 +553,10 @@ Choices made without the owner while following `docs/AUTOPILOT.md`. One line eac
   blurred photo. In the demo that is enough. Live will need server made blurred copies (Task 2.3, deferred).
 - 3.1: Prefetch happens when a swipe leaves three or fewer cards, not right after a page loads, so a short first page cannot loop.
 - 2.2: In the live flavour photos all show as pending and the manager hides ordering and blur until Task 2.3 (deferred).
+- 3.5: "Try the demo" signs into a ready made Demo Guest. The 20 showcase members live in code, not JSON, and are seeded once.
+  The first launch tour shows again after Reset demo data. Somali for the tour and reset strings is a first draft that
+  needs native review. The chat screen has no empty state picture because a new match always starts with the safety note.
+
 
 ## Found issues
 

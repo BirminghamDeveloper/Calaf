@@ -1,5 +1,7 @@
 package com.calaf.feature.matches
 
+import com.calaf.core.ui.IllustrationKind
+import com.calaf.core.ui.EmptyState
 import com.calaf.core.ui.R as CoreR
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Box
@@ -133,7 +135,7 @@ private fun MatchesList(
     var pending by remember { mutableStateOf<Pending?>(null) }
     val active = state.matches.filter { it.status == MatchStatus.ACTIVE }
     CalafListScreen(stringResource(CoreR.string.matches), state.action, "matches_list", onRetry = onRetry) {
-        if (active.isEmpty()) item { Text(stringResource(R.string.empty_matches)) }
+        if (active.isEmpty()) item { EmptyState(IllustrationKind.Match, stringResource(R.string.empty_matches)) }
         items(active, key = Match::id) { match ->
             MatchCard(
                 match, onOpen = { onOpenConversation(match) },
