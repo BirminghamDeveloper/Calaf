@@ -83,10 +83,9 @@ class LocalBackendFlowTest {
         compose.waitUntil(30000) { compose.onAllNodes(deliveredMessage, useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
         compose.onNode(deliveredMessage, useUnmergedTree = true).assertExists()
         compose.onNodeWithText("Discover").performClick()
-        compose.onNodeWithText("Refresh").performScrollTo().performClick()
-        compose.waitUntil(30000) { compose.onAllNodesWithText("Hodan (Demo)", substring = true).fetchSemanticsNodes().isNotEmpty() }
-        compose.onNodeWithTag("discovery_list").performScrollToNode(hasText("Yusuf (Demo)", substring = true))
-        compose.onNodeWithText("Yusuf (Demo)", substring = true).assertIsDisplayed()
+        // Discovery is a stack of swipe cards, so the top card is a seeded fictional member.
+        compose.waitUntil(30000) { compose.onAllNodesWithText("(Demo)", substring = true).fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithTag("discovery_list").assertIsDisplayed()
         compose.runOnIdle { compose.activity.appEntryPoint().auth().logout() }
     }
 

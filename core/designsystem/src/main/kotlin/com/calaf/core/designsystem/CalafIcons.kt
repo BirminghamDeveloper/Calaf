@@ -26,6 +26,7 @@ object CalafIcons {
     val Block = CalafIcon(R.drawable.ic_calaf_block)
     val Send = CalafIcon(R.drawable.ic_calaf_send)
     val Settings = CalafIcon(R.drawable.ic_calaf_settings)
+    val Close = CalafIcon(R.drawable.ic_calaf_close)
 }
 
 /**

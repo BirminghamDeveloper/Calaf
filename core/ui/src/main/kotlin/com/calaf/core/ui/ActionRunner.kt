@@ -26,8 +26,16 @@ class ActionRunner(
     private val read: () -> ActionState,
     private val write: ((ActionState) -> ActionState) -> Unit,
 ) {
-    /** Ignored while another action is running. [onResult] and [onSuccess] run only if the command succeeded. */
-    fun run(command: CommunityCommand, onResult: (CommandResult) -> Unit = {}, onSuccess: () -> Unit = {}) {
+    /**
+     * Ignored while another action is running. [onResult] and [onSuccess] run only if the command succeeded and
+     * [onFailure] only if it failed, which lets a screen undo an optimistic change.
+     */
+    fun run(
+        command: CommunityCommand,
+        onResult: (CommandResult) -> Unit = {},
+        onSuccess: () -> Unit = {},
+        onFailure: () -> Unit = {},
+    ) {
         if (read().busy) return
         write { it.copy(busy = true, error = null, notice = null) }
         scope.launch {
@@ -38,6 +46,7 @@ class ActionRunner(
                 onSuccess()
             } catch (error: Exception) {
                 fail(error)
+                onFailure()
             } finally {
                 write { it.copy(busy = false) }
             }
