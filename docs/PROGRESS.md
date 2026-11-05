@@ -61,10 +61,10 @@ There is a proper app icon, a splash screen with the Calaf colours and friendly 
 Behind the scenes: the showcase data is added once and never twice, and tests check labels, photos, the guest's content and the reset.
 
 ## In progress
-Task 3.5 is finished and being merged. After it merges: the final demo report.
+The demo track is finished. See docs/DEMO_REPORT.md.
 
 ## Still to do
-- Final demo report (docs/DEMO_REPORT.md)
+- Nothing left on the demo track. See docs/DEMO_REPORT.md.
 
 ## Known issues
 - Nothing has been tried on a phone yet. Everything so far is checked by automatic tests only.
