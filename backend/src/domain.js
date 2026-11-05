@@ -80,12 +80,35 @@ export function validateProfile(input, now = new Date()) {
     age, visibility: 'VISIBLE', verification: 'EMAIL_ONLY', photos: [],
   };
 }
+function selection(value, options) {
+  const list = value ?? [];
+  requireThat(Array.isArray(list) && list.length <= options.length && list.every(item => options.includes(item)),
+    'Invalid selection.');
+  return [...new Set(list)];
+}
+function heightBound(value) {
+  const height = value ?? 0;
+  requireThat(Number.isInteger(height) && (height === 0 || (height >= 120 && height <= 230)), 'Invalid height.');
+  return height;
+}
 export function preferences(input) {
   const minAge = input.minAge ?? 18, maxAge = input.maxAge ?? 70;
   requireThat(Number.isInteger(minAge) && Number.isInteger(maxAge) && minAge >= 18 && maxAge <= 120 && minAge <= maxAge, 'Invalid age range.');
+  const minHeightCm = heightBound(input.minHeightCm), maxHeightCm = heightBound(input.maxHeightCm);
+  requireThat(!minHeightCm || !maxHeightCm || minHeightCm <= maxHeightCm, 'Invalid height range.');
   return { minAge, maxAge, gender: choice(input.gender, ['ANY', 'WOMAN', 'MAN'], 'ANY'),
     country: text(input.country ?? '', 100), language: text(input.language ?? '', 60),
-    nonSmokerOnly: input.nonSmokerOnly === true, wantsChildren: choice(input.wantsChildren, ['ANY', 'YES', 'NO', 'OPEN'], 'ANY') };
+    nonSmokerOnly: input.nonSmokerOnly === true, wantsChildren: choice(input.wantsChildren, ['ANY', 'YES', 'NO', 'OPEN'], 'ANY'),
+    // Added in Task 3.2. Empty lists, 'ANY', 0 and blank text all mean no filter.
+    maritalStatuses: selection(input.maritalStatuses, MARITAL.filter(value => value !== 'UNSPECIFIED')),
+    hasChildren: choice(input.hasChildren, ['ANY', 'YES', 'NO'], 'ANY'), minHeightCm, maxHeightCm,
+    religiosity: selection(input.religiosity, RELIGIOSITY.filter(value => value !== 'UNSPECIFIED')),
+    prays: selection(input.prays, PRAYS.filter(value => value !== 'UNSPECIFIED')),
+    heritage: selection(input.heritage, HERITAGE.filter(value => value !== 'UNSPECIFIED')),
+    countryOfBirth: text(input.countryOfBirth ?? '', 100), profession: text(input.profession ?? '', 100),
+    education: text(input.education ?? '', 100),
+    timelines: selection(input.timelines, ['WITHIN_YEAR', 'ONE_TO_TWO_YEARS', 'WHEN_READY']),
+    willingToRelocate: choice(input.willingToRelocate, ['ANY', 'YES', 'NO'], 'ANY') };
 }
 export function eligible(profile, prefs) {
   return profile.age >= prefs.minAge && profile.age <= prefs.maxAge &&
@@ -93,7 +116,24 @@ export function eligible(profile, prefs) {
     (!prefs.country || profile.country.toLowerCase() === prefs.country.toLowerCase()) &&
     (!prefs.language || profile.languages.some(value => value.toLowerCase() === prefs.language.toLowerCase())) &&
     (!prefs.nonSmokerOnly || profile.smoking === 'NO') &&
-    (prefs.wantsChildren === 'ANY' || profile.wantsChildren === prefs.wantsChildren);
+    (prefs.wantsChildren === 'ANY' || profile.wantsChildren === prefs.wantsChildren) &&
+    // Filters added in Task 3.2. A filter never matches a member who left that field unspecified.
+    (!prefs.maritalStatuses?.length || prefs.maritalStatuses.includes(profile.maritalStatus)) &&
+    (!prefs.hasChildren || prefs.hasChildren === 'ANY' || profile.children === prefs.hasChildren) &&
+    (!prefs.minHeightCm || (profile.heightCm > 0 && profile.heightCm >= prefs.minHeightCm)) &&
+    (!prefs.maxHeightCm || (profile.heightCm > 0 && profile.heightCm <= prefs.maxHeightCm)) &&
+    (!prefs.religiosity?.length || prefs.religiosity.includes(profile.religiosity)) &&
+    (!prefs.prays?.length || prefs.prays.includes(profile.prays)) &&
+    (!prefs.heritage?.length || prefs.heritage.includes(profile.heritage)) &&
+    (!prefs.countryOfBirth || (profile.countryOfBirth ?? '').toLowerCase() === prefs.countryOfBirth.toLowerCase()) &&
+    (!prefs.profession || (profile.occupation ?? '').toLowerCase().includes(prefs.profession.toLowerCase())) &&
+    (!prefs.education || (profile.education ?? '').toLowerCase().includes(prefs.education.toLowerCase())) &&
+    (!prefs.timelines?.length || prefs.timelines.includes(profile.timeline)) &&
+    relocationMatches(prefs.willingToRelocate, profile.relocation);
+}
+function relocationMatches(wanted, answer) {
+  if (!wanted || wanted === 'ANY') return true;
+  return wanted === 'YES' ? answer === 'YES' || answer === 'OPEN' : answer === 'NO';
 }
 export function messageWarnings(body) {
   const warnings = [];

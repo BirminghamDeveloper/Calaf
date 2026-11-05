@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.calaf.core.model.CommunityCommand
 import com.calaf.core.model.CommunityProfile
 import com.calaf.core.model.CommunityRepository
+import com.calaf.core.model.PartnerPreference
 import com.calaf.core.model.PhotoRepositoryFactory
 import com.calaf.core.model.PublicPhoto
 import com.calaf.core.model.ReportCategory
@@ -25,6 +26,8 @@ import kotlinx.coroutines.launch
 data class DiscoveryUiState(
     /** The member's own published profile. Null until they publish, which discovery needs. */
     val profile: CommunityProfile? = null,
+    /** The member's saved filters, which the filter sheet edits. */
+    val preferences: PartnerPreference = PartnerPreference(),
     val candidates: List<CommunityProfile> = emptyList(),
     val cursor: String? = null,
     val discovering: Boolean = false,
@@ -45,24 +48,45 @@ class DiscoveryViewModel @AssistedInject constructor(
 
     private val mutable = MutableStateFlow(DiscoveryUiState())
     val state = mutable.asStateFlow()
-    private var observer: Job? = null
+    private var observers = listOf<Job>()
     private val photoCache = mutableMapOf<String, ByteArray>()
     private val actions = ActionRunner(repository, viewModelScope, { mutable.value.action }) { change ->
         mutable.update { it.copy(action = change(it.action)) }
     }
 
     fun observe() {
-        observer?.cancel()
+        observers.forEach(Job::cancel)
         actions.clearError()
-        observer = viewModelScope.launch {
-            repository.profile(uid).catch { actions.fail(it) }.collect { data ->
-                mutable.update { it.copy(profile = data) }
-            }
-        }
+        observers = listOf(
+            viewModelScope.launch {
+                repository.profile(uid).catch { actions.fail(it) }.collect { data ->
+                    mutable.update { it.copy(profile = data) }
+                }
+            },
+            viewModelScope.launch {
+                repository.preferences(uid).catch { actions.fail(it) }.collect { data ->
+                    mutable.update { it.copy(preferences = data) }
+                }
+            },
+        )
     }
 
     fun stop() {
-        observer?.cancel()
+        observers.forEach(Job::cancel)
+    }
+
+    /** Saves the filters, then restarts discovery so the stack reflects them. [onSaved] runs once they are saved. */
+    fun applyFilters(value: PartnerPreference, onSaved: () -> Unit = {}) = actions.run(
+        CommunityCommand.Preferences(value),
+        onSuccess = {
+            onSaved()
+            reload()
+        },
+    )
+
+    private fun reload() {
+        mutable.update { it.copy(candidates = emptyList(), cursor = null, loaded = false) }
+        discover()
     }
 
     /** Loads the first page, or the next one when [more] is true. */

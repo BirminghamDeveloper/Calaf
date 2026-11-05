@@ -313,12 +313,30 @@ Done notes (Task 3.1):
   test tooling in cloud sessions). The card layout was only compiled and previewed in source.
 
 ### Task 3.2 Profile detail and filters
-Status: todo | Branch: `task/3.2-profile-detail` | Depends on: 3.1
+Status: done | Branch: `task/3.2-profile-detail` | Depends on: 3.1
 (Can run in parallel with 3.3.)
 
 - Full profile screen opened from the card: all photos, about, values, deen section,
   compatibility breakdown, report and block.
 - Filter sheet covering the Phase 2 fields, saved to preferences.
+
+Done notes (Task 3.2):
+- Profile detail: tapping the info button or the facts on a card opens the full profile inside the Discover tab (system
+  Back closes it): swipeable gallery of every approved photo, name, age and location, about (bio, culture, languages),
+  the basics (marital status, children, height, work, education, smoking, relocation, timeline, birthplace), values and
+  interests, a faith section that only appears when the member chose to share faith details, and the compatibility
+  breakdown (score, what you share, where you differ). Pass, like, report and block stay at the bottom.
+- Filter sheet (bottom sheet from the new Filters button, with an active filter count): age range, language, non smokers,
+  marital status, has children, wants children, height range, marriage timeline, willing to relocate, country of birth,
+  profession, education, and (shared only) how practising, prayer and heritage. Apply saves through the existing
+  preferences command and restarts discovery from the first page. Clear all keeps gender and country.
+- `PartnerPreference` gained the filter fields. `PartnerPreference.accepts(profile)` in `core:model` is the one matching
+  rule used by the demo, mirrored by `eligible` in `backend/src/domain.js` (validated by `preferences()`). A filter on a
+  field a member left unspecified never matches that member. Demo store rows, the Firebase payload and the live parse
+  carry the new fields; older preference rows still mean "any".
+- Tests: 5 `PartnerFilter` (core:model), 2 backend (12 pass), 4 `DiscoveryViewModel`, 2 demo (filters narrow discovery
+  and persist, legacy preference rows).
+- Not verified: the detail screen, pager, filter sheet and chips on a device.
 
 ### Task 3.3 Match moment, likes and compliments
 Status: todo | Branch: `task/3.3-match-likes` | Depends on: 3.1
@@ -462,6 +480,11 @@ Choices made without the owner while following `docs/AUTOPILOT.md`. One line eac
 - 2.2: The main photo is always the first photo. Choosing a main photo or dragging one to the front are the same thing.
 - 2.2: Blur is a per photo owner choice carried in the public projection. The blur itself is drawn by the card in Task 3.1.
 - 2.2: Reordering has long press drag plus Move up and Move down buttons so it works with TalkBack and without gestures.
+- 3.2: The full profile opens inside the Discover tab, not as a separate destination, because the candidate data lives in the stack. System Back closes it.
+- 3.2: A filter on a field a member left blank never matches them, so people who chose not to share are not guessed at.
+  "Willing to relocate: Yes" also accepts "open to it".
+- 3.2: Heritage, prayer and how practising can be filtered but only match members who chose to share them. There is no clan or skin colour filter.
+- 3.2: Gender and country filters stay in Settings, Partner preferences. The sheet covers the Phase 2 fields plus age, language and non smoking.
 - 3.1: A swiped card is removed from the stack at once (optimistic) and restored to the front if the request fails.
 - 3.1: Blur is drawn on the phone by shrinking and enlarging the image, so the sharp bytes never reach the screen for a
   blurred photo. In the demo that is enough. Live will need server made blurred copies (Task 2.3, deferred).

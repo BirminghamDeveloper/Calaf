@@ -164,4 +164,43 @@ class DemoCommunityRepositoryTest {
         DemoPhotoRows.row(demo.store, firstId)!!.put("state", "PENDING")
         assertFalse(firstId in demo.community.discover().profiles.first { it.id == "demo-hassan" }.photos.map { it.id })
     }
+
+    @Test fun `saved phase 2 filters narrow discovery and survive a restart`() = runBlocking<Unit> {
+        val demo = fixture()
+        demo.loginAsMember("hodan")
+        fun ids() = runBlocking { demo.community.discover().profiles.map { it.id }.sorted() }
+        assertEquals(listOf("demo-admin", "demo-amina", "demo-hassan", "demo-yusuf"), ids())
+        val filters = com.calaf.core.model.PartnerPreference(
+            heritage = setOf(com.calaf.core.model.Heritage.SOMALILAND),
+            maritalStatuses = setOf(com.calaf.core.model.MaritalStatus.NEVER_MARRIED),
+            willingToRelocate = null, minHeightCm = 160,
+        )
+        demo.community.execute(CommunityCommand.Preferences(filters))
+        assertEquals(listOf("demo-hassan"), ids())
+        val reopened = demo.reopen()
+        reopened.auth.refresh()
+        assertEquals(filters, reopened.community.preferences("demo-hodan").first())
+        demo.community.execute(CommunityCommand.Preferences(filters.copy(minHeightCm = 175, heritage = emptySet())))
+        assertEquals(listOf("demo-yusuf"), ids())
+        demo.community.execute(CommunityCommand.Preferences(com.calaf.core.model.PartnerPreference(profession = "nurse")))
+        assertEquals(emptyList<String>(), ids())
+    }
+
+    @Test fun `a preference row saved before the new filters existed still means any`() = runBlocking<Unit> {
+        val demo = fixture()
+        demo.store.table("preferences").put(
+            "demo-hodan",
+            org.json.JSONObject().put("min", 25).put("max", 60).put("gender", "MAN").put("country", "United Kingdom")
+                .put("nonSmoker", true).put("children", "YES"),
+        )
+        demo.loginAsMember("hodan")
+        val loaded = demo.community.preferences("demo-hodan").first()
+        assertEquals(25, loaded.minAge)
+        assertTrue(loaded.maritalStatuses.isEmpty() && loaded.heritage.isEmpty() && loaded.timelines.isEmpty())
+        assertEquals(0, loaded.minHeightCm)
+        assertEquals(null, loaded.hasChildren)
+        assertEquals(null, loaded.willingToRelocate)
+        assertEquals("", loaded.profession)
+        assertTrue(demo.community.discover().profiles.isNotEmpty())
+    }
 }

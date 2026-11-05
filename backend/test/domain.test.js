@@ -71,3 +71,45 @@ test('there is no clan field in the validated profile', () => {
   const clean = validateProfile({ ...adult, clan: 'x', qabiil: 'y' }, today);
   assert.ok(!('clan' in clean) && !('qabiil' in clean));
 });
+
+test('new filters validate their input and default to no filtering', () => {
+  const none = preferences({});
+  assert.deepEqual(none.maritalStatuses, []);
+  assert.equal(none.hasChildren, 'ANY');
+  assert.equal(none.minHeightCm, 0);
+  assert.equal(none.willingToRelocate, 'ANY');
+  assert.throws(() => preferences({ maritalStatuses: ['MARRIED'] }));
+  assert.throws(() => preferences({ maritalStatuses: ['UNSPECIFIED'] }));
+  assert.throws(() => preferences({ heritage: 'SOMALI' }));
+  assert.throws(() => preferences({ minHeightCm: 100 }));
+  assert.throws(() => preferences({ minHeightCm: 190, maxHeightCm: 150 }));
+  assert.throws(() => preferences({ willingToRelocate: 'OPEN' }));
+  assert.deepEqual(preferences({ heritage: ['SOMALI', 'SOMALI', 'KENYAN'] }).heritage, ['SOMALI', 'KENYAN']);
+});
+test('new filters match like the Kotlin rules and never match unspecified fields', () => {
+  const member = { age: 30, gender: 'WOMAN', country: 'UK', languages: [], smoking: 'NO', wantsChildren: 'YES',
+    maritalStatus: 'NEVER_MARRIED', children: 'NO', heightCm: 168, religiosity: 'PRACTISING', prays: 'USUALLY',
+    heritage: 'SOMALILAND', countryOfBirth: 'Somalia', occupation: 'Primary school teacher',
+    education: 'University degree', timeline: 'WITHIN_YEAR', relocation: 'OPEN' };
+  const ok = filter => eligible(member, preferences(filter));
+  assert.equal(ok({}), true);
+  assert.equal(ok({ maritalStatuses: ['NEVER_MARRIED'] }), true);
+  assert.equal(ok({ maritalStatuses: ['DIVORCED'] }), false);
+  assert.equal(ok({ hasChildren: 'NO' }), true);
+  assert.equal(ok({ hasChildren: 'YES' }), false);
+  assert.equal(ok({ minHeightCm: 160, maxHeightCm: 175 }), true);
+  assert.equal(ok({ minHeightCm: 170 }), false);
+  assert.equal(ok({ religiosity: ['PRACTISING'], prays: ['USUALLY'], heritage: ['SOMALILAND'] }), true);
+  assert.equal(ok({ heritage: ['KENYAN'] }), false);
+  assert.equal(ok({ countryOfBirth: 'somalia', profession: 'TEACHER', education: 'degree' }), true);
+  assert.equal(ok({ profession: 'doctor' }), false);
+  assert.equal(ok({ timelines: ['ONE_TO_TWO_YEARS'] }), false);
+  assert.equal(ok({ willingToRelocate: 'YES' }), true);
+  assert.equal(ok({ willingToRelocate: 'NO' }), false);
+  const reserved = { ...member, heightCm: 0, religiosity: 'UNSPECIFIED', heritage: 'UNSPECIFIED', countryOfBirth: '' };
+  assert.equal(eligible(reserved, preferences({})), true);
+  assert.equal(eligible(reserved, preferences({ minHeightCm: 150 })), false);
+  assert.equal(eligible(reserved, preferences({ religiosity: ['PRACTISING'] })), false);
+  assert.equal(eligible(reserved, preferences({ heritage: ['SOMALI'] })), false);
+  assert.equal(eligible(reserved, preferences({ countryOfBirth: 'Somalia' })), false);
+});

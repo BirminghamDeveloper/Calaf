@@ -43,7 +43,15 @@ class FirebaseCommunityRepository(private val db: FirebaseFirestore, private val
         val data = raw.orEmpty()
         PartnerPreference(data.number("minAge", 18).toInt(), data.number("maxAge", 70).toInt(),
             enumValues<Gender>().firstOrNull { it.name == data["gender"] }, data.string("country"), data.string("language"),
-            data["nonSmokerOnly"] == true, enumValues<Answer>().firstOrNull { it.name == data["wantsChildren"] })
+            data["nonSmokerOnly"] == true, enumValues<Answer>().firstOrNull { it.name == data["wantsChildren"] },
+            maritalStatuses = data.enums<MaritalStatus>("maritalStatuses"),
+            hasChildren = enumValues<Answer>().firstOrNull { it.name == data["hasChildren"] },
+            minHeightCm = data.number("minHeightCm").toInt(), maxHeightCm = data.number("maxHeightCm").toInt(),
+            religiosity = data.enums<Religiosity>("religiosity"), prays = data.enums<PrayerHabit>("prays"),
+            heritage = data.enums<Heritage>("heritage"), countryOfBirth = data.string("countryOfBirth"),
+            profession = data.string("profession"), education = data.string("education"),
+            timelines = data.enums<MarriageTimeline>("timelines"),
+            willingToRelocate = enumValues<Answer>().firstOrNull { it.name == data["willingToRelocate"] })
     }
     override fun matches(userId: String) = query(db.collection("pairs").whereArrayContains("members", userId)).map { docs ->
         docs.mapNotNull { (id, data) ->
@@ -91,7 +99,13 @@ class FirebaseCommunityRepository(private val db: FirebaseFirestore, private val
             is CommunityCommand.Publish -> mapOf("action" to "saveProfile", "profile" to command.profile.payload())
             is CommunityCommand.Preferences -> with(command.value) { mapOf("action" to "savePreferences", "preferences" to mapOf(
                 "minAge" to minAge, "maxAge" to maxAge, "gender" to (gender?.name ?: "ANY"), "country" to country,
-                "language" to language, "nonSmokerOnly" to nonSmokerOnly, "wantsChildren" to (wantsChildren?.name ?: "ANY"))) }
+                "language" to language, "nonSmokerOnly" to nonSmokerOnly, "wantsChildren" to (wantsChildren?.name ?: "ANY"),
+                "maritalStatuses" to maritalStatuses.map { it.name }, "hasChildren" to (hasChildren?.name ?: "ANY"),
+                "minHeightCm" to minHeightCm, "maxHeightCm" to maxHeightCm,
+                "religiosity" to religiosity.map { it.name }, "prays" to prays.map { it.name },
+                "heritage" to heritage.map { it.name }, "countryOfBirth" to countryOfBirth,
+                "profession" to profession, "education" to education, "timelines" to timelines.map { it.name },
+                "willingToRelocate" to (willingToRelocate?.name ?: "ANY"))) }
             is CommunityCommand.Privacy -> with(command.value) { mapOf("action" to "saveSettings", "settings" to mapOf(
                 "visible" to visible, "readReceipts" to readReceipts, "showCity" to showCity, "notifications" to notifications,
                 "analytics" to analytics, "marketing" to marketing)) }
@@ -148,6 +162,8 @@ private fun messageFrom(id: String, data: Map<String, Any>) = ChatMessage(id, da
 
 private fun Map<String, Any>.string(key: String) = this[key] as? String ?: ""
 private fun Map<String, Any>.number(key: String, default: Long = 0) = (this[key] as? Number)?.toLong() ?: default
+private inline fun <reified T : Enum<T>> Map<String, Any>.enums(key: String): Set<T> =
+    strings(key).mapNotNull { name -> enumValues<T>().firstOrNull { it.name == name } }.toSet()
 private fun Map<String, Any>.strings(key: String) = (this[key] as? List<*>)?.filterIsInstance<String>().orEmpty()
 private inline fun <reified T : Enum<T>> enumValue(value: String, default: T): T = enumValues<T>().firstOrNull { it.name == value } ?: default
 private fun area(value: String): CompatibilityArea? = when (value) {

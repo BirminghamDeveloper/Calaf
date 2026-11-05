@@ -15,12 +15,14 @@ import com.calaf.core.designsystem.CalafIcons
 import com.calaf.core.designsystem.CalafSpacing
 
 /**
- * Pass and like buttons that do exactly what a swipe does, for people who cannot or would rather not drag. The
- * optional [onReport] and [onBlock] buttons keep the safety actions one tap away.
+ * Pass and like buttons for people who cannot or would rather not drag. In a [SwipeCardStack] they call
+ * [SwipeStackController.swipe], so they do exactly what a swipe does. The optional [onReport] and [onBlock] buttons
+ * keep the safety actions one tap away.
  */
 @Composable
 fun SwipeButtons(
-    controller: SwipeStackController,
+    onPass: () -> Unit,
+    onLike: () -> Unit,
     passLabel: String,
     likeLabel: String,
     enabled: Boolean,
@@ -38,11 +40,11 @@ fun SwipeButtons(
             IconButton(onClick = onReport, enabled = enabled) { CalafIcon(CalafIcons.Report, reportLabel) }
         }
         FilledTonalIconButton(
-            onClick = { controller.swipe(SwipeDirection.PASS) }, enabled = enabled,
+            onClick = onPass, enabled = enabled,
             modifier = Modifier.size(BUTTON_SIZE),
         ) { CalafIcon(CalafIcons.Close, passLabel) }
         FilledIconButton(
-            onClick = { controller.swipe(SwipeDirection.LIKE) }, enabled = enabled,
+            onClick = onLike, enabled = enabled,
             modifier = Modifier.size(BUTTON_SIZE),
         ) { CalafIcon(CalafIcons.Matches, likeLabel, selected = true) }
         if (blockLabel != null) {

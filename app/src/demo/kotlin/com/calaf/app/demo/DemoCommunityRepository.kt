@@ -1,7 +1,7 @@
 package com.calaf.app.demo
 
 import com.calaf.app.demo.DemoProfileCodec.enumValue
-import com.calaf.core.model.Answer
+import com.calaf.core.model.accepts
 import com.calaf.core.model.ChatMessage
 import com.calaf.core.model.CommunityError
 import com.calaf.core.model.CommunityCommand
@@ -9,7 +9,6 @@ import com.calaf.core.model.CommunityException
 import com.calaf.core.model.CommunityProfile
 import com.calaf.core.model.CommunityRepository
 import com.calaf.core.model.DiscoveryPage
-import com.calaf.core.model.Gender
 import com.calaf.core.model.Guardian
 import com.calaf.core.model.GuardianStatus
 import com.calaf.core.model.Match
@@ -109,7 +108,7 @@ class DemoCommunityRepository(
         if (!privacy(me).visible) throw CommunityException(CommunityError.PERMISSION)
         val candidates = store.rows("profiles").filter { (id, _) -> isCandidate(me, id) }
             .map { (id, data) -> publicProfile(id, data) }
-            .filter { matchesPreference(it, preference) }
+            .filter { preference.accepts(it) }
         return DiscoveryPage(candidates, null)
     }
 
@@ -121,14 +120,6 @@ class DemoCommunityRepository(
         !store.table("choices").has("${me}_$id") &&
         !store.table("pairs").has(store.pairId(me, id)) &&
         !store.isBlockedEitherWay(me, id)
-
-    private fun matchesPreference(p: CommunityProfile, want: PartnerPreference) =
-        p.age in want.minAge..want.maxAge &&
-            (want.gender == null || want.gender == p.gender) &&
-            (want.country.isBlank() || p.country.equals(want.country, true)) &&
-            (want.language.isBlank() || p.languages.any { it.equals(want.language, true) }) &&
-            (!want.nonSmokerOnly || p.smoking == Answer.NO) &&
-            (want.wantsChildren == null || p.wantsChildren == want.wantsChildren)
 
     private fun members(pair: JSONObject) = listOf(pair.optString("a"), pair.optString("b"))
 
@@ -153,15 +144,8 @@ class DemoCommunityRepository(
         )
     }
 
-    private fun preference(id: String): PartnerPreference {
-        val p = store.table("preferences").optJSONObject(id) ?: JSONObject()
-        return PartnerPreference(
-            p.optInt("min", 18), p.optInt("max", 70),
-            Gender.entries.firstOrNull { it.name == p.optString("gender") },
-            p.optString("country"), p.optString("language"), p.optBoolean("nonSmoker"),
-            Answer.entries.firstOrNull { it.name == p.optString("children") },
-        )
-    }
+    private fun preference(id: String): PartnerPreference =
+        DemoPreferenceCodec.fromJson(store.table("preferences").optJSONObject(id) ?: JSONObject())
 
     private fun publicProfile(id: String, json: JSONObject): CommunityProfile {
         val p = DemoProfileCodec.toDraft(json)

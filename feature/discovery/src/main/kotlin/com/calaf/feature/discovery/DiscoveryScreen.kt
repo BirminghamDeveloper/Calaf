@@ -1,5 +1,6 @@
 package com.calaf.feature.discovery
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,6 +33,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.calaf.core.designsystem.CalafSpacing
 import com.calaf.core.designsystem.CalafTheme
 import com.calaf.core.model.CommunityProfile
+import com.calaf.core.model.PartnerPreference
+import com.calaf.core.model.activeFilterCount
 import com.calaf.core.model.PublicPhoto
 import com.calaf.core.model.ReportCategory
 import com.calaf.core.ui.ActionBanner
@@ -60,7 +63,7 @@ fun DiscoveryRoute(uid: String, onPreferences: () -> Unit) {
     DiscoveryScreen(
         state, photoLoader = model::photo, onRefresh = { model.discover() },
         onInterest = model::interest, onBlock = model::block, onReport = model::report,
-        onPreferences = onPreferences, onRetry = model::retry,
+        onApplyFilters = model::applyFilters, onPreferences = onPreferences, onRetry = model::retry,
     )
 }
 
@@ -72,21 +75,43 @@ fun DiscoveryScreen(
     onInterest: (String, Boolean) -> Unit,
     onBlock: (String) -> Unit,
     onReport: (String, ReportCategory, String, () -> Unit) -> Unit,
+    onApplyFilters: (PartnerPreference, () -> Unit) -> Unit,
     onPreferences: () -> Unit,
     onRetry: () -> Unit,
 ) {
+    var detailId by rememberSaveable { mutableStateOf<String?>(null) }
+    var showFilters by rememberSaveable { mutableStateOf(false) }
     var reportUser by rememberSaveable { mutableStateOf<String?>(null) }
     var blockUser by remember { mutableStateOf<String?>(null) }
     val controller = remember { SwipeStackController() }
     val busy = state.action.busy
+    // The open profile is looked up by id, so it closes by itself once that member leaves the stack.
+    val detail = state.candidates.firstOrNull { it.id == detailId }
+    BackHandler(enabled = detail != null) { detailId = null }
     Column(Modifier.fillMaxSize().testTag("discovery_list")) {
         ActionBanner(state.action, working = state.discovering, onRetry = onRetry)
-        Header(onRefresh, state.discovering, onPreferences)
+        if (detail != null) {
+            ProfileDetailScreen(
+                detail, photoLoader = { photo -> photoLoader(detail.id, photo) }, enabled = !busy,
+                onBack = { detailId = null },
+                onInterest = { like ->
+                    detailId = null
+                    onInterest(detail.id, like)
+                },
+                onReport = { reportUser = detail.id }, onBlock = { blockUser = detail.id },
+            )
+            return@Column
+        }
+        Header(
+            onRefresh, state.discovering, state.preferences.activeFilterCount,
+            onFilters = { showFilters = true }, onPreferences = onPreferences,
+        )
         if (state.profile == null) NoticeCard(stringResource(R.string.publish_first))
         when {
             state.candidates.isNotEmpty() -> Deck(
                 state, controller, photoLoader, enabled = !busy,
                 onInterest = onInterest,
+                onOpenDetails = { detailId = state.candidates.firstOrNull()?.id },
                 onReport = { reportUser = state.candidates.firstOrNull()?.id },
                 onBlock = { blockUser = state.candidates.firstOrNull()?.id },
                 modifier = Modifier.weight(1f),
@@ -100,6 +125,13 @@ fun DiscoveryScreen(
             onReport(userId, category, details) { reportUser = null }
         }
     }
+    if (showFilters) {
+        FilterSheet(
+            current = state.preferences, busy = busy,
+            onApply = { value -> onApplyFilters(value) { showFilters = false } },
+            onDismiss = { showFilters = false },
+        )
+    }
     blockUser?.let { userId ->
         ConfirmDialog(
             enabled = !busy,
@@ -110,13 +142,28 @@ fun DiscoveryScreen(
 }
 
 @Composable
-private fun Header(onRefresh: () -> Unit, refreshing: Boolean, onPreferences: () -> Unit) {
+private fun Header(
+    onRefresh: () -> Unit,
+    refreshing: Boolean,
+    filterCount: Int,
+    onFilters: () -> Unit,
+    onPreferences: () -> Unit,
+) {
     Row(
         Modifier.fillMaxWidth().padding(horizontal = CalafSpacing.medium),
         horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(stringResource(CoreR.string.discover), style = MaterialTheme.typography.titleLarge)
         Row {
+            TextButton(onClick = onFilters) {
+                Text(
+                    if (filterCount > 0) {
+                        stringResource(R.string.disc_filters_count, filterCount)
+                    } else {
+                        stringResource(R.string.disc_filters)
+                    },
+                )
+            }
             TextButton(onClick = onRefresh, enabled = !refreshing) { Text(stringResource(R.string.refresh)) }
             TextButton(onClick = onPreferences) { Text(stringResource(CoreR.string.preferences)) }
         }
@@ -130,6 +177,7 @@ private fun Deck(
     photoLoader: suspend (String, PublicPhoto) -> ByteArray?,
     enabled: Boolean,
     onInterest: (String, Boolean) -> Unit,
+    onOpenDetails: () -> Unit,
     onReport: () -> Unit,
     onBlock: () -> Unit,
     modifier: Modifier,
@@ -145,10 +193,15 @@ private fun Deck(
             onSwiped = { profile, direction -> onInterest(profile.id, direction == SwipeDirection.LIKE) },
             controller = controller, likeLabel = like, passLabel = pass, enabled = enabled,
             modifier = Modifier.weight(1f).fillMaxWidth(),
-        ) { profile -> ProfileCard(profile, photoLoader = { photo -> photoLoader(profile.id, photo) }) }
+        ) { profile ->
+            ProfileCard(
+                profile, photoLoader = { photo -> photoLoader(profile.id, photo) }, onOpenDetails = onOpenDetails,
+            )
+        }
         Text(stringResource(R.string.disc_swipe_hint), style = MaterialTheme.typography.bodySmall)
         SwipeButtons(
-            controller, passLabel = pass, likeLabel = like, enabled = enabled,
+            onPass = { controller.swipe(SwipeDirection.PASS) }, onLike = { controller.swipe(SwipeDirection.LIKE) },
+            passLabel = pass, likeLabel = like, enabled = enabled,
             modifier = Modifier.align(Alignment.CenterHorizontally),
             reportLabel = stringResource(CoreR.string.report), blockLabel = stringResource(CoreR.string.block),
             onReport = onReport, onBlock = onBlock,
@@ -159,7 +212,10 @@ private fun Deck(
 @Composable
 private fun Loading(modifier: Modifier) {
     Box(modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(CalafSpacing.medium)) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(CalafSpacing.medium),
+        ) {
             CircularProgressIndicator()
             Text(stringResource(R.string.disc_loading))
         }
@@ -169,7 +225,10 @@ private fun Loading(modifier: Modifier) {
 @Composable
 private fun EmptyState(onRefresh: () -> Unit, onPreferences: () -> Unit, modifier: Modifier) {
     Box(modifier.fillMaxWidth().padding(CalafSpacing.large), contentAlignment = Alignment.Center) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(CalafSpacing.medium)) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(CalafSpacing.medium),
+        ) {
             Text(stringResource(R.string.disc_empty_title), style = MaterialTheme.typography.titleLarge)
             Text(stringResource(R.string.empty_discovery), textAlign = TextAlign.Center)
             Button(onClick = onRefresh) { Text(stringResource(R.string.refresh)) }
@@ -190,7 +249,8 @@ private fun DiscoveryScreenPreview() {
             DiscoveryUiState(profile = demo, candidates = listOf(demo, demo.copy(id = "b")), loaded = true),
             photoLoader = { _, _ -> null }, onRefresh = {}, onInterest = { _, _ -> },
             onBlock = {},
-            onReport = { _, _, _, _ -> }, onPreferences = {}, onRetry = {},
+            onReport = { _, _, _, _ -> }, onApplyFilters = { _, _ -> },
+            onPreferences = {}, onRetry = {},
         )
     }
 }
@@ -201,7 +261,8 @@ private fun DiscoveryEmptyPreview() {
     CalafTheme {
         DiscoveryScreen(
             DiscoveryUiState(loaded = true), photoLoader = { _, _ -> null }, onRefresh = {},
-            onInterest = { _, _ -> }, onBlock = {}, onReport = { _, _, _, _ -> }, onPreferences = {}, onRetry = {},
+            onInterest = { _, _ -> }, onBlock = {}, onReport = { _, _, _, _ -> },
+            onApplyFilters = { _, _ -> }, onPreferences = {}, onRetry = {},
         )
     }
 }

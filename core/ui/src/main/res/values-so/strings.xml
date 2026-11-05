@@ -81,4 +81,7 @@
     <string name="lbl_height">%1$d cm</string>
     <string name="swipe_like_action">Like</string>
     <string name="swipe_pass_action">Pass</string>
+    <string name="lbl_answer_yes">Yes</string>
+    <string name="lbl_answer_no">No</string>
+    <string name="lbl_answer_open">Open to it</string>
 </resources>

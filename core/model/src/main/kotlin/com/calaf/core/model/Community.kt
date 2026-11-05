@@ -33,8 +33,29 @@ data class CommunityProfile(
     /** Approved photos only, main photo first. */
     val photos: List<PublicPhoto> = emptyList(),
 )
-data class PartnerPreference(val minAge: Int = 18, val maxAge: Int = 70, val gender: Gender? = null,
-    val country: String = "", val language: String = "", val nonSmokerOnly: Boolean = false, val wantsChildren: Answer? = null)
+/**
+ * Who a member wants to see. Empty sets, null answers, blank text and 0 heights all mean "any". The fields from
+ * [maritalStatuses] on were added in Task 3.2. Religiosity, prayer and heritage can only match members who chose to
+ * share them, because everyone else has those left unspecified.
+ */
+data class PartnerPreference(
+    val minAge: Int = 18, val maxAge: Int = 70, val gender: Gender? = null,
+    val country: String = "", val language: String = "", val nonSmokerOnly: Boolean = false,
+    val wantsChildren: Answer? = null,
+    val maritalStatuses: Set<MaritalStatus> = emptySet(),
+    /** Whether the other member already has children. YES or NO, null for any. */
+    val hasChildren: Answer? = null,
+    val minHeightCm: Int = 0, val maxHeightCm: Int = 0,
+    val religiosity: Set<Religiosity> = emptySet(),
+    val prays: Set<PrayerHabit> = emptySet(),
+    val heritage: Set<Heritage> = emptySet(),
+    val countryOfBirth: String = "",
+    val profession: String = "",
+    val education: String = "",
+    val timelines: Set<MarriageTimeline> = emptySet(),
+    /** YES also accepts members who are open to it. NO accepts only members who are not. Null for any. */
+    val willingToRelocate: Answer? = null,
+)
 data class PrivacySettings(val visible: Boolean = true, val readReceipts: Boolean = false, val showCity: Boolean = true,
     val notifications: Boolean = true, val analytics: Boolean = false, val marketing: Boolean = false)
 data class Match(val id: String, val otherId: String, val name: String, val status: MatchStatus, val blockedByMe: Boolean = false, val messageCount: Long = 0,
