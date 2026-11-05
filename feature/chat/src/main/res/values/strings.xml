@@ -8,4 +8,27 @@
     <string name="sent_at">%1$s · %2$s</string>
     <string name="warning_message">Safety reminder: this message may contain a link, contact information, or a money request.</string>
     <string name="you">You</string>
+    <string name="chat_day_today">Today</string>
+    <string name="chat_day_yesterday">Yesterday</string>
+    <string name="chat_status_sending">Sending…</string>
+    <string name="chat_status_sent">Sent</string>
+    <string name="chat_status_read">Read</string>
+    <string name="chat_demo_reply">Demo reply, simulated</string>
+    <string name="chat_warn_link">This message has a link. Do not open links from someone you have just met.</string>
+    <string name="chat_warn_personal">This message has contact details. Keep your own details private until you trust them.</string>
+    <string name="chat_warn_money">This message mentions money. Never send money to someone you have met online.</string>
+    <string name="chat_more">More options</string>
+    <string name="chat_menu_guardian">Guardian</string>
+    <string name="chat_guardian_title">Share with your guardian</string>
+    <string name="chat_guardian_body">Your guardian (wali) can read this conversation, read only, but only if you turn this on. They cannot write messages. You can turn it off at any time.</string>
+    <string name="chat_guardian_switch">Let my guardian read this conversation</string>
+    <string name="chat_guardian_none">You have not added a guardian yet. Invite one, then come back and turn this on.</string>
+    <string name="chat_guardian_invite">Invite a guardian</string>
+    <string name="chat_guardian_code">Give this code to your guardian. They enter it in Settings, Guardian.</string>
+    <string name="chat_guardian_close">Done</string>
+    <string name="chat_guardian_mine">Your guardian can read this conversation. They cannot write in it.</string>
+    <string name="chat_guardian_theirs">%1$s has shared this conversation with their guardian. They cannot write in it.</string>
+    <string name="chat_guardian_readonly">Read only. You are viewing %1$s’s conversation with %2$s.</string>
+    <string name="chat_guardian_empty">No messages yet.</string>
+    <string name="chat_guardian_stopped">This conversation is no longer shared with you.</string>
 </resources>

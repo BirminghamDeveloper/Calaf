@@ -53,4 +53,7 @@
     <string name="woman">Woman</string>
     <string name="country">Country (leave blank for any)</string>
     <string name="safety_body">Take your time. Never send money to someone you have only met online. Keep identity documents, financial information and your address private. Meet in public and tell someone you trust.\n\nYou may block, report or unmatch at any time. If you are in immediate danger, contact local emergency services.</string>
+    <string name="set_guardian_shared_title">Conversations shared with you</string>
+    <string name="set_guardian_shared_item">%1$s is talking with %2$s</string>
+    <string name="set_guardian_open">Open conversation (read only)</string>
 </resources>

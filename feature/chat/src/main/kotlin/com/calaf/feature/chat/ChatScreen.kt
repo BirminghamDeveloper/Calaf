@@ -1,23 +1,16 @@
 package com.calaf.feature.chat
 
-import com.calaf.core.ui.R as CoreR
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Button
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -28,7 +21,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -43,13 +35,15 @@ import com.calaf.core.designsystem.CalafTheme
 import com.calaf.core.model.ChatMessage
 import com.calaf.core.model.Match
 import com.calaf.core.model.MatchStatus
+import com.calaf.core.model.MessageSafety
 import com.calaf.core.model.ReportCategory
+import com.calaf.core.model.SafetyWarning
 import com.calaf.core.ui.ActionBanner
 import com.calaf.core.ui.ConfirmDialog
 import com.calaf.core.ui.Notice
+import com.calaf.core.ui.NoticeCard
 import com.calaf.core.ui.ReportDialog
-import java.text.DateFormat
-import java.util.Date
+import com.calaf.core.ui.sendingMessageRes
 
 private enum class Pending { BLOCK, UNMATCH }
 
@@ -73,27 +67,34 @@ fun ChatRoute(uid: String, matchId: String, onClosed: () -> Unit, onBack: () -> 
         }
     }
     ChatScreen(
-        uid, state, onSend = model::send, onBack = onBack, onUnmatch = model::unmatch, onBlock = model::block,
-        onReport = model::report, onEarlier = model::loadEarlierMessages, onRead = model::markVisibleMessageRead,
+        uid, state, ChatActions(
+            onSend = model::send, onBack = onBack, onUnmatch = model::unmatch, onBlock = model::block,
+            onReport = model::report, onEarlier = model::loadEarlierMessages, onRead = model::markVisibleMessageRead,
+            onShareWithGuardian = model::shareWithGuardian, onInviteGuardian = model::inviteGuardian,
+        ),
     )
 }
 
+/** Everything the chat can ask for, so the screen takes one parameter instead of ten. */
+class ChatActions(
+    val onSend: (String) -> Unit,
+    val onBack: () -> Unit,
+    val onUnmatch: () -> Unit,
+    val onBlock: (String) -> Unit,
+    val onReport: (String, ReportCategory, String, () -> Unit) -> Unit,
+    val onEarlier: () -> Unit,
+    val onRead: (ChatMessage) -> Unit,
+    val onShareWithGuardian: (Boolean) -> Unit,
+    val onInviteGuardian: () -> Unit,
+)
+
 @Composable
-fun ChatScreen(
-    uid: String,
-    state: ChatUiState,
-    onSend: (String) -> Unit,
-    onBack: () -> Unit,
-    onUnmatch: () -> Unit,
-    onBlock: (String) -> Unit,
-    onReport: (String, ReportCategory, String, () -> Unit) -> Unit,
-    onEarlier: () -> Unit,
-    onRead: (ChatMessage) -> Unit,
-) {
+fun ChatScreen(uid: String, state: ChatUiState, actions: ChatActions) {
     val conversation = state.conversation
     var draft by rememberSaveable(conversation?.id) { mutableStateOf("") }
     var reportUser by rememberSaveable { mutableStateOf<String?>(null) }
     var pending by remember { mutableStateOf<Pending?>(null) }
+    var guardianDialog by rememberSaveable { mutableStateOf(false) }
     val list = rememberLazyListState()
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     LaunchedEffect(conversation?.id, state.messages.lastOrNull()?.id) {
@@ -103,7 +104,7 @@ fun ChatScreen(
     LaunchedEffect(list, state.messages, state.readReceipts) {
         lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
             snapshotFlow { list.layoutInfo.visibleItemsInfo.map { it.key } }.collect { keys ->
-                state.messages.lastOrNull { it.id in keys && it.senderId != uid }?.let(onRead)
+                state.messages.lastOrNull { it.id in keys && it.senderId != uid }?.let(actions.onRead)
             }
         }
     }
@@ -113,29 +114,21 @@ fun ChatScreen(
         if (conversation == null) return@Column
         Column(Modifier.weight(1f).imePadding().padding(horizontal = CalafSpacing.medium)) {
             ChatHeader(
-                conversation, onBack,
+                conversation, actions.onBack,
                 onReport = { reportUser = conversation.otherId },
                 onBlock = { pending = Pending.BLOCK },
                 onUnmatch = { pending = Pending.UNMATCH },
+                onGuardian = { guardianDialog = true },
             )
+            GuardianBanners(conversation)
             Text(stringResource(R.string.chat_safety), style = MaterialTheme.typography.bodySmall)
-            MessageList(uid, conversation, state, list, onEarlier, Modifier.weight(1f))
-            OutlinedTextField(
-                draft, { draft = it.take(MAX_MESSAGE) }, label = { Text(stringResource(R.string.message_hint)) },
-                enabled = !state.action.busy, modifier = Modifier.fillMaxWidth(), maxLines = 4,
-            )
-            Button(
-                onClick = { onSend(draft) }, enabled = draft.isNotBlank() && !state.action.busy,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                CalafIcon(CalafIcons.Send, contentDescription = null)
-                Text(stringResource(R.string.send), Modifier.padding(start = CalafSpacing.small))
-            }
+            MessageList(uid, conversation, state, list, actions.onEarlier, Modifier.weight(1f))
+            Composer(draft, { draft = it }, state.action.busy) { actions.onSend(draft) }
         }
     }
     reportUser?.let { userId ->
         ReportDialog(onDismiss = { reportUser = null }) { category, details ->
-            onReport(userId, category, details) { reportUser = null }
+            actions.onReport(userId, category, details) { reportUser = null }
         }
     }
     pending?.let { action ->
@@ -143,82 +136,54 @@ fun ChatScreen(
             enabled = !state.action.busy,
             onConfirm = {
                 when (action) {
-                    Pending.BLOCK -> conversation?.let { onBlock(it.otherId) }
-                    Pending.UNMATCH -> onUnmatch()
+                    Pending.BLOCK -> conversation?.let { actions.onBlock(it.otherId) }
+                    Pending.UNMATCH -> actions.onUnmatch()
                 }
                 pending = null
             },
             onDismiss = { pending = null },
         )
     }
+    if (guardianDialog && conversation != null) {
+        GuardianShareDialog(
+            shared = conversation.sharedWithGuardian, hasGuardian = state.hasGuardian, code = state.guardianCode,
+            enabled = !state.action.busy, onShare = actions.onShareWithGuardian,
+            onInvite = actions.onInviteGuardian, onDismiss = { guardianDialog = false },
+        )
+    }
 }
 
+/** Who can read this conversation besides the two members, always shown so nobody is read over without knowing. */
 @Composable
-private fun ChatHeader(
-    match: Match,
-    onBack: () -> Unit,
-    onReport: () -> Unit,
-    onBlock: () -> Unit,
-    onUnmatch: () -> Unit,
-) {
-    Text(match.name, style = MaterialTheme.typography.titleLarge)
-    Row {
-        IconButton(onClick = onBack) { CalafIcon(CalafIcons.Back, stringResource(CoreR.string.back)) }
-        IconButton(onClick = onReport) { CalafIcon(CalafIcons.Report, stringResource(CoreR.string.report)) }
-        IconButton(onClick = onBlock) { CalafIcon(CalafIcons.Block, stringResource(CoreR.string.block)) }
-        TextButton(onClick = onUnmatch) { Text(stringResource(CoreR.string.unmatch)) }
+private fun GuardianBanners(conversation: Match) {
+    if (conversation.sharedWithGuardian) NoticeCard(stringResource(R.string.chat_guardian_mine))
+    if (conversation.otherSharesWithGuardian) {
+        NoticeCard(stringResource(R.string.chat_guardian_theirs, conversation.name.ifBlank { "?" }))
     }
 }
 
 @Composable
-private fun MessageList(
-    uid: String,
-    conversation: Match,
-    state: ChatUiState,
-    list: androidx.compose.foundation.lazy.LazyListState,
-    onEarlier: () -> Unit,
-    modifier: Modifier,
-) {
-    LazyColumn(
-        modifier.fillMaxWidth().testTag("chat_history"), state = list, reverseLayout = true,
-        verticalArrangement = Arrangement.spacedBy(CalafSpacing.small),
-    ) {
-        items(state.messages.asReversed(), key = ChatMessage::id) { message ->
-            val mine = message.senderId == uid
-            Surface(
-                color = if (mine) {
-                    MaterialTheme.colorScheme.primaryContainer
-                } else {
-                    MaterialTheme.colorScheme.surfaceVariant
-                },
-                shape = MaterialTheme.shapes.medium,
-            ) {
-                Column(Modifier.padding(CalafSpacing.medium)) {
-                    Text(message.text)
-                    if (mine && message.createdAt > 0 && conversation.otherReadAt >= message.createdAt) {
-                        Text(stringResource(R.string.message_read), style = MaterialTheme.typography.labelSmall)
-                    }
-                    val time = if (message.createdAt == 0L) {
-                        stringResource(R.string.please_wait)
-                    } else {
-                        DateFormat.getTimeInstance(DateFormat.SHORT).format(Date(message.createdAt))
-                    }
-                    val sender = stringResource(if (mine) R.string.you else CoreR.string.member)
-                    Text(stringResource(R.string.sent_at, sender, time), style = MaterialTheme.typography.labelSmall)
-                    if (message.warnings.isNotEmpty()) {
-                        Text(stringResource(R.string.warning_message), style = MaterialTheme.typography.bodySmall)
-                    }
-                }
-            }
-        }
-        if (state.hasEarlierMessages) {
-            item {
-                TextButton(onClick = onEarlier, enabled = !state.loadingHistory) {
-                    Text(stringResource(if (state.loadingHistory) R.string.please_wait else R.string.earlier_messages))
-                }
-            }
+private fun Composer(draft: String, onChange: (String) -> Unit, busy: Boolean, onSend: () -> Unit) {
+    val warnings = MessageSafety.warnings(draft)
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(CalafSpacing.small)) {
+        OutlinedTextField(
+            draft, { onChange(it.take(MAX_MESSAGE)) }, label = { Text(stringResource(R.string.message_hint)) },
+            enabled = !busy, modifier = Modifier.fillMaxWidth(), maxLines = 4,
+        )
+        warnings.forEach { warning -> warning.hint() }
+        Button(onClick = onSend, enabled = draft.isNotBlank() && !busy, modifier = Modifier.fillMaxWidth()) {
+            CalafIcon(CalafIcons.Send, contentDescription = null)
+            Text(stringResource(R.string.send), Modifier.padding(start = CalafSpacing.small))
         }
     }
+}
+
+@Composable
+private fun SafetyWarning.hint() {
+    Text(
+        stringResource(sendingMessageRes()), style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.error,
+    )
 }
 
 private const val MAX_MESSAGE = 2000
@@ -226,7 +191,7 @@ private const val MAX_MESSAGE = 2000
 @Preview(showBackground = true)
 @Composable
 private fun ChatScreenPreview() {
-    val match = Match("a_b", "b", "Hodan (Demo)", MatchStatus.ACTIVE)
+    val match = Match("a_b", "b", "Hodan (Demo)", MatchStatus.ACTIVE, otherReadAt = 1_700_000_050_000)
     CalafTheme {
         ChatScreen(
             "a",
@@ -235,10 +200,14 @@ private fun ChatScreenPreview() {
                 messages = listOf(
                     ChatMessage("1", "b", "Salaam, nice to meet you.", 1_700_000_000_000, emptyList()),
                     ChatMessage("2", "a", "Walaykum salaam!", 1_700_000_060_000, emptyList()),
+                    ChatMessage(
+                        "3", "b", "Call me on 07700 900123", 1_700_000_120_000,
+                        listOf(SafetyWarning.PERSONAL_INFORMATION),
+                    ),
+                    ChatMessage("4", "b", "Thank you for sharing that.", 1_700_000_180_000, emptyList(), isDemo = true),
                 ),
             ),
-            onSend = {}, onBack = {}, onUnmatch = {}, onBlock = {}, onReport = { _, _, _, _ -> },
-            onEarlier = {}, onRead = {},
+            ChatActions({}, {}, {}, {}, { _, _, _, _ -> }, {}, {}, {}, {}),
         )
     }
 }

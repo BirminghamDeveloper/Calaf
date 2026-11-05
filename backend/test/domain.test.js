@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ageOn, validateProfile, pairId, preferences, eligible, messageWarnings, compatibility, shareable, hasSpecialCategoryData, SPECIAL_CATEGORY_FIELDS, complimentFrom, COMPLIMENT_MAX } from '../src/domain.js';
+import { ageOn, validateProfile, pairId, preferences, eligible, messageWarnings, compatibility, shareable, hasSpecialCategoryData, SPECIAL_CATEGORY_FIELDS, complimentFrom, COMPLIMENT_MAX, guardianSees } from '../src/domain.js';
 
 test('age gate handles the eighteenth birthday and invalid calendar dates', () => {
   const today = new Date('2026-10-28T12:00:00Z');
@@ -124,4 +124,19 @@ test('a compliment is shown to the receiver only while the author like stands, w
   const risky = { choices: { a: 'LIKE' }, notes: { a: 'mail me a@example.org' } };
   assert.deepEqual(complimentFrom(risky, 'a').warnings, ['PERSONAL_INFORMATION']);
   assert.equal(COMPLIMENT_MAX, 140);
+});
+
+test('a guardian sees only active, unblocked matches their member opted in to share', () => {
+  const pair = { members: ['owner', 'other'], state: 'ACTIVE', blockedBy: [], guardianShares: { owner: true } };
+  assert.equal(guardianSees(pair, ['owner']), 'owner');
+  assert.equal(guardianSees(pair, ['someone']), null);
+  assert.equal(guardianSees(pair, []), null);
+  // Sharing is per member: the other member's guardian sees nothing unless that member opted in too.
+  assert.equal(guardianSees(pair, ['other']), null);
+  assert.equal(guardianSees({ ...pair, guardianShares: { owner: false } }, ['owner']), null);
+  assert.equal(guardianSees({ ...pair, guardianShares: {} }, ['owner']), null);
+  assert.equal(guardianSees({ ...pair, guardianShares: undefined }, ['owner']), null);
+  assert.equal(guardianSees({ ...pair, state: 'CLOSED' }, ['owner']), null);
+  assert.equal(guardianSees({ ...pair, blockedBy: ['other'] }, ['owner']), null);
+  assert.equal(guardianSees(undefined, ['owner']), null);
 });

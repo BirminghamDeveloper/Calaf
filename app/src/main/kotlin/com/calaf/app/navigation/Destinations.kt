@@ -24,3 +24,6 @@ import kotlinx.serialization.Serializable
 @Serializable data class SettingsPageDestination(val page: SettingsPage)
 
 @Serializable data class ChatDestination(val matchId: String)
+
+/** A guardian reading a conversation a member shared with them. Read only. */
+@Serializable data class GuardianChatDestination(val matchId: String)

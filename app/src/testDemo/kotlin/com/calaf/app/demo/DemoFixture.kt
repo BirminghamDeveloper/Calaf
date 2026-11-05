@@ -8,7 +8,8 @@ internal class DemoFixture(val directory: File) {
     val session = DemoSession(store)
     val auth = DemoAuthRepository(store, session)
     val profiles = DemoProfileRepository(store, session)
-    val community = DemoCommunityRepository(store, session)
+    val replies = ManualReplies()
+    val community = DemoCommunityRepository(store, session, replies)
     val avatars = FakeAvatars()
     val admin = DemoAdminRepository(store, session, avatars)
 
@@ -24,4 +25,21 @@ internal class DemoFixture(val directory: File) {
 /** Returns a few bytes that depend on the avatar key, so tests can tell avatars apart. */
 internal class FakeAvatars : AvatarSource {
     override fun bytes(key: String): ByteArray = key.toByteArray()
+}
+
+/** Collects scheduled demo replies so a test can decide when they fire. */
+internal class ManualReplies : ReplyScheduler {
+    private val actions = mutableListOf<Pair<Long, () -> Unit>>()
+    val pending get() = actions.size
+    val delays get() = actions.map { it.first }
+
+    override fun schedule(delayMillis: Long, action: () -> Unit) {
+        actions += delayMillis to action
+    }
+
+    fun runAll() {
+        val due = actions.toList()
+        actions.clear()
+        due.forEach { it.second() }
+    }
 }

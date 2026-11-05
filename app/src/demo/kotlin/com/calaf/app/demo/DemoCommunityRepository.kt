@@ -11,6 +11,7 @@ import com.calaf.core.model.CommunityProfile
 import com.calaf.core.model.CommunityRepository
 import com.calaf.core.model.DiscoveryPage
 import com.calaf.core.model.Guardian
+import com.calaf.core.model.GuardianMatch
 import com.calaf.core.model.GuardianStatus
 import com.calaf.core.model.LikedYou
 import com.calaf.core.model.Match
@@ -33,8 +34,9 @@ import java.time.Period
 class DemoCommunityRepository(
     private val store: DemoStore,
     private val session: DemoSession,
+    replies: ReplyScheduler = ReplyScheduler.None,
 ) : CommunityRepository {
-    private val commands = DemoCommandHandler(store, session)
+    private val commands = DemoCommandHandler(store, session, replies)
 
     private fun <T> observe(block: () -> T): Flow<T> = store.revision.map { block() }.distinctUntilChanged()
 
@@ -70,6 +72,9 @@ class DemoCommunityRepository(
             Match(
                 id, other, store.table("profiles").optJSONObject(other)?.optString("name") ?: "Demo member", status,
                 pair.optString("blockedBy") == userId, messageRows(id).size.toLong(),
+                otherReadAt = pair.optLong("readAt_$other"),
+                sharedWithGuardian = store.table("guardianShares").has("${id}_$userId"),
+                otherSharesWithGuardian = store.table("guardianShares").has("${id}_$other"),
             )
         }
     }
@@ -127,6 +132,38 @@ class DemoCommunityRepository(
         return LikedYou(profiles.size, profiles, locked = false, simulated = true)
     }
 
+    override suspend fun guardianMatches(): List<GuardianMatch> {
+        val me = session.requireUid()
+        val owners = store.rows("guardians")
+            .filter { (_, g) -> g.optString("guardian") == me && g.optString("status") == "ACCEPTED" }
+            .map { (_, g) -> g.getString("owner") }.toSet()
+        return store.rows("pairs").filter { (id, pair) -> sharedOwner(id, pair, owners) != null }.map { (id, pair) ->
+            val owner = sharedOwner(id, pair, owners)!!
+            val other = members(pair).first { it != owner }
+            GuardianMatch(id, owner, profileName(owner), profileName(other))
+        }
+    }
+
+    override fun guardianMessages(matchId: String) = observe {
+        val me = session.requireUid()
+        val owners = store.rows("guardians")
+            .filter { (_, g) -> g.optString("guardian") == me && g.optString("status") == "ACCEPTED" }
+            .map { (_, g) -> g.getString("owner") }.toSet()
+        val pair = store.table("pairs").optJSONObject(matchId)
+        if (pair == null || sharedOwner(matchId, pair, owners) == null) {
+            throw CommunityException(CommunityError.PERMISSION)
+        }
+        messageRows(matchId).takeLast(PAGE_SIZE)
+    }
+
+    /** The owner among [owners] who shared this active match with their guardian, or null. */
+    private fun sharedOwner(id: String, pair: JSONObject, owners: Set<String>): String? {
+        if (pair.optString("status") != "ACTIVE" || members(pair).any { store.isSuspended(it) }) return null
+        return members(pair).firstOrNull { it in owners && store.table("guardianShares").has("${id}_$it") }
+    }
+
+    private fun profileName(id: String) = store.table("profiles").optJSONObject(id)?.optString("name").orEmpty()
+
     override suspend fun execute(command: CommunityCommand) = commands.execute(command)
 
     /** [other] liked [me], and neither answered the other, matched, blocked nor left the demo. */
@@ -162,7 +199,10 @@ class DemoCommunityRepository(
 
     private fun messageRows(matchId: String): List<ChatMessage> =
         store.rows("messages").filter { it.second.optString("pair") == matchId }.map { (id, m) ->
-            ChatMessage(id, m.getString("sender"), m.getString("text"), m.getLong("time"), emptyList())
+            val text = m.getString("text")
+            ChatMessage(
+                id, m.getString("sender"), text, m.getLong("time"), MessageSafety.warnings(text), m.optBoolean("demo"),
+            )
         }.sortedBy { it.createdAt }
 
     private fun privacy(id: String): PrivacySettings {

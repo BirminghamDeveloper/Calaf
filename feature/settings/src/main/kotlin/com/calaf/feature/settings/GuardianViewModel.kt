@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.calaf.core.model.CommunityCommand
 import com.calaf.core.model.CommunityRepository
 import com.calaf.core.model.Guardian
+import com.calaf.core.model.GuardianMatch
 import com.calaf.core.ui.ActionRunner
 import com.calaf.core.ui.ActionState
 import dagger.assisted.Assisted
@@ -21,6 +22,8 @@ import kotlinx.coroutines.launch
 data class GuardianUiState(
     val guardians: List<Guardian> = emptyList(),
     val invitationCode: String? = null,
+    /** Conversations members you guard have chosen to share with you. */
+    val shared: List<GuardianMatch> = emptyList(),
     val action: ActionState = ActionState(),
 )
 
@@ -44,6 +47,7 @@ class GuardianViewModel @AssistedInject constructor(
     fun observe() {
         observer?.cancel()
         actions.clearError()
+        refreshShared()
         observer = viewModelScope.launch {
             repository.guardians(uid).catch { actions.fail(it) }.collect { data ->
                 mutable.update { it.copy(guardians = data) }
@@ -62,9 +66,23 @@ class GuardianViewModel @AssistedInject constructor(
         },
     )
 
-    fun accept(code: String) = actions.run(CommunityCommand.AcceptGuardian(code))
+    /** Loads the conversations shared with this member as a guardian. An error here only means an empty list. */
+    fun refreshShared() {
+        viewModelScope.launch {
+            try {
+                val shared = repository.guardianMatches()
+                mutable.update { it.copy(shared = shared) }
+            } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                mutable.update { it.copy(shared = emptyList()) }
+            }
+        }
+    }
 
-    fun revoke(id: String) = actions.run(CommunityCommand.RevokeGuardian(id))
+    fun accept(code: String) = actions.run(CommunityCommand.AcceptGuardian(code), onSuccess = ::refreshShared)
+
+    fun revoke(id: String) = actions.run(CommunityCommand.RevokeGuardian(id), onSuccess = ::refreshShared)
 
     fun dismissNotice() = actions.dismissNotice()
 }

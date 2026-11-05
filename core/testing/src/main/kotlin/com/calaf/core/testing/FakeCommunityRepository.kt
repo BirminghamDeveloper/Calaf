@@ -9,6 +9,7 @@ import com.calaf.core.model.CommunityProfile
 import com.calaf.core.model.CommunityRepository
 import com.calaf.core.model.DiscoveryPage
 import com.calaf.core.model.Guardian
+import com.calaf.core.model.GuardianMatch
 import com.calaf.core.model.LikedYou
 import com.calaf.core.model.Match
 import com.calaf.core.model.MemberNotification
@@ -30,6 +31,10 @@ class FakeCommunityRepository : CommunityRepository {
 
     /** What [earlierMessages] returns. */
     var older = emptyList<ChatMessage>()
+
+    /** What [guardianMatches] returns, and the messages [guardianMessages] streams. */
+    var guarded = emptyList<GuardianMatch>()
+    val liveGuardianMessages = MutableStateFlow<List<ChatMessage>>(emptyList())
 
     /** What [likedYou] returns. */
     var liked = LikedYou(0, emptyList())
@@ -57,6 +62,8 @@ class FakeCommunityRepository : CommunityRepository {
     override suspend fun earlierMessages(matchId: String, beforeId: String) = older
     override suspend fun discover(cursor: String?) = page
     override suspend fun likedYou() = liked
+    override suspend fun guardianMatches() = guarded
+    override fun guardianMessages(matchId: String) = liveGuardianMessages
 
     override suspend fun execute(command: CommunityCommand): CommandResult {
         commands += command

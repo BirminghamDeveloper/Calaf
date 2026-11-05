@@ -46,7 +46,7 @@ fun ComplimentDialog(recipientName: String, enabled: Boolean, onSend: (String) -
                 )
                 Column(Modifier.semantics { liveRegion = LiveRegionMode.Polite }) {
                     warnings.forEach { warning ->
-                        Text(stringResource(warning.sendingMessage()), color = MaterialTheme.colorScheme.error)
+                        Text(stringResource(warning.sendingMessageRes()), color = MaterialTheme.colorScheme.error)
                     }
                 }
             }
@@ -63,7 +63,8 @@ fun ComplimentDialog(recipientName: String, enabled: Boolean, onSend: (String) -
     )
 }
 
-private fun SafetyWarning.sendingMessage() = when (this) {
+/** What to tell someone who is about to send text with this problem. */
+fun SafetyWarning.sendingMessageRes() = when (this) {
     SafetyWarning.LINK -> R.string.cmp_warning_link
     SafetyWarning.PERSONAL_INFORMATION -> R.string.cmp_warning_personal
     SafetyWarning.MONEY_REQUEST -> R.string.cmp_warning_money

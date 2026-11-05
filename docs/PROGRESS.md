@@ -1,5 +1,5 @@
 # Calaf demo progress
-Last updated: 2026-11-05 08:26 UTC, after Task 3.3
+Last updated: 2026-11-05 08:40 UTC, after Task 3.4
 
 ## Done so far
 
@@ -47,11 +47,16 @@ The Matches tab now has two tabs: Matches and Liked you. Liked you lists people 
 Next to Pass and Like there is now a "Like with a note" button: write up to 140 characters, with a counter and safety warnings as you type. The other person sees your note on your card, with a warning if it has a link, contact details or a money request.
 Behind the scenes: the server checks the note, the same safety rule is shared with chat, and older demo data upgrades automatically.
 
+### Task 3.4 Chat polish and guardian view
+Chats now look like a real messenger: your messages on the right, theirs on the left, day headings (Today, Yesterday, dates) and under your messages Sending, Sent or Read. A message with a link, contact details or a money request gets a red warning for the person receiving it, and you get a hint while typing it. Report and Block stay one tap away in the chat header; Unmatch and Guardian are in the chat menu.
+Guardian (wali): in the chat menu you can let your guardian read that one conversation, read only, and you can switch it off any time. It is off unless you turn it on. The other person always sees a notice that the chat is shared. Your guardian opens shared chats from Settings, Guardian.
+In the demo, fictional members answer you after a couple of seconds with a friendly scripted reply that is clearly labelled "Demo reply, simulated".
+Behind the scenes: the server only lets a guardian read a chat that was shared and still active, and read receipts now work in the demo too.
+
 ## In progress
-Task 3.3 is finished and being merged. Next up: Task 3.4 Chat polish and guardian view (not started).
+Task 3.4 is finished and being merged. Next up: Task 3.5 Demo showcase polish (not started).
 
 ## Still to do
-- Task 3.4 Chat polish and guardian (wali) view
 - Task 3.5 Demo showcase polish (20 demo profiles, walkthrough, Try the demo button, reset, icon, Somali, demo script)
 
 ## Known issues
@@ -67,6 +72,7 @@ Task 3.3 is finished and being merged. Next up: Task 3.4 Chat polish and guardia
 - New Somali strings are English copies for now (filled in at Task 3.5).
 - The main photo is always the first photo, so choosing a main photo and dragging to the front are the same thing.
 - Blur is chosen per photo by the owner. The card that actually draws the blur arrives with the swipe cards (Task 3.1).
+- Guardian sharing is per chat, off by default, both people are told, and a guardian can only read. Demo replies are scripted, delayed and labelled as simulated. Risky messages are flagged, never blocked.
 - Liked you is a second tab inside Matches. Risky notes are flagged, never blocked. In the real app Liked you stays locked until premium.
 - The full profile opens inside Discover and closes with the Back button. A filter never matches someone who left that field blank. Heritage and faith filters only match people who chose to share them.
 - A swiped card disappears immediately and comes back if the action fails. More cards load when three are left.

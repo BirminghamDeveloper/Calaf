@@ -33,6 +33,7 @@ fun GuardianScreen(
     onInvite: () -> Unit,
     onAccept: (String) -> Unit,
     onRevoke: (String) -> Unit,
+    onOpenShared: (String) -> Unit = {},
 ) {
     var code by rememberSaveable { mutableStateOf("") }
     val busy = state.action.busy
@@ -53,6 +54,19 @@ fun GuardianScreen(
         )
         OutlinedButton(onClick = { onAccept(code) }, enabled = code.length == CODE_LENGTH && !busy) {
             Text(stringResource(R.string.accept_invitation))
+        }
+        if (state.shared.isNotEmpty()) {
+            Text(stringResource(R.string.set_guardian_shared_title), style = MaterialTheme.typography.titleMedium)
+            state.shared.forEach { shared ->
+                Card(Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(CalafSpacing.medium)) {
+                        Text(stringResource(R.string.set_guardian_shared_item, shared.ownerName, shared.otherName))
+                        TextButton(onClick = { onOpenShared(shared.matchId) }) {
+                            Text(stringResource(R.string.set_guardian_open))
+                        }
+                    }
+                }
+            }
         }
         if (state.guardians.isEmpty()) Text(stringResource(R.string.no_guardians))
         state.guardians.forEach { guardian ->

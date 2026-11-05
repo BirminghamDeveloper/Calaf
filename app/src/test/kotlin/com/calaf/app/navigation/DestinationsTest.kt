@@ -21,6 +21,10 @@ class DestinationsTest {
         roundTrip(ChatDestination("a_b"))
     }
 
+    @Test fun `guardian chat destination keeps the match id`() {
+        roundTrip(GuardianChatDestination("a_b"))
+    }
+
     @Test fun `object destinations are serializable`() {
         roundTrip(WelcomeDestination)
         roundTrip(LoginDestination)

@@ -58,7 +58,9 @@ class FirebaseCommunityRepository(private val db: FirebaseFirestore, private val
             val other = data.strings("members").firstOrNull { it != userId } ?: return@mapNotNull null
             Match(id, other, (data["names"] as? Map<*, *>)?.get(other) as? String ?: "",
                 enumValue(data.string("state"), MatchStatus.PENDING), userId in data.strings("blockedBy"), data.number("messageCount"),
-                ((data["readAt"] as? Map<*, *>)?.get(other) as? Number)?.toLong() ?: 0)
+                ((data["readAt"] as? Map<*, *>)?.get(other) as? Number)?.toLong() ?: 0,
+                sharedWithGuardian = (data["guardianShares"] as? Map<*, *>)?.get(userId) == true,
+                otherSharesWithGuardian = (data["guardianShares"] as? Map<*, *>)?.get(other) == true)
         }.filter { it.status != MatchStatus.PENDING }
     }
     override fun guardians(userId: String) = query(db.collection("guardians").whereArrayContains("members", userId)).map { docs ->
@@ -94,6 +96,25 @@ class FirebaseCommunityRepository(private val db: FirebaseFirestore, private val
         }
         return DiscoveryPage(profiles, data["cursor"] as? String)
     }
+    override suspend fun guardianMatches(): List<GuardianMatch> =
+        (call(mapOf("action" to "guardianMatches"))["matches"] as? List<*>).orEmpty().mapNotNull { raw ->
+            @Suppress("UNCHECKED_CAST") val item = raw as? Map<String, Any> ?: return@mapNotNull null
+            GuardianMatch(item.string("matchId"), item.string("ownerId"), item.string("ownerName"), item.string("otherName"))
+        }
+
+    /** A shared conversation, refreshed every few seconds. The server only returns it while it is shared. */
+    override fun guardianMessages(matchId: String): Flow<List<ChatMessage>> = flow {
+        while (true) {
+            val data = call(mapOf("action" to "guardianMessages", "matchId" to matchId))
+            emit((data["messages"] as? List<*>).orEmpty().mapNotNull { raw ->
+                @Suppress("UNCHECKED_CAST") val item = raw as? Map<String, Any> ?: return@mapNotNull null
+                ChatMessage(item.string("id"), item.string("senderId"), item.string("text"), item.number("createdAt"),
+                    item.strings("warnings").mapNotNull { name -> SafetyWarning.entries.firstOrNull { it.name == name } })
+            })
+            kotlinx.coroutines.delay(GUARDIAN_POLL_MILLIS)
+        }
+    }
+
     override suspend fun likedYou(): LikedYou {
         val data = call(mapOf("action" to "likedYou"))
         val profiles = (data["profiles"] as? List<*>).orEmpty().mapNotNull { raw ->
@@ -122,6 +143,8 @@ class FirebaseCommunityRepository(private val db: FirebaseFirestore, private val
                 "note" to command.note,
             )
             is CommunityCommand.Send -> mapOf("action" to "sendMessage", "matchId" to command.matchId, "messageId" to command.messageId, "text" to command.text)
+            is CommunityCommand.ShareWithGuardian ->
+                mapOf("action" to "guardianShare", "matchId" to command.matchId, "share" to command.share)
             is CommunityCommand.Read -> mapOf("action" to "markRead", "matchId" to command.matchId, "messageId" to command.messageId)
             is CommunityCommand.ReadNotification -> mapOf("action" to "readNotification", "id" to command.id, "createdAt" to command.createdAt)
             is CommunityCommand.Unmatch -> mapOf("action" to "unmatch", "matchId" to command.matchId)
@@ -214,3 +237,5 @@ private fun ProfileDraft.payload(): Map<String, Any> = mapOf(
     "maritalStatus" to maritalStatus.name, "heightCm" to heightCm, "countryOfBirth" to countryOfBirth,
     "religiosity" to religiosity.name, "prays" to prays.name, "heritage" to heritage.name,
     "sensitiveConsent" to sensitiveConsent)
+
+private const val GUARDIAN_POLL_MILLIS = 5_000L

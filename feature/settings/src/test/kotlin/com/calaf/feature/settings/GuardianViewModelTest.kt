@@ -3,6 +3,7 @@ package com.calaf.feature.settings
 import com.calaf.core.model.CommandResult
 import com.calaf.core.model.CommunityCommand
 import com.calaf.core.model.Guardian
+import com.calaf.core.model.GuardianMatch
 import com.calaf.core.model.GuardianStatus
 import com.calaf.core.testing.FakeCommunityRepository
 import com.calaf.core.testing.MainDispatcherRule
@@ -10,6 +11,7 @@ import com.calaf.core.ui.Notice
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -40,4 +42,19 @@ class GuardianViewModelTest {
             repository.commands,
         )
     }
+
+    @Test fun `conversations shared with a guardian are listed and refreshed after accepting`() =
+        runTest(main.dispatcher) {
+            val model = GuardianViewModel("me", repository)
+            model.observe(); runCurrent()
+            assertTrue(model.state.value.shared.isEmpty())
+            val shared = GuardianMatch("match", "owner", "Hassan", "Amina")
+            repository.guarded = listOf(shared)
+            model.accept("code"); runCurrent()
+            assertEquals(listOf(shared), model.state.value.shared)
+            repository.guarded = emptyList()
+            model.revoke("g"); runCurrent()
+            assertTrue(model.state.value.shared.isEmpty())
+            model.stop()
+        }
 }

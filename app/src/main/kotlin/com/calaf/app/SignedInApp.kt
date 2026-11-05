@@ -34,6 +34,7 @@ import androidx.navigation.toRoute
 import com.calaf.app.navigation.ActivityDestination
 import com.calaf.app.navigation.ChatDestination
 import com.calaf.app.navigation.DiscoverDestination
+import com.calaf.app.navigation.GuardianChatDestination
 import com.calaf.app.navigation.MatchesDestination
 import com.calaf.app.navigation.ProfileDestination
 import com.calaf.app.navigation.SettingsDestination
@@ -43,6 +44,7 @@ import com.calaf.core.designsystem.CalafIcons
 import com.calaf.core.designsystem.CalafSpacing
 import com.calaf.core.model.PhotoRepository
 import com.calaf.feature.chat.ChatRoute
+import com.calaf.feature.chat.GuardianChatRoute
 import com.calaf.feature.discovery.DiscoveryRoute
 import com.calaf.feature.matches.ActivityScreen
 import com.calaf.feature.matches.ActivityViewModel
@@ -144,7 +146,16 @@ internal fun SignedInApp(
                     SettingsMenuScreen { page -> navigation.navigate(SettingsPageDestination(page)) }
                 }
                 composable<SettingsPageDestination> { entry ->
-                    SettingsPageRoute(uid, entry.toRoute<SettingsPageDestination>().page)
+                    SettingsPageRoute(
+                        uid, entry.toRoute<SettingsPageDestination>().page,
+                        onOpenSharedChat = { matchId -> navigation.navigate(GuardianChatDestination(matchId)) },
+                    )
+                }
+                composable<GuardianChatDestination> { entry ->
+                    GuardianChatRoute(
+                        entry.toRoute<GuardianChatDestination>().matchId,
+                        onBack = { navigation.popBackStack() },
+                    )
                 }
             }
         }
