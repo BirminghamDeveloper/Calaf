@@ -122,20 +122,17 @@ private fun MatchCard(
                     CalafIcon(CalafIcons.Messages, contentDescription = null)
                     Text(stringResource(R.string.open_conversation), Modifier.padding(start = CalafSpacing.small))
                 }
+                // Safety actions stay one tap away. Only the less urgent Unmatch lives in the menu.
+                IconButton(onClick = onReport) {
+                    CalafIcon(CalafIcons.Report, stringResource(CoreR.string.report))
+                }
+                IconButton(onClick = onBlock) {
+                    CalafIcon(CalafIcons.Block, stringResource(CoreR.string.block))
+                }
                 IconButton(onClick = { menu = true }) {
                     CalafIcon(CalafIcons.More, stringResource(R.string.more_options))
                 }
                 DropdownMenu(menu, { menu = false }) {
-                    DropdownMenuItem(
-                        text = { Text(stringResource(CoreR.string.report)) },
-                        leadingIcon = { CalafIcon(CalafIcons.Report, contentDescription = null) },
-                        onClick = { menu = false; onReport() },
-                    )
-                    DropdownMenuItem(
-                        text = { Text(stringResource(CoreR.string.block)) },
-                        leadingIcon = { CalafIcon(CalafIcons.Block, contentDescription = null) },
-                        onClick = { menu = false; onBlock() },
-                    )
                     DropdownMenuItem(
                         text = { Text(stringResource(CoreR.string.unmatch)) },
                         onClick = { menu = false; onUnmatch() },
