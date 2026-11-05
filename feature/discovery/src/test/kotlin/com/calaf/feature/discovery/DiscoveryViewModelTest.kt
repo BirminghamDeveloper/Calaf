@@ -5,6 +5,8 @@ import com.calaf.core.model.CommunityCommand
 import com.calaf.core.model.CommunityError
 import com.calaf.core.model.CommunityProfile
 import com.calaf.core.model.DiscoveryPage
+import com.calaf.core.model.Heritage
+import com.calaf.core.model.PartnerPreference
 import com.calaf.core.model.PublicPhoto
 import com.calaf.core.model.ReportCategory
 import com.calaf.core.testing.FakeCommunityRepository
@@ -163,5 +165,52 @@ class DiscoveryViewModelTest {
         assertEquals(5, model.photo("owner", photo)?.first()?.toInt())
         photos.failWith = java.io.IOException("no")
         assertNull(model.photo("owner", PublicPhoto("other", blurred = false)))
+    }
+
+    @Test fun `saved filters appear in the state`() = runTest(main.dispatcher) {
+        val model = model()
+        repository.livePreferences.value = PartnerPreference(heritage = setOf(Heritage.SOMALI))
+        model.observe(); runCurrent()
+        assertEquals(setOf(Heritage.SOMALI), model.state.value.preferences.heritage)
+        model.stop()
+    }
+
+    @Test fun `applying filters saves them, then reloads discovery from the first page`() = runTest(main.dispatcher) {
+        val model = model()
+        repository.page = DiscoveryPage(profiles(2), "more")
+        model.discover(); runCurrent()
+        assertEquals("more", model.state.value.cursor)
+        val filters = PartnerPreference(minAge = 25, heritage = setOf(Heritage.KENYAN))
+        repository.page = DiscoveryPage(profiles(1, "filtered"), null)
+        var saved = 0
+        model.applyFilters(filters) { saved++ }; runCurrent()
+        assertEquals(listOf<CommunityCommand>(CommunityCommand.Preferences(filters)), repository.commands)
+        assertEquals(1, saved)
+        assertEquals(listOf("filtered1"), model.state.value.candidates.map { it.id })
+        assertNull(model.state.value.cursor)
+        assertTrue(model.state.value.loaded)
+    }
+
+    @Test fun `a failed filter save keeps the stack and the sheet open`() = runTest(main.dispatcher) {
+        val model = model()
+        repository.page = DiscoveryPage(profiles(2), null)
+        model.discover(); runCurrent()
+        repository.failWith = CommunityError.OFFLINE
+        var saved = 0
+        model.applyFilters(PartnerPreference(minAge = 30)) { saved++ }; runCurrent()
+        assertEquals(0, saved)
+        assertEquals(listOf("p1", "p2"), model.state.value.candidates.map { it.id })
+        assertEquals(CommunityError.OFFLINE, model.state.value.action.error)
+    }
+
+    @Test fun `clearing the sheet keeps gender and country`() {
+        val kept = PartnerPreference(
+            minAge = 30, gender = com.calaf.core.model.Gender.WOMAN, country = "UK", heritage = setOf(Heritage.SOMALI),
+        )
+        val cleared = clearedFilters(kept)
+        assertEquals(com.calaf.core.model.Gender.WOMAN, cleared.gender)
+        assertEquals("UK", cleared.country)
+        assertEquals(18, cleared.minAge)
+        assertTrue(cleared.heritage.isEmpty())
     }
 }

@@ -41,12 +41,8 @@ internal class DemoCommandHandler(private val store: DemoStore, private val sess
         store.table("profiles").put(me, DemoProfileCodec.toJson(command.profile))
     }
 
-    private fun savePreferences(me: String, command: CommunityCommand.Preferences) = with(command.value) {
-        store.table("preferences").put(
-            me,
-            JSONObject().put("min", minAge).put("max", maxAge).put("gender", gender?.name).put("country", country)
-                .put("language", language).put("nonSmoker", nonSmokerOnly).put("children", wantsChildren?.name),
-        )
+    private fun savePreferences(me: String, command: CommunityCommand.Preferences) {
+        store.table("preferences").put(me, DemoPreferenceCodec.toJson(command.value))
     }
 
     private fun savePrivacy(me: String, command: CommunityCommand.Privacy) = with(command.value) {

@@ -1,5 +1,5 @@
 # Calaf demo progress
-Last updated: 2026-11-05 07:58 UTC, after Task 3.1
+Last updated: 2026-11-05 08:11 UTC, after Task 3.2
 
 ## Done so far
 
@@ -36,11 +36,15 @@ Each card shows a big photo (tap the right or left side to see the next or previ
 More people load automatically before the stack runs out, and there are friendly loading and "that is everyone for now" screens. TalkBack users get Like and Pass actions on the card.
 Behind the scenes: the swipe rules (how far, how fast) are separate and tested, and a swiped card returns if the request fails.
 
+### Task 3.2 Full profile screen and filters
+Tap the info button (or the name area) on a card to open that person's full profile: all their photos you can swipe through, about, the basics, values and interests, a faith section if they chose to share it, and a breakdown of what you share and where you differ. You can still pass, like, report or block from there, and the phone's Back button returns to the cards.
+The new Filters button on Discover opens a sheet: age, language, non smokers, marital status, children, height, marriage timeline, willing to relocate, country of birth, profession, education, and (only for people who shared it) how practising, prayer and heritage. The button shows how many filters are on. Show results saves them and reloads the cards.
+Behind the scenes: one filter rule is shared and tested, the server mirrors it, and a filter never matches someone who left that field blank.
+
 ## In progress
-Task 3.1 is finished and being merged. Next up: Task 3.2 Full profile screen and filters (not started).
+Task 3.2 is finished and being merged. Next up: Task 3.3 Match moment, likes and compliments (not started).
 
 ## Still to do
-- Task 3.2 Full profile screen and filters
 - Task 3.3 "It's a match" moment, who liked you, compliments
 - Task 3.4 Chat polish and guardian (wali) view
 - Task 3.5 Demo showcase polish (20 demo profiles, walkthrough, Try the demo button, reset, icon, Somali, demo script)
@@ -58,6 +62,7 @@ Task 3.1 is finished and being merged. Next up: Task 3.2 Full profile screen and
 - New Somali strings are English copies for now (filled in at Task 3.5).
 - The main photo is always the first photo, so choosing a main photo and dragging to the front are the same thing.
 - Blur is chosen per photo by the owner. The card that actually draws the blur arrives with the swipe cards (Task 3.1).
+- The full profile opens inside Discover and closes with the Back button. A filter never matches someone who left that field blank. Heritage and faith filters only match people who chose to share them.
 - A swiped card disappears immediately and comes back if the action fails. More cards load when three are left.
 - Blurred photos are blurred on the phone by shrinking and enlarging them, so the sharp image is never drawn. The real app will need blurred copies made by the server.
 - Photo reordering works by long press drag and by Move up and Move down buttons.

@@ -3,8 +3,10 @@ package com.calaf.core.designsystem
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 
 /** One icon with an outlined drawable and, for navigation icons, a filled one for the selected state. */
@@ -27,6 +29,7 @@ object CalafIcons {
     val Send = CalafIcon(R.drawable.ic_calaf_send)
     val Settings = CalafIcon(R.drawable.ic_calaf_settings)
     val Close = CalafIcon(R.drawable.ic_calaf_close)
+    val Info = CalafIcon(R.drawable.ic_calaf_info)
 }
 
 /**
@@ -39,10 +42,12 @@ fun CalafIcon(
     contentDescription: String?,
     modifier: Modifier = Modifier,
     selected: Boolean = false,
+    tint: Color = LocalContentColor.current,
 ) {
     Icon(
         painterResource(if (selected) icon.filled else icon.outlined),
         contentDescription,
         modifier.size(CalafDimensions.icon),
+        tint,
     )
 }

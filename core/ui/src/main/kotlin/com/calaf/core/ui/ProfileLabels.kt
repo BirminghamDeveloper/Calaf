@@ -53,3 +53,11 @@ fun PrayerHabit.labelRes(): Int? = when (this) {
     PrayerHabit.NEVER -> R.string.lbl_prays_never
     PrayerHabit.UNSPECIFIED -> null
 }
+
+@StringRes
+fun com.calaf.core.model.Answer.labelRes(): Int? = when (this) {
+    com.calaf.core.model.Answer.YES -> R.string.lbl_answer_yes
+    com.calaf.core.model.Answer.NO -> R.string.lbl_answer_no
+    com.calaf.core.model.Answer.OPEN -> R.string.lbl_answer_open
+    com.calaf.core.model.Answer.UNSPECIFIED -> null
+}
