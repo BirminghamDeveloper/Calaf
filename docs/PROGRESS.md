@@ -1,5 +1,5 @@
 # Calaf demo progress
-Last updated: 2026-11-05 08:40 UTC, after Task 3.4
+Last updated: 2026-11-05, after Task 3.5
 
 ## Done so far
 
@@ -53,11 +53,18 @@ Guardian (wali): in the chat menu you can let your guardian read that one conver
 In the demo, fictional members answer you after a couple of seconds with a friendly scripted reply that is clearly labelled "Demo reply, simulated".
 Behind the scenes: the server only lets a guardian read a chat that was shared and still active, and read receipts now work in the demo too.
 
+### Task 3.5 Demo showcase polish
+The demo now has 20 fictional members from the UK, Somaliland, Somalia, Djibouti, Ethiopia, Kenya, the US, Canada and Sweden. Every name says "(Demo)", each has a full profile and two to four illustrated avatars.
+On first launch, after the Calaf name animation, three short screens explain the app, with a Skip button. The welcome screen has a Try the demo button that signs in a ready made guest with two matches, a started chat, a compliment and two people waiting in Liked you.
+Settings has Reset demo data (with a confirmation) that puts everything back to the start and shows the tour again.
+There is a proper app icon, a splash screen with the Calaf colours and friendly drawn pictures on the empty Discover, Matches, Liked you and Activity screens. Somali is filled in for the new text as a first draft that needs a native speaker to check. A five minute presenting guide is in docs/DEMO_SCRIPT.md.
+Behind the scenes: the showcase data is added once and never twice, and tests check labels, photos, the guest's content and the reset.
+
 ## In progress
-Task 3.4 is finished and being merged. Next up: Task 3.5 Demo showcase polish (not started).
+Task 3.5 is finished and being merged. After it merges: the final demo report.
 
 ## Still to do
-- Task 3.5 Demo showcase polish (20 demo profiles, walkthrough, Try the demo button, reset, icon, Somali, demo script)
+- Final demo report (docs/DEMO_REPORT.md)
 
 ## Known issues
 - Nothing has been tried on a phone yet. Everything so far is checked by automatic tests only.
@@ -69,7 +76,7 @@ Task 3.4 is finished and being merged. Next up: Task 3.5 Demo showcase polish (n
 - "Prays" is a four option prayer habit (always, usually, sometimes, never).
 - Religion, how practising, prayer and heritage all sit behind one consent switch that is off by default.
 - Old religion text without a consent record is cleared when the demo database upgrades (fictional seeded members keep theirs). The server rejects such data instead of silently dropping it.
-- New Somali strings are English copies for now (filled in at Task 3.5).
+- Somali for the newest strings is English until a native speaker checks it (listed in docs/TRANSLATION_TODO.md). The tour and reset text has a first draft Somali that needs review.
 - The main photo is always the first photo, so choosing a main photo and dragging to the front are the same thing.
 - Blur is chosen per photo by the owner. The card that actually draws the blur arrives with the swipe cards (Task 3.1).
 - Guardian sharing is per chat, off by default, both people are told, and a guardian can only read. Demo replies are scripted, delayed and labelled as simulated. Risky messages are flagged, never blocked.
@@ -78,6 +85,7 @@ Task 3.4 is finished and being merged. Next up: Task 3.5 Demo showcase polish (n
 - A swiped card disappears immediately and comes back if the action fails. More cards load when three are left.
 - Blurred photos are blurred on the phone by shrinking and enlarging them, so the sharp image is never drawn. The real app will need blurred copies made by the server.
 - Photo reordering works by long press drag and by Move up and Move down buttons.
+- "Try the demo" signs in a ready made guest. The chat screen has no empty state picture.
 
 ## How to try the demo
 1. Open the GitHub repository, go to the Actions tab and open the latest green run on master.

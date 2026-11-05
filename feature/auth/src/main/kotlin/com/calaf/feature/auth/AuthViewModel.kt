@@ -42,6 +42,8 @@ class AuthViewModel(private val repository: AuthRepository, private val adminSho
             if (register) repository.register(email, password) else repository.login(email, password)
         }
     }
+    /** Signs in with fixed credentials, for the demo's "Try the demo" button. */
+    fun quickLogin(email: String, password: String) = perform { repository.login(email, password) }
     fun reset(email: String) {
         if (!AccountValidation.email(email)) {
             mutable.update { it.copy(error = AccountError.InvalidInput, notice = null) }

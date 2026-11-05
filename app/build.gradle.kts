@@ -61,8 +61,11 @@ dependencies {
     // Moderation tools exist only in the demo flavour.
     "demoImplementation"(project(":feature:admin"))
     implementation(platform(libs.compose.bom))
+    implementation(libs.androidx.splashscreen)
     implementation(libs.compose.material3)
     implementation(libs.compose.foundation)
+    implementation(libs.compose.tooling.preview)
+    debugImplementation(libs.compose.tooling)
     implementation(libs.activity.compose)
     implementation(libs.lifecycle.compose)
     implementation(libs.lifecycle.viewmodel)

@@ -21,7 +21,24 @@ interface AppMode {
 
     /** Extra controls on the profile screen, such as the demo moderation panel. */
     @Composable fun AdminSection() = Unit
+
+    /** Remembers whether the first launch tour was shown, or null when the flavour has no tour. */
+    val walkthrough: WalkthroughState? get() = null
+
+    /** One tap sign in for the welcome screen, or null for none. */
+    val quickLogin: QuickLogin? get() = null
+
+    /** Extra rows at the end of the settings menu, such as resetting the demo. */
+    @Composable fun SettingsExtras() = Unit
 }
+
+/** Whether the first launch tour has been shown. */
+interface WalkthroughState {
+    var seen: Boolean
+}
+
+/** Credentials behind a "Try the demo" button. Public and fictional. */
+data class QuickLogin(val email: String, val password: String)
 
 /** Used by previews and tests that do not care about flavour specific behaviour. */
 object PlainAppMode : AppMode

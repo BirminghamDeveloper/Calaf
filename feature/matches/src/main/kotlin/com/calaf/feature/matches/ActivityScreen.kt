@@ -1,5 +1,7 @@
 package com.calaf.feature.matches
 
+import com.calaf.core.ui.IllustrationKind
+import com.calaf.core.ui.EmptyState
 import com.calaf.core.ui.R as CoreR
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -36,7 +38,7 @@ fun ActivityScreen(
         stringResource(CoreR.string.activity_title), state.action, "activity_list", onRetry = onRetry,
     ) {
         item { Text(stringResource(R.string.activity_description)) }
-        if (state.notifications.isEmpty()) item { Text(stringResource(R.string.activity_empty)) }
+        if (state.notifications.isEmpty()) item { EmptyState(IllustrationKind.Calm, stringResource(R.string.activity_empty)) }
         items(state.notifications, key = MemberNotification::id) { notification ->
             val match = state.matches.firstOrNull { it.id == notification.targetId && it.status == MatchStatus.ACTIVE }
             Card(Modifier.fillMaxWidth()) {

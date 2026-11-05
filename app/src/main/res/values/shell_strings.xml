@@ -3,4 +3,16 @@
     <string name="profile">Profile</string>
     <string name="safety_body">Never send money to someone you have only met online. Keep your address, financial details and identity documents private. When meeting, choose a public place and tell someone you trust.\n\nCalaf is for adults aged 18 and over. Family involvement must always be your choice.</string>
     <string name="local_development">LOCAL DEVELOPMENT · Firebase emulators · Demo accounts only</string>
+
+    <string name="try_demo">Try the demo</string>
+    <string name="tour_skip">Skip</string>
+    <string name="tour_next">Next</string>
+    <string name="tour_start">Get started</string>
+    <string name="tour_progress">%1$d of %2$d</string>
+    <string name="tour_discover_title">Meet people with serious intent</string>
+    <string name="tour_discover_body">Swipe or tap the buttons to pass, like or send a kind compliment. Everyone here is a fictional demo member.</string>
+    <string name="tour_chat_title">Matches become conversations</string>
+    <string name="tour_chat_body">When interest is mutual you can chat. In this demo, replies are scripted and clearly labelled.</string>
+    <string name="tour_privacy_title">Privacy and family first</string>
+    <string name="tour_privacy_body">You choose what is shared, photos can be blurred, and a guardian can follow along if you want.</string>
 </resources>

@@ -20,3 +20,5 @@ Keys whose `values-so` value is still the English text. Add the key here when yo
 | every key starting `ly_` (Task 3.3) | `feature/matches/src/main/res/values-so/strings.xml` |
 | every key starting `chat_` (Task 3.4) | `feature/chat/src/main/res/values-so/strings.xml` |
 | every key starting `set_guardian_` and `chat_guardian_stopped` (Task 3.4) | `feature/settings/src/main/res/values-so/strings.xml`, `feature/chat/src/main/res/values-so/strings.xml` |
+| `try_demo` and every key starting `tour_` (Task 3.5, first draft Somali, needs native review) | `app/src/main/res/values-so/shell_strings.xml` |
+| every key starting `demo_reset` (Task 3.5, first draft Somali, needs native review) | `app/src/demo/res/values-so/demo_strings.xml` |

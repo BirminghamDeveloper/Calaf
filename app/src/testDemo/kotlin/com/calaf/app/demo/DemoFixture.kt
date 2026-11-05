@@ -3,8 +3,8 @@ package com.calaf.app.demo
 import java.io.File
 
 /** A demo backend over a temp directory. [reopen] simulates the app being closed and started again. */
-internal class DemoFixture(val directory: File) {
-    val store = DemoStore(directory)
+internal class DemoFixture(val directory: File, private val showcase: Boolean = false) {
+    val store = if (showcase) DemoStore(directory, seed = DemoSeed::seedEverything) else DemoStore(directory)
     val session = DemoSession(store)
     val auth = DemoAuthRepository(store, session)
     val profiles = DemoProfileRepository(store, session)
@@ -15,7 +15,7 @@ internal class DemoFixture(val directory: File) {
 
     fun photos(owner: String) = DemoPhotoRepository(store, session, avatars, owner)
 
-    fun reopen() = DemoFixture(directory)
+    fun reopen() = DemoFixture(directory, showcase)
 
     suspend fun loginAsMember(name: String) = auth.login(DemoSeed.memberEmail(name), DemoSeed.MEMBER_PASSWORD)
 

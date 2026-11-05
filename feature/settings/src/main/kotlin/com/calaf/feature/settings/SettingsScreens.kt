@@ -29,13 +29,14 @@ import com.calaf.core.ui.NoticeCard
 
 /** The list of settings pages. */
 @Composable
-fun SettingsMenuScreen(onOpen: (SettingsPage) -> Unit) {
+fun SettingsMenuScreen(onOpen: (SettingsPage) -> Unit, extras: @Composable () -> Unit = {}) {
     CalafListScreen(stringResource(CoreR.string.settings), ActionState(), "settings_list") {
         items(SettingsPage.entries) { page ->
             OutlinedButton(onClick = { onOpen(page) }, modifier = Modifier.fillMaxWidth()) {
                 Text(stringResource(page.label))
             }
         }
+        item { extras() }
     }
 }
 
