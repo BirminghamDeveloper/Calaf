@@ -1,0 +1,12 @@
+<resources>
+    <string name="admin_photos_title">Photos to review (%1$d)</string>
+    <string name="admin_photo_owner">Owner: %1$s</string>
+    <string name="admin_photo_state_pending">Waiting for review</string>
+    <string name="admin_photo_state_approved">Approved</string>
+    <string name="admin_photo_state_rejected">Rejected</string>
+    <string name="admin_photo_approve">Approve photo</string>
+    <string name="admin_photo_reject">Reject photo</string>
+    <string name="admin_photo_approve_confirm">Approve this photo? Other members will be able to see it.</string>
+    <string name="admin_photo_reject_confirm">Reject this photo? Other members will no longer see it.</string>
+    <string name="admin_photo_description">Photo from %1$s</string>
+</resources>

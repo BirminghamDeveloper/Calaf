@@ -45,6 +45,7 @@ fun AdminPanel(demo: AdminRepository) {
                     }
                 } }
             }
+            AdminPhotoReview(demo, revision) { message, action -> pending = message to action }
             Text("Recorded administrative actions: ${demo.auditCount()}")
         }
     }

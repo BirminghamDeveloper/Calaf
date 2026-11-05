@@ -98,4 +98,17 @@
     <string name="onb_review_intro">Check your details, then save. You can come back and change anything later.</string>
     <string name="error_height">Height must be between 120 and 230 cm, or left empty.</string>
     <string name="error_consent">Agree to the faith and heritage consent, or clear those details.</string>
+    <string name="onb_photo_main">Main photo</string>
+    <string name="onb_photo_make_main">Make main photo</string>
+    <string name="onb_photo_up">Move up</string>
+    <string name="onb_photo_down">Move down</string>
+    <string name="onb_photo_blur">Blur for members I have not matched with</string>
+    <string name="onb_photo_pending">Waiting for review</string>
+    <string name="onb_photo_approved">Approved, other members can see it</string>
+    <string name="onb_photo_rejected">Not approved, only you can see it</string>
+    <string name="onb_photo_limit">You can add up to 6 photos. The first one is your main photo.</string>
+    <string name="onb_photo_drag">Press and hold a handle, then drag to reorder. The move buttons do the same.</string>
+    <string name="onb_photo_handle">Reorder photo %1$d. Press and hold, then drag.</string>
+    <string name="onb_photo_demo">Demo: new photos are approved automatically. The demo administrator can reject them.</string>
+    <string name="onb_photo_unmanaged">Reordering and blur arrive with photo review. Your photos stay private for now.</string>
 </resources>

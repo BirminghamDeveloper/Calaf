@@ -92,7 +92,31 @@ class DemoStore(
 
     private fun migrate(from: Int) {
         if (from < 2) migrateToVersion2()
+        if (from < 3) migrateToVersion3()
         // Future steps: if (from < 3) { ...rewrite rows... }
+    }
+
+    /**
+     * Version 3 adds the photo model. Photos used to be plain files `photos/<owner>/photo-<slot>.jpg` with no record in
+     * the store, so each becomes an approved photo row ordered by its old slot. Seeded members then get avatars.
+     * Safe on an empty store.
+     */
+    private fun migrateToVersion3() {
+        val owners = photoRoot.listFiles { file -> file.isDirectory }.orEmpty()
+        for (directory in owners) {
+            val legacy = Regex("photo-(\\d+)\\.jpg")
+            val slots = directory.listFiles().orEmpty().mapNotNull { file ->
+                val slot = legacy.matchEntire(file.name)?.groupValues?.get(1)?.toInt()
+                slot?.let { it to file.name.removeSuffix(".jpg") }
+            }.sortedBy { it.first }
+            if (slots.isEmpty()) continue
+            val rows = slots.associate { (_, id) -> id to DemoPhotoRows.newRow(directory.name) }
+            val photos = slots.mapIndexed { index, (_, id) ->
+                com.calaf.core.model.Photo(id, index, index == 0, com.calaf.core.model.PhotoState.APPROVED)
+            }
+            DemoPhotoRows.write(this, photos, rows)
+        }
+        DemoSeed.seedPhotos(this)
     }
 
     /**
@@ -112,7 +136,7 @@ class DemoStore(
     }
 
     companion object {
-        const val SCHEMA_VERSION = 2
+        const val SCHEMA_VERSION = 3
         private const val KEY_VERSION = "schemaVersion"
         private const val KEY_SESSION = "session"
     }

@@ -150,4 +150,18 @@ class DemoCommunityRepositoryTest {
         assertEquals("Islam", com.calaf.app.demo.DemoProfileCodec.toDraft(
             demo.store.table("profiles").getJSONObject("demo-hodan")).religion)
     }
+
+    @Test fun `discovery lists approved photos main first with the blur choice`() = runBlocking {
+        val demo = fixture()
+        demo.loginAsMember("hodan")
+        val photos = demo.community.discover().profiles.first { it.id == "demo-hassan" }.photos
+        assertTrue(photos.size in 2..3)
+        assertEquals(DemoPhotoRows.ownerPhotos(demo.store, "demo-hassan").map { it.id }, photos.map { it.id })
+        assertTrue(photos.none { it.blurred })
+        val firstId = photos.first().id
+        DemoPhotoRows.row(demo.store, firstId)!!.put("blur", true)
+        assertTrue(demo.community.discover().profiles.first { it.id == "demo-hassan" }.photos.first().blurred)
+        DemoPhotoRows.row(demo.store, firstId)!!.put("state", "PENDING")
+        assertFalse(firstId in demo.community.discover().profiles.first { it.id == "demo-hassan" }.photos.map { it.id })
+    }
 }

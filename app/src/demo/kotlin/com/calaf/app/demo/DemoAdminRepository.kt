@@ -1,16 +1,22 @@
 package com.calaf.app.demo
 
 import com.calaf.core.model.AdminMember
+import com.calaf.core.model.AdminPhoto
 import com.calaf.core.model.AdminReport
 import com.calaf.core.model.AdminRepository
 import com.calaf.core.model.CommunityError
 import com.calaf.core.model.CommunityException
+import com.calaf.core.model.PhotoState
 import kotlinx.coroutines.flow.StateFlow
 import org.json.JSONObject
 import java.util.UUID
 
 /** Demo moderation. Every call needs a signed in member whose stored user has the admin role flag. */
-class DemoAdminRepository(private val store: DemoStore, private val session: DemoSession) : AdminRepository {
+class DemoAdminRepository(
+    private val store: DemoStore,
+    private val session: DemoSession,
+    private val avatars: AvatarSource,
+) : AdminRepository {
     /** Changes whenever demo data changes, so screens can refresh. */
     override val revision: StateFlow<Int> get() = store.revision
 
@@ -29,6 +35,27 @@ class DemoAdminRepository(private val store: DemoStore, private val session: Dem
             val details = "${report.optString("category")}: ${report.optString("details")}"
             AdminReport(id, report.getString("target"), details, report.getString("status"))
         }
+    }
+
+    override fun photos(): List<AdminPhoto> {
+        session.requireAdmin()
+        return store.rows("photos").map { (id, row) ->
+            val owner = row.getString("owner")
+            AdminPhoto(id, owner, store.user(owner)?.optString("email").orEmpty(), DemoPhotoRows.photo(id, row).state)
+        }.sortedWith(compareBy({ it.ownerEmail }, { it.id }))
+    }
+
+    override fun photoBytes(photoId: String): ByteArray {
+        session.requireAdmin()
+        return DemoPhotoRows.bytes(store, avatars, photoId)
+    }
+
+    override fun reviewPhoto(photoId: String, approve: Boolean) {
+        val actor = session.requireAdmin()
+        val row = DemoPhotoRows.row(store, photoId) ?: throw CommunityException(CommunityError.INVALID)
+        row.put("state", (if (approve) PhotoState.APPROVED else PhotoState.REJECTED).name)
+        audit(actor, if (approve) "APPROVE_PHOTO" else "REJECT_PHOTO", photoId)
+        store.save()
     }
 
     override fun auditCount(): Int {

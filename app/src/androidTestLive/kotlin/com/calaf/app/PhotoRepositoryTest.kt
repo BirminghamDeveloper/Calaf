@@ -2,6 +2,7 @@ package com.calaf.app
 
 import android.graphics.Bitmap
 import androidx.test.platform.app.InstrumentationRegistry
+import com.calaf.core.model.PhotoState
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.runBlocking
@@ -26,15 +27,17 @@ class PhotoRepositoryTest {
             val bitmap = Bitmap.createBitmap(32, 32, Bitmap.Config.ARGB_8888)
             val bytes = ByteArrayOutputStream().use { out -> bitmap.compress(Bitmap.CompressFormat.JPEG, 85, out); out.toByteArray() }
             bitmap.recycle()
-            assertTrue(repository.slots().isEmpty())
-            repository.upload(0, bytes)
+            assertTrue(repository.photos().isEmpty())
+            val added = repository.add(bytes)
             try {
-                assertEquals(listOf(0), repository.slots())
-                assertArrayEquals(bytes, repository.read(0))
-                assertTrue(runCatching { repository.upload(0, bytes) }.isFailure)
-                assertTrue(runCatching { repository.upload(6, bytes) }.isFailure)
-            } finally { repository.delete(0) }
-            assertTrue(repository.slots().isEmpty())
+                assertEquals(listOf(added.id), repository.photos().map { it.id })
+                // Nothing reviews live photos yet, so they stay pending and private.
+                assertEquals(PhotoState.PENDING, added.state)
+                assertArrayEquals(bytes, repository.read(added.id))
+                assertTrue(runCatching { repository.reorder(listOf(added.id)) }.isFailure)
+                assertTrue(runCatching { repository.readMemberPhoto(account.id, added.id) }.isFailure)
+            } finally { repository.delete(added.id) }
+            assertTrue(repository.photos().isEmpty())
         } finally {
             auth.currentUser?.delete()?.await()
             app.auth().logout()

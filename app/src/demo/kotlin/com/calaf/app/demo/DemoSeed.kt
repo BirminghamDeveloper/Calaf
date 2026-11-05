@@ -30,6 +30,7 @@ object DemoSeed {
             )
             store.table("profiles").put(id, profile(name, index))
         }
+        seedPhotos(store)
         store.createMatch(ADMIN_ID, "demo-amina")
         store.createMatch("demo-hassan", "demo-amina")
         store.table("reports").put(
@@ -40,6 +41,25 @@ object DemoSeed {
         )
         store.table("meta").put("seeded", true)
         store.save()
+    }
+
+    /** Gives each seeded member two or three bundled avatars, if they have no photos yet. Safe to repeat. */
+    fun seedPhotos(store: DemoStore) {
+        names.forEachIndexed { index, name ->
+            val id = "demo-$name"
+            if (store.user(id)?.optBoolean("seed") != true) return@forEachIndexed
+            if (DemoPhotoRows.ownerPhotos(store, id).isNotEmpty()) return@forEachIndexed
+            val keys = buildList {
+                add(DemoAvatars.key(index * 2))
+                add(DemoAvatars.key(index * 2 + 1))
+                if (index % 2 == 0) add(DemoAvatars.key(index * 2 + 5))
+            }
+            val rows = keys.mapIndexed { n, key -> "$id-photo-$n" to DemoPhotoRows.newRow(id, key) }.toMap()
+            val photos = rows.keys.mapIndexed { n, photoId ->
+                com.calaf.core.model.Photo(photoId, n, n == 0, com.calaf.core.model.PhotoState.APPROVED)
+            }
+            DemoPhotoRows.write(store, photos, rows)
+        }
     }
 
     private fun profile(name: String, index: Int) = JSONObject()

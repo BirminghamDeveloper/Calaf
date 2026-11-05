@@ -22,5 +22,6 @@ dependencies {
     implementation(libs.compose.tooling.preview)
     debugImplementation(libs.compose.tooling)
     implementation(libs.coroutines.core)
+    implementation(libs.coil.compose)
     testImplementation(project(":core:testing"))
 }

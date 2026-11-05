@@ -30,6 +30,8 @@ data class CommunityProfile(
     val religiosity: Religiosity = Religiosity.UNSPECIFIED,
     val prays: PrayerHabit = PrayerHabit.UNSPECIFIED,
     val heritage: Heritage = Heritage.UNSPECIFIED,
+    /** Approved photos only, main photo first. */
+    val photos: List<PublicPhoto> = emptyList(),
 )
 data class PartnerPreference(val minAge: Int = 18, val maxAge: Int = 70, val gender: Gender? = null,
     val country: String = "", val language: String = "", val nonSmokerOnly: Boolean = false, val wantsChildren: Answer? = null)

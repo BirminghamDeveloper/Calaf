@@ -1,5 +1,6 @@
 package com.calaf.app.demo
 
+import com.calaf.core.model.PhotoState
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -54,5 +55,29 @@ class DemoAdminRepositoryTest {
         assertTrue(runCatching { demo.admin.suspend(DemoSeed.ADMIN_ID, true) }.isFailure)
         assertTrue(runCatching { demo.admin.suspend("missing", true) }.isFailure)
         assertEquals(0, demo.admin.auditCount())
+    }
+
+    @Test fun `the admin sees the photo queue and rejecting a photo hides it from other members`() = runBlocking {
+        val demo = fixture()
+        demo.loginAsMember("hodan")
+        assertTrue(runCatching { demo.admin.photos() }.isFailure)
+        demo.auth.logout()
+        demo.loginAsAdmin()
+        val queue = demo.admin.photos()
+        assertTrue(queue.size >= 10)
+        assertTrue(queue.all { it.state == PhotoState.APPROVED && it.ownerEmail.endsWith("@calaf.test") })
+        val target = queue.first { it.ownerId == "demo-yusuf" }
+        assertEquals(DemoAvatars.key(8).toByteArray().toList(), demo.admin.photoBytes(target.id).toList())
+        demo.admin.reviewPhoto(target.id, approve = false)
+        assertEquals(PhotoState.REJECTED, demo.admin.photos().single { it.id == target.id }.state)
+        demo.auth.logout()
+        demo.loginAsMember("hodan")
+        val visible = demo.community.discover().profiles.first { it.id == "demo-yusuf" }.photos.map { it.id }
+        assertFalse(target.id in visible)
+        demo.auth.logout()
+        demo.loginAsAdmin()
+        demo.admin.reviewPhoto(target.id, approve = true)
+        assertEquals(2, demo.admin.auditCount())
+        assertTrue(runCatching { demo.admin.reviewPhoto("missing", true) }.isFailure)
     }
 }

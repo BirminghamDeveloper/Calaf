@@ -238,13 +238,34 @@ Done notes (Task 2.1):
 - Not verified: the onboarding screens on a device. Somali for the new `onb_*` strings is English (TRANSLATION_TODO).
 
 ### Task 2.2 Photo model and demo photos
-Status: todo | Branch: `task/2.2-photos-model` | Depends on: 2.1
+Status: done | Branch: `task/2.2-photos-model` | Depends on: 2.1
 
 - `Photo(id, order, isPrimary, state: PENDING|APPROVED|REJECTED, blurForNonMatches)`.
 - Profile photo manager UI: add up to 6, reorder by drag, choose primary, delete, see moderation
   state. Coil for loading. Keep EXIF stripping and resizing from `PhotoProcessor`.
 - Demo flavour: bundle 8 to 12 generated illustrated avatars (not real people), auto approve
   uploads, and let the demo admin approve or reject photos in `feature:admin`.
+
+Done notes (Task 2.2):
+- `core:model`: `Photo(id, order, isPrimary, state PENDING|APPROVED|REJECTED, blurForNonMatches)`, `PublicPhoto`, the new
+  `PhotoRepository` (photos, read, add, delete, setPrimary, reorder, setBlur, readMemberPhoto, plus `supportsManagement`
+  and `simulatedModeration`) and `PhotoRules` (shared ordering rules, 5 tests). `CommunityProfile.photos` lists approved
+  photos only, main first, with the blur choice.
+- Demo: ten generated, faceless illustrated avatars in `app/src/demo/res/drawable-nodpi` (made by
+  `scripts/generate-demo-avatars.py`, abstract art, no real people). Seeded members get 2 to 3 of them. Uploads are
+  approved at once and labelled as demo on the screen. `DemoPhotoRepository` enforces six photos, a single main photo
+  and that other members only read approved photos of members they are not blocked with. Store schema version 3
+  migrates the old `photo-N.jpg` files into approved photo rows and adds avatars for seeded members.
+- Photo manager (`feature:onboarding`): list with Coil thumbnails, main photo badge, moderation state, make main, move
+  up and down buttons, long press drag to reorder, blur switch, remove. Keeps `PhotoProcessor` (EXIF stripping and
+  resizing). Controls that the backend cannot do are hidden (live).
+- Demo admin (`feature:admin`): photo queue with thumbnail, owner, Approve and Reject, recorded in the audit log.
+  Rejecting hides the photo from every other member immediately.
+- Live: `FirebasePhotoRepository` is an adapter over the existing private slot storage. Photos show as pending and
+  management, public reads and blur throw `UnsupportedOperationException` until the deferred live photo pipeline.
+- Tests: 5 `PhotoRules`, 5 `PhotoViewModel`, demo photo repository (7), admin queue, store migration and discovery
+  projection. `FakePhotoRepository` added to `core:testing`.
+- Not verified: the manager screen, dragging and Coil rendering on a device.
 
 ### Task 2.3 Live photo pipeline
 Status: deferred | Branch: `task/2.3-photos-live` | Depends on: 2.2
@@ -421,6 +442,10 @@ Choices made without the owner while following `docs/AUTOPILOT.md`. One line eac
 - 2.1: Old stored religion text with no consent record is cleared by the demo store migration (seeded fictional members
   keep theirs). The server rejects, rather than silently strips, special category data sent without consent.
 - 2.1: New Somali strings are English copies listed in `docs/TRANSLATION_TODO.md`, to be filled in Task 3.5.
+- 2.2: The main photo is always the first photo. Choosing a main photo or dragging one to the front are the same thing.
+- 2.2: Blur is a per photo owner choice carried in the public projection. The blur itself is drawn by the card in Task 3.1.
+- 2.2: Reordering has long press drag plus Move up and Move down buttons so it works with TalkBack and without gestures.
+- 2.2: In the live flavour photos all show as pending and the manager hides ordering and blur until Task 2.3 (deferred).
 
 ## Found issues
 

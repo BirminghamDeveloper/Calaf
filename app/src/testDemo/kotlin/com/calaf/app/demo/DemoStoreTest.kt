@@ -89,4 +89,27 @@ class DemoStoreTest {
         assertEquals(DemoStore.SCHEMA_VERSION, saved.getInt("schemaVersion"))
         assertFalse(saved.getJSONObject("profiles").getJSONObject("member").getBoolean("sensitiveConsent"))
     }
+
+    @Test fun `a version 2 store migrates old photo files to approved photo rows and seeds avatars`() {
+        val directory = temp.newFolder("legacy-photos")
+        val legacy = JSONObject()
+            .put("schemaVersion", 2)
+            .put("users", JSONObject()
+                .put("demo-hassan", JSONObject().put("email", "hassan@calaf.test").put("seed", true))
+                .put("member", JSONObject().put("email", "m@example.test")))
+            .put("meta", JSONObject().put("seeded", true))
+        File(directory, "demo.json").writeText(legacy.toString())
+        val memberDir = File(directory, "photos/member").apply { mkdirs() }
+        File(memberDir, "photo-4.jpg").writeBytes(byteArrayOf(4))
+        File(memberDir, "photo-1.jpg").writeBytes(byteArrayOf(1))
+        File(memberDir, "notes.txt").writeText("ignored")
+        val store = DemoStore(directory)
+        val photos = DemoPhotoRows.ownerPhotos(store, "member")
+        assertEquals(listOf("photo-1", "photo-4"), photos.map { it.id })
+        assertEquals(listOf(0, 1), photos.map { it.order })
+        assertEquals(listOf(true, false), photos.map { it.isPrimary })
+        assertTrue(photos.all { it.state == com.calaf.core.model.PhotoState.APPROVED })
+        assertTrue(DemoPhotoRows.ownerPhotos(store, "demo-hassan").isNotEmpty())
+        assertEquals(DemoStore.SCHEMA_VERSION, JSONObject(File(directory, "demo.json").readText()).getInt("schemaVersion"))
+    }
 }
