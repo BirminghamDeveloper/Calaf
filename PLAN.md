@@ -285,7 +285,7 @@ Status: deferred | Branch: `task/2.3-photos-live` | Depends on: 2.2
 ## Phase 3: discovery experience
 
 ### Task 3.1 Swipe card stack
-Status: todo | Branch: `task/3.1-swipe-stack` | Depends on: 2.2
+Status: done | Branch: `task/3.1-swipe-stack` | Depends on: 2.2
 
 - Reusable `SwipeCardStack` composable in `core:ui`: drag with rotation, fling thresholds,
   undo animation hook, 3 cards rendered at most, buttons for pass and like that do the same
@@ -294,6 +294,23 @@ Status: todo | Branch: `task/3.1-swipe-stack` | Depends on: 2.2
   timeline and top compatibility reasons.
 - Prefetch the next page when 3 cards remain. Empty and error states.
 - Unit test the swipe decision logic separately from the composable.
+
+Done notes (Task 3.1):
+- `core:ui`: `SwipeCardStack` (drag with rotation and a LIKE or PASS stamp, fling thresholds from the pure `SwipePhysics`,
+  at most three cards drawn with the others peeking out, `SwipeStackController` for programmatic swipes and the undo
+  animation hook `animateUndo`, TalkBack custom actions Like and Pass on the top card), `SwipeButtons` (pass and like do
+  exactly what a swipe does, with Report and Block kept one tap away), `PhotoBlur` (shrink and scale up, works on every
+  Android version), shared profile labels. New `CalafIcons.Close`. `ActionRunner.run` gained `onFailure`.
+- Discover now shows one full height card per profile: photo with tap zones (right next, left previous) and segments,
+  name, age, city, heritage, profession, marriage timeline and the top shared answers. Photos flagged blur are blurred
+  before they are drawn. Loading and empty states with refresh and preferences; errors use the existing banner with retry.
+- `DiscoveryViewModel`: the first page loads on opening, a swiped card leaves at once and returns to the front if the
+  request fails, the next page is fetched when three cards or fewer remain (`DiscoveryPaging`), and photos are read as
+  the viewer through `PhotoRepositoryFactory` with a small cache.
+- Tests: 9 `SwipePhysics` (thresholds, flick against drag, tiny touches, rotation, stamp, exit) and 6 new
+  `DiscoveryViewModel` tests (optimistic removal and restore, ignored swipe while busy, prefetch, first load, photos).
+- Not verified: the drag feel, animations, tap zones, blur rendering and TalkBack actions on a device (no Compose UI
+  test tooling in cloud sessions). The card layout was only compiled and previewed in source.
 
 ### Task 3.2 Profile detail and filters
 Status: todo | Branch: `task/3.2-profile-detail` | Depends on: 3.1
@@ -445,6 +462,10 @@ Choices made without the owner while following `docs/AUTOPILOT.md`. One line eac
 - 2.2: The main photo is always the first photo. Choosing a main photo or dragging one to the front are the same thing.
 - 2.2: Blur is a per photo owner choice carried in the public projection. The blur itself is drawn by the card in Task 3.1.
 - 2.2: Reordering has long press drag plus Move up and Move down buttons so it works with TalkBack and without gestures.
+- 3.1: A swiped card is removed from the stack at once (optimistic) and restored to the front if the request fails.
+- 3.1: Blur is drawn on the phone by shrinking and enlarging the image, so the sharp bytes never reach the screen for a
+  blurred photo. In the demo that is enough. Live will need server made blurred copies (Task 2.3, deferred).
+- 3.1: Prefetch happens when a swipe leaves three or fewer cards, not right after a page loads, so a short first page cannot loop.
 - 2.2: In the live flavour photos all show as pending and the manager hides ordering and blur until Task 2.3 (deferred).
 
 ## Found issues

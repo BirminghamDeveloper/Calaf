@@ -1,5 +1,5 @@
 # Calaf demo progress
-Last updated: 2026-11-05 07:47 UTC, after Task 2.2
+Last updated: 2026-11-05 07:58 UTC, after Task 3.1
 
 ## Done so far
 
@@ -30,11 +30,16 @@ Your profile now has a photo manager: up to six photos, the first is your main p
 Ten illustrated demo avatars come with the app (abstract art, no real people), and every demo member has two or three. In the demo new photos are approved straight away. The demo administrator has a photo review list on the Profile tab to approve or reject any photo, and a rejected photo disappears for everyone else.
 Behind the scenes: photos have a proper model (approved, pending, rejected), the old demo photo files upgrade automatically, and the real app only shows your own pending photos until the live photo pipeline is built.
 
+### Task 3.1 Swipe cards
+Discover is now a stack of profile cards like a dating app. Drag a card right to like or left to pass, or use the round buttons under it, which do exactly the same. Report and Block sit next to those buttons.
+Each card shows a big photo (tap the right or left side to see the next or previous photo), name, age, city, heritage, job, marriage timeline and the answers you share. Photos the owner chose to blur are blurred.
+More people load automatically before the stack runs out, and there are friendly loading and "that is everyone for now" screens. TalkBack users get Like and Pass actions on the card.
+Behind the scenes: the swipe rules (how far, how fast) are separate and tested, and a swiped card returns if the request fails.
+
 ## In progress
-Task 2.2 is finished and being merged. Next up: Task 3.1 Swipe cards (not started).
+Task 3.1 is finished and being merged. Next up: Task 3.2 Full profile screen and filters (not started).
 
 ## Still to do
-- Task 3.1 Swipe cards on Discover
 - Task 3.2 Full profile screen and filters
 - Task 3.3 "It's a match" moment, who liked you, compliments
 - Task 3.4 Chat polish and guardian (wali) view
@@ -53,6 +58,8 @@ Task 2.2 is finished and being merged. Next up: Task 3.1 Swipe cards (not starte
 - New Somali strings are English copies for now (filled in at Task 3.5).
 - The main photo is always the first photo, so choosing a main photo and dragging to the front are the same thing.
 - Blur is chosen per photo by the owner. The card that actually draws the blur arrives with the swipe cards (Task 3.1).
+- A swiped card disappears immediately and comes back if the action fails. More cards load when three are left.
+- Blurred photos are blurred on the phone by shrinking and enlarging them, so the sharp image is never drawn. The real app will need blurred copies made by the server.
 - Photo reordering works by long press drag and by Move up and Move down buttons.
 
 ## How to try the demo

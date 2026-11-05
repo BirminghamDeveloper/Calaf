@@ -21,4 +21,11 @@
     <string name="publish_first">Complete and publish your profile from the Profile tab to start discovering people.</string>
     <string name="refresh">Refresh</string>
     <string name="strong_areas">Shared answers: %1$s</string>
+    <string name="disc_empty_title">That is everyone for now</string>
+    <string name="disc_loading">Finding people for you</string>
+    <string name="disc_photo_description">%1$s, photo %2$d of %3$d</string>
+    <string name="disc_prev_photo">Previous photo</string>
+    <string name="disc_next_photo">Next photo</string>
+    <string name="disc_swipe_hint">Swipe right to like, left to pass, or use the buttons.</string>
+    <string name="disc_card_summary">%1$s, %2$d, %3$s</string>
 </resources>
